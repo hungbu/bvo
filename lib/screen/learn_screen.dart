@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider/carousel_controller.dart'; // Ensure correct import
 
 import 'package:bvo/model/word.dart';
 import 'package:bvo/repository/word_repository.dart';
@@ -23,6 +24,9 @@ class _LearnScreenState extends State<LearnScreen> {
   final TextEditingController _controller = TextEditingController();
   String _feedbackMessage = '';
   final FlutterTts _flutterTts = FlutterTts();
+  final CarouselSliderController _carouselController =
+      CarouselSliderController(); // Updated controller
+  final FocusNode _inputFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -34,6 +38,7 @@ class _LearnScreenState extends State<LearnScreen> {
   void dispose() {
     _controller.dispose();
     _flutterTts.stop();
+    _inputFocusNode.dispose();
     super.dispose();
   }
 
@@ -67,7 +72,23 @@ class _LearnScreenState extends State<LearnScreen> {
       setState(() {
         _feedbackMessage = 'Correct!';
       });
-      // Optionally, move to the next card
+      // Move to the next slide after a short delay
+      Future.delayed(const Duration(seconds: 1), () {
+        if (_currentIndex < words.length - 1) {
+          _carouselController.nextPage(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.linear,
+          );
+
+          // forcus input
+          _controller.clear();
+        } else {
+          // Optionally, handle the end of the list
+          setState(() {
+            _feedbackMessage = 'You have completed all cards!';
+          });
+        }
+      });
     } else {
       setState(() {
         _feedbackMessage = 'Incorrect. Try again.';
@@ -106,6 +127,7 @@ class _LearnScreenState extends State<LearnScreen> {
 
   Widget flashCardWidget() {
     return CarouselSlider.builder(
+      carouselController: _carouselController, // Assign the controller here
       itemCount: words.length,
       options: CarouselOptions(
         height: double.infinity,
@@ -117,6 +139,7 @@ class _LearnScreenState extends State<LearnScreen> {
             _controller.clear();
             _feedbackMessage = '';
             _speakEnglish(words[_currentIndex].en);
+            _inputFocusNode.requestFocus();
           });
         },
       ),
@@ -133,10 +156,14 @@ class _LearnScreenState extends State<LearnScreen> {
         children: [
           TextField(
             controller: _controller,
+            focusNode: _inputFocusNode,
             decoration: const InputDecoration(
               labelText: 'Enter the English word',
               border: OutlineInputBorder(),
             ),
+            onSubmitted: (value) {
+              _checkAnswer();
+            },
           ),
           const SizedBox(height: 10),
           ElevatedButton(
