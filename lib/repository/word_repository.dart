@@ -8,16 +8,12 @@ class WordRepository {
   }
 
   Future<List<Word>> getDictionary(String topic) async {
-    dynamic dictionary = await loadDictionary(topic);
-    if (dictionary != null) {
-      List<Word> words = dictionary.map((e) => Word.fromJson(e)).toList();
-      return words;
-    }
-
-    return [];
+    List<dynamic> dictionary = await loadDictionary(topic);
+    List<Word> words = dictionary.map((e) => Word.fromJson(e)).toList();
+    return words;
   }
 
-  Future<dynamic> loadDictionary(String topic) async {
+  Future<List<dynamic>> loadDictionary(String topic) async {
     dynamic dictionary = [
       {
         'en': 'classroom',
@@ -135,7 +131,8 @@ class WordRepository {
         'en': 'backpack',
         'vi': 'ba lô',
         'pronunciation': '/ˈbækˌpæk/',
-        'sentence': 'He put all his books into his backpack before leaving school.',
+        'sentence':
+            'He put all his books into his backpack before leaving school.',
         'topic': 'schools'
       },
       {

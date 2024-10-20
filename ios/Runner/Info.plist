@@ -45,5 +45,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app uses speech recognition to help users learn languages.</string>
+	<key>NSSpeechSynthesizerDelegate</key>
+	<string>This app uses speech synthesis to pronounce words.</string>
+
 </dict>
 </plist>
