@@ -38,47 +38,66 @@ class _HomeScreenState extends State<HomeScreen> {
         // the App.build method, and use it to set our appbar title.
         title: const Text("Bun Vocabulary"),
       ),
-      body: ListView(
-        children: getTopics,
-      ),
+      body: GridView.builder(
+          itemCount: topics.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, // Maximum 2 cards per row
+            childAspectRatio: 3 / 2, // Adjust the aspect ratio as needed
+            mainAxisSpacing: 4.0, // Space between rows
+            crossAxisSpacing: 4.0, // Space between columns
+          ),
+          padding: const EdgeInsets.all(4.0),
+          itemBuilder: (context, index) {
+            final word = topics[index];
+            return topicWidget(topic: word.topic);
+          }),
     );
   }
 
-  List<Widget> get getTopics {
-    List<Widget> topicWidgets = [];
-
-    if (topics.isNotEmpty) {
-      for (var topic in topics) {
-        topicWidgets.add(topicWidget(topic: topic.topic));
-      }
-    }
-
-    List<Widget> result = [];
-    // add a spacer
-    result.add(const SizedBox(height: 20));
-    // get 20 topics
-    result = topicWidgets.take(20).toList();
-    // add a spacer
-    result.add(const SizedBox(height: 20));
-
-    return result;
-  }
+  // List<Widget> get getTopics {
+  //   List<Widget> topicWidgets = [];
+  //
+  //   if (topics.isNotEmpty) {
+  //     for (var topic in topics) {
+  //       topicWidgets.add(topicWidget(topic: topic.topic));
+  //     }
+  //   }
+  //
+  //   List<Widget> result = [];
+  //   // add a spacer
+  //   result.add(const SizedBox(height: 20));
+  //   // get 20 topics
+  //   result = topicWidgets.take(20).toList();
+  //   // add a spacer
+  //   result.add(const SizedBox(height: 20));
+  //
+  //   return result;
+  // }
 
   Widget topicWidget({required String topic}) {
+
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => TopicScreen(topic: topic)),
+            onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => TopicScreen(topic: topic)),
+          );
+        },
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  topic,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+        )
         );
-      },
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(topic),
-        ),
-      ),
-    );
   }
 
   init() async {

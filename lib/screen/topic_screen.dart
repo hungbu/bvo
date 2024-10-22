@@ -47,26 +47,21 @@ class _TopicScreenState extends State<TopicScreen> {
   }
 
   Widget listWord() {
-    return GridView.builder(
+    return ListView.builder(
       itemCount: words.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // Maximum 2 cards per row
-        childAspectRatio: 3 / 2, // Adjust the aspect ratio as needed
-        mainAxisSpacing: 4.0, // Space between rows
-        crossAxisSpacing: 4.0, // Space between columns
-      ),
-      padding: const EdgeInsets.all(4.0),
+      padding: const EdgeInsets.all(16.0),
       itemBuilder: (context, index) {
         final word = words[index];
         return Card(
           child: Padding(
-            padding: const EdgeInsets.all(4.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   word.en,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.deepPurple),
                 ),
                 Text(
                   word.vi,
