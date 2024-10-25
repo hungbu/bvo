@@ -1,8 +1,4 @@
-import 'package:bvo/model/topic.dart';
-import 'package:bvo/repository/topic_repository.dart';
 import 'package:bvo/screen/home_screen.dart';
-import 'package:bvo/service/topic_service.dart';
-import 'package:bvo/screen/topic_screen.dart';
 import 'package:bvo/theme/purple_theme.dart';
 import 'package:flutter/material.dart';
 

@@ -54,30 +54,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // List<Widget> get getTopics {
-  //   List<Widget> topicWidgets = [];
-  //
-  //   if (topics.isNotEmpty) {
-  //     for (var topic in topics) {
-  //       topicWidgets.add(topicWidget(topic: topic.topic));
-  //     }
-  //   }
-  //
-  //   List<Widget> result = [];
-  //   // add a spacer
-  //   result.add(const SizedBox(height: 20));
-  //   // get 20 topics
-  //   result = topicWidgets.take(20).toList();
-  //   // add a spacer
-  //   result.add(const SizedBox(height: 20));
-  //
-  //   return result;
-  // }
-
   Widget topicWidget({required String topic}) {
-
     return GestureDetector(
-            onTap: () {
+        onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => TopicScreen(topic: topic)),
@@ -96,8 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-        )
-        );
+        ));
   }
 
   init() async {

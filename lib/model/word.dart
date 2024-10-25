@@ -6,10 +6,18 @@ class Word {
   String sentence;
   String topic;
   String pronunciation;
-  int? reviewCount;
-  DateTime? nextReview;
+  int reviewCount;
+  DateTime nextReview;
 
-  Word({required this.en, required this.vi, required this.sentence, required this.topic, required this.pronunciation, this.reviewCount, this.nextReview});
+  Word({
+    required this.en,
+    required this.vi,
+    required this.sentence,
+    required this.topic,
+    required this.pronunciation,
+    this.reviewCount = 0,
+    DateTime? nextReview,
+  }) : nextReview = nextReview ?? DateTime.now();
 
   factory Word.fromJson(Map<String, dynamic> json) {
     return Word(
@@ -18,8 +26,10 @@ class Word {
       sentence: json['sentence'],
       topic: json['topic'],
       pronunciation: json['pronunciation'],
-      reviewCount: json['reviewCount'],
-      nextReview: json['nextReview'],
+      reviewCount: json['reviewCount'] ?? 0,
+      nextReview: json['nextReview'] != null
+          ? DateTime.parse(json['nextReview'])
+          : null,
     );
   }
 
@@ -31,8 +41,8 @@ class Word {
     data['topic'] = topic;
     data['pronunciation'] = pronunciation;
     data['reviewCount'] = reviewCount;
-    data['nextReview'] = nextReview;
+    data['nextReview'] =
+        nextReview.toIso8601String(); // Convert DateTime to String
     return data;
   }
-
 }

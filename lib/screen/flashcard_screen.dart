@@ -7,18 +7,17 @@ import 'package:bvo/model/word.dart';
 import 'package:bvo/repository/word_repository.dart';
 import 'package:bvo/screen/flashcard/flashcard.dart';
 
-class LearnScreen extends StatefulWidget {
+class FlashCardScreen extends StatefulWidget {
   final List<Word> words;
   final String topic;
 
-  const LearnScreen({Key? key, required this.words, required this.topic})
-      : super(key: key);
+  const FlashCardScreen({super.key, required this.words, required this.topic});
 
   @override
-  State<LearnScreen> createState() => _LearnScreenState();
+  State<FlashCardScreen> createState() => _FlashCardScreenState();
 }
 
-class _LearnScreenState extends State<LearnScreen> {
+class _FlashCardScreenState extends State<FlashCardScreen> {
   late List<Word> words = [];
   int _currentIndex = 0;
   final TextEditingController _controller = TextEditingController();
@@ -98,14 +97,9 @@ class _LearnScreenState extends State<LearnScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Learn ${widget.topic}"),
-      ),
-      body: words.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : bodyWidget(),
-    );
+    return words.isEmpty
+        ? const Center(child: CircularProgressIndicator())
+        : bodyWidget();
   }
 
   Widget bodyWidget() {

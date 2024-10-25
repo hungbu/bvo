@@ -8,7 +8,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 class Flashcard extends StatefulWidget {
   final Word word;
 
-  const Flashcard({Key? key, required this.word}) : super(key: key);
+  const Flashcard({super.key, required this.word});
 
   @override
   _FlashcardState createState() => _FlashcardState();
@@ -129,11 +129,11 @@ class _FlashcardState extends State<Flashcard> {
 // Helper widget for rotation animation
 class RotationYTransition extends AnimatedWidget {
   const RotationYTransition({
-    Key? key,
+    super.key,
     required Animation<double> turns,
     this.alignment = Alignment.center,
     required this.child,
-  }) : super(key: key, listenable: turns);
+  }) : super(listenable: turns);
 
   final Alignment alignment;
   final Widget child;
