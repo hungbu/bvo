@@ -80,9 +80,32 @@ class _FlashcardState extends State<Flashcard> {
       elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Center(
-        child: Text(
-          word.en,
-          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+        child: SizedBox(
+          height: 145,
+          child: Column(
+            children: [
+              IconButton(
+                  onPressed: () {
+                    _speakEnglish();
+                  },
+                  icon: const Icon(Icons.volume_up, size: 32)),
+              const SizedBox(height: 16),
+              Text(
+                word.en,
+                style:
+                    const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.remove_red_eye_outlined),
+                  const SizedBox(width: 8),
+                  Text("Lượt xem: ${word.reviewCount}"),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );

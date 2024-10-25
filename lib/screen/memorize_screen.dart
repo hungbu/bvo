@@ -123,9 +123,9 @@ class _MemorizeScreenState extends State<MemorizeScreen> {
   Widget build(BuildContext context) {
     if (dueWords.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: Text('Memorize ${widget.topic}')),
+        appBar: AppBar(title: Text('Học chủ đề ${widget.topic}')),
         body: const Center(
-          child: Text('No words due for review today!'),
+          child: Text('Bạn quá xuất sắc, đã học hết bài ngày hôm nay'),
         ),
       );
     }
@@ -133,7 +133,7 @@ class _MemorizeScreenState extends State<MemorizeScreen> {
     Word currentWord = dueWords[currentWordIndex];
 
     return Scaffold(
-      appBar: AppBar(title: Text('Memorize ${widget.topic}')),
+      appBar: AppBar(title: Text('Học chủ đề  ${widget.topic}')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -157,7 +157,7 @@ class _MemorizeScreenState extends State<MemorizeScreen> {
                       showAnswer = true;
                     });
                   },
-                  child: const Text('Show Answer'),
+                  child: const Text('Hiển thị câu trả lời'),
                 )
               else
                 Column(

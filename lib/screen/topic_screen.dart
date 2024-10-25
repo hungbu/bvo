@@ -1,4 +1,5 @@
 import 'package:bvo/screen/memorize_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 
@@ -25,7 +26,12 @@ class _TopicScreenState extends State<TopicScreen> {
   }
 
   Future<void> init() async {
-    words = await WordRepository().getWordsOfTopic(widget.topic);
+    words = await WordRepository().loadWords(widget.topic);
+    if (words.isEmpty) {
+      // If no words are loaded, fetch from initial source and save
+      words = await WordRepository().getWordsOfTopic(widget.topic);
+      await WordRepository().saveWords(widget.topic, words);
+    }
     setState(() {});
   }
 
@@ -89,21 +95,46 @@ class _TopicScreenState extends State<TopicScreen> {
           child: Padding(
             padding:
                 const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  word.en,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.deepPurple,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        word.en,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.deepPurple,
+                        ),
+                      ),
+                      Text(
+                        word.vi,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  word.vi,
-                  style: const TextStyle(color: Colors.grey),
-                ),
+                SizedBox(
+                    width: 90,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(width: 2),
+                        const Icon(
+                          CupertinoIcons.heart_fill,
+                          size: 16,
+                          color: Colors.deepPurpleAccent,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "${word.reviewCount}",
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ],
+                    ))
               ],
             ),
           ),
