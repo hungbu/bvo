@@ -156,27 +156,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void showTopicSelectionBottomSheet() {
-    // Identify topics already on the homepage
-    Set<String> reviewedTopics = reviewedWordsByTopic.keys.toSet();
-
-    // Filter out these topics from the topics list
-    List<Topic> availableTopics =
-        topics.where((topic) => !reviewedTopics.contains(topic.topic)).toList();
-
-    // Check if there are any available topics
-    if (availableTopics.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All topics have been added.')),
-      );
-      return;
-    }
-
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
       ),
-      isScrollControlled: true,
       builder: (context) {
         return SizedBox(
           height:
@@ -184,11 +169,11 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               // Title of the bottom sheet
-              Padding(
-                padding: const EdgeInsets.all(16.0),
+              const Padding(
+                padding: EdgeInsets.all(16.0),
                 child: Text(
                   'Choose Topic',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -196,21 +181,22 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               // Divider (optional)
               const Divider(height: 1, thickness: 1),
+              const SizedBox(height: 16.0),
               // Expanded widget to contain the GridView
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: GridView.builder(
-                    itemCount: availableTopics.length,
+                    itemCount: topics.length,
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2, // 2 cards per row
-                      childAspectRatio: 3 / 2, // Adjust as needed
+                      childAspectRatio: 2.5, // Adjust as needed
                       mainAxisSpacing: 4.0,
                       crossAxisSpacing: 4.0,
                     ),
                     itemBuilder: (context, index) {
-                      final topic = availableTopics[index];
+                      final topic = topics[index];
                       return topicWidget(topic: topic.topic);
                     },
                   ),
