@@ -25,21 +25,28 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   GoogleSignInAccount? _currentUser;
+  late GoogleSignIn _googleSignIn;
 
   @override
   void initState() {
     super.initState();
-    GoogleSignIn().onCurrentUserChanged.listen((account) {
+    
+    // Initialize GoogleSignIn with basic configuration
+    _googleSignIn = GoogleSignIn(
+      scopes: ['email', 'profile'],
+    );
+    
+    _googleSignIn.onCurrentUserChanged.listen((account) {
       setState(() {
         _currentUser = account;
       });
     });
-    GoogleSignIn().signInSilently();
+    _googleSignIn.signInSilently();
   }
 
   Future<void> _handleSignIn() async {
     try {
-      final googleUser = await GoogleSignIn().signIn();
+      final googleUser = await _googleSignIn.signIn();
       if (googleUser != null) {
         await FirebaseFirestore.instance
             .collection('users')
@@ -55,7 +62,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _handleSignOut() async {
-    await GoogleSignIn().disconnect();
+    await _googleSignIn.disconnect();
     setState(() {
       _currentUser = null;
     });

@@ -19,6 +19,15 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8
     }
 
+    signingConfigs {
+        release {
+            keyAlias 'my-key-alias'
+            keyPassword 'Trinhngochung88@123'  // Thay bằng mật khẩu bạn đã nhập
+            storeFile file('my-release-key.keystore')
+            storePassword 'Trinhngochung88@123'  // Thay bằng mật khẩu keystore
+        }
+    }
+
     defaultConfig {
         applicationId = "com.vnwebsite.bvoca"
         minSdk = flutter.minSdkVersion
@@ -29,11 +38,19 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.debug
+            signingConfig = signingConfigs.release
+        }
+        debug {
+            signingConfig = signingConfigs.release
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+// Task to get SHA-1 fingerprint
+task getFingerprint(type: Exec) {
+    commandLine 'keytool', '-list', '-v', '-keystore', System.getProperty('user.home') + '/.android/debug.keystore', '-alias', 'androiddebugkey', '-storepass', 'android', '-keypass', 'android'
 }
