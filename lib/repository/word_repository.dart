@@ -10,19 +10,45 @@ import 'package:shared_preferences/shared_preferences.dart';
 class WordRepository {
   // get word
   Future<List<Word>> getWordsOfTopic(String topic) async {
-    return await getDictionary(topic);
+    try {
+      // First try to get from local cache
+      final cachedWords = await loadWords(topic);
+      if (cachedWords.isNotEmpty) {
+        return cachedWords;
+      }
+
+      // If cache is empty, generate from dictionary data
+      return await getDictionary(topic);
+    } catch (e) {
+      print("Error getting words for topic $topic: $e");
+      return [];
+    }
   }
 
   Future<List<Word>> getDictionary(String topic) async {
-    List<dynamic> dictionary = await loadDictionary(topic);
-    List<Word> words = dictionary.map((e) => Word.fromJson(e)).toList();
-    return words;
+    try {
+      List<dynamic> dictionary = await loadDictionary(topic);
+      List<Word> words = dictionary.map((e) => Word.fromJson(e)).toList();
+      
+      // Cache the words automatically
+      await saveWords(topic, words);
+      
+      return words;
+    } catch (e) {
+      print("Error getting dictionary for topic $topic: $e");
+      return [];
+    }
   }
 
   Future<List<dynamic>> loadDictionary(String topic) async {
-    // filter dictionary by topic
-    final result = dictionary.where((e) => e['topic'] == topic).toList();
-    return result;
+    try {
+      // filter dictionary by topic
+      final result = dictionary.where((e) => e['topic'] == topic).toList();
+      return result;
+    } catch (e) {
+      print("Error loading dictionary for topic $topic: $e");
+      return [];
+    }
   }
 
   Future<List<Word>> loadWords(String topic) async {

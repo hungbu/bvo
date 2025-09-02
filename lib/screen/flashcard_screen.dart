@@ -130,11 +130,16 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.words.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    } else {
-      return bodyWidget();
-    }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('FlashCard - ${widget.topic}'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: widget.words.isEmpty 
+          ? const Center(child: CircularProgressIndicator())
+          : bodyWidget(),
+    );
   }
 
   Widget bodyWidget() {

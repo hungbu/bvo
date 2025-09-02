@@ -1,11 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:bvo/repository/dictionary.dart';
 
 import 'theme/purple_theme.dart';
-import 'screen/home_screen.dart';
+import 'screen/main_layout.dart';
+import 'screen/login_screen.dart';
+import 'service/auth_service.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -25,124 +25,48 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   GoogleSignInAccount? _currentUser;
-  late GoogleSignIn _googleSignIn;
 
   @override
   void initState() {
     super.initState();
     
-    // Initialize GoogleSignIn with basic configuration
-    _googleSignIn = GoogleSignIn(
-      scopes: ['email', 'profile'],
-    );
-    
-    _googleSignIn.onCurrentUserChanged.listen((account) {
+    // Listen to auth state changes
+    AuthService().onAuthStateChanged.listen((account) {
       setState(() {
         _currentUser = account;
       });
     });
-    _googleSignIn.signInSilently();
+    
+    // Try silent sign in
+    _trySignInSilently();
   }
 
-  Future<void> _handleSignIn() async {
-    try {
-      final googleUser = await _googleSignIn.signIn();
-      if (googleUser != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(googleUser.email)
-            .set({
-          'displayName': googleUser.displayName,
-          'email': googleUser.email,
-        });
-      }
-    } catch (error) {
-      print(error);
-    }
-  }
-
-  Future<void> _handleSignOut() async {
-    await _googleSignIn.disconnect();
+  Future<void> _trySignInSilently() async {
+    final user = await AuthService().signInSilently();
     setState(() {
-      _currentUser = null;
+      _currentUser = user;
     });
   }
 
-  // Temporary function to upload data to Firestore
-  Future<void> _uploadDictionaryToFirestore() async {
-    final firestore = FirebaseFirestore.instance;
-    final wordsCollection = firestore.collection('words');
-    final topicsCollection = firestore.collection('topics');
-    final allWords = dictionary; // from dictionary.dart
 
-    // Get unique topics
-    final topics = allWords.map((word) => word['topic']).toSet();
 
-    // Upload topics
-    for (var topicName in topics) {
-      if (topicName != null) {
-        await topicsCollection.doc(topicName).set({'name': topicName});
-      }
-    }
 
-    // Upload words
-    for (var wordData in allWords) {
-      // A simple way to create a unique ID is to use the english word
-      final wordId = wordData['en']?.replaceAll(' ', '_').toLowerCase();
-      if (wordId != null && wordId.isNotEmpty) {
-        await wordsCollection.doc(wordId).set({
-          'en': wordData['en'],
-          'vi': wordData['vi'],
-          'pronunciation': wordData['pronunciation'],
-          'sentence': wordData['sentence'],
-          'topic': wordData['topic'],
-        });
-      }
-    }
-
-    print('Data upload completed!');
-  }
 
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Bun Vocabulary',
-        debugShowCheckedModeBanner: false,
-        theme: PurpleTheme.getTheme(),
-        home: _buildBody());
+      title: 'Bun Vocabulary',
+      debugShowCheckedModeBanner: false,
+      theme: PurpleTheme.getTheme(),
+      initialRoute: _currentUser != null ? '/main' : '/login',
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/main': (context) => const MainLayout(),
+      },
+    );
   }
 
-  Widget _buildBody() {
-    GoogleSignInAccount? user = _currentUser;
-    if (user != null) {
-      return HomeScreen();
-    } else {
-      return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "You are not signed in.",
-                style: TextStyle(fontSize: 20),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _handleSignIn,
-                child: const Text("Sign in with Google"),
-              ),
-              const SizedBox(height: 20),
-              // Temporary button to trigger the upload
-              ElevatedButton(
-                onPressed: _uploadDictionaryToFirestore,
-                child: const Text("Upload Dictionary to Firestore"),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-  }
+
 }
