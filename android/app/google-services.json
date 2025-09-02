@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "387492232517",
+    "firebase_url": "https://bvoca-68c89-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "bvoca-68c89",
+    "storage_bucket": "bvoca-68c89.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:387492232517:android:6b0cdbc3ed18ebc07fd22c",
+        "android_client_info": {
+          "package_name": "com.vnwebsite.bvoca"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "387492232517-nol82ovv87cvuour5m4kolot4prv5lu4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZr2ZtmZx2_GKHxZdeil8LFvuP0mi-xOU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "387492232517-nol82ovv87cvuour5m4kolot4prv5lu4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
