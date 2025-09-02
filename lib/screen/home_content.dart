@@ -292,13 +292,30 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Widget _buildTopicCard(Topic topic, int reviewedCount) {
+    // Get topic-specific data
+    final topicData = _getTopicData(topic.topic);
+    final totalWords = topicData['totalWords'] as int;
+    final difficulty = topicData['difficulty'] as String;
+    final icon = topicData['icon'] as IconData;
+    final color = topicData['color'] as Color;
+    final estimatedTime = topicData['estimatedTime'] as String;
+    
+    // Calculate progress
+    final progress = totalWords > 0 ? (reviewedCount / totalWords).clamp(0.0, 1.0) : 0.0;
+    final progressPercentage = (progress * 100).round();
+    
+    // Determine completion status
+    final isCompleted = progress >= 1.0;
+    final isStarted = reviewedCount > 0;
+    
     return Card(
-      elevation: 2,
+      elevation: 3,
+      shadowColor: color.withOpacity(0.3),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         onTap: () {
           Navigator.push(
             context,
@@ -307,53 +324,346 @@ class _HomeContentState extends State<HomeContent> {
             ),
           );
         },
-        child: Padding(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [
+                color.withOpacity(0.1),
+                color.withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
           padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
+              // Header with icon and status
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(
-                    Icons.topic,
-                    color: Theme.of(context).primaryColor,
-                    size: 20,
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: color,
+                      size: 18,
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                                      Expanded(
-                      child: Text(
-                        topic.topic,
-                        style: const TextStyle(
-                          fontSize: 14,
+                  if (isCompleted)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check, color: Colors.white, size: 8),
+                          SizedBox(width: 1),
+                          Text(
+                            'Done',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (isStarted)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'Learning',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
                           fontWeight: FontWeight.bold,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'New',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                 ],
               ),
-              const Spacer(),
+              
+              const SizedBox(height: 6),
+              
+              // Topic title
               Text(
-                '$reviewedCount words learned',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
+                topic.topic.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.2,
+                  height: 1.1,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
+              
               const SizedBox(height: 4),
-              LinearProgressIndicator(
-                value: reviewedCount > 0 ? 0.5 : 0.0, // Simplified progress
-                backgroundColor: Colors.grey[300],
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).primaryColor,
-                ),
+              
+              // Difficulty and time
+              Row(
+                children: [
+                  _buildDifficultyStars(difficulty),
+                  const Spacer(),
+                  Icon(
+                    Icons.access_time,
+                    size: 10,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    estimatedTime,
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 6),
+              
+              // Progress section
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          '$reviewedCount/$totalWords words',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(
+                        '$progressPercentage%',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: color,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: Colors.grey[300],
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                      minHeight: 3,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildDifficultyStars(String difficulty) {
+    int stars = difficulty == 'Beginner' ? 1 : 
+                difficulty == 'Intermediate' ? 2 : 3;
+    
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (index) {
+        return Icon(
+          index < stars ? Icons.star : Icons.star_border,
+          size: 10,
+          color: index < stars ? Colors.amber : Colors.grey[400],
+        );
+      }),
+    );
+  }
+
+  Map<String, dynamic> _getTopicData(String topicName) {
+    // Topic-specific configurations
+    final topicConfigs = {
+      'schools': {
+        'totalWords': 25,
+        'difficulty': 'Beginner',
+        'icon': Icons.school,
+        'color': Colors.blue,
+        'estimatedTime': '15 min',
+      },
+      'examination': {
+        'totalWords': 20,
+        'difficulty': 'Intermediate',
+        'icon': Icons.quiz,
+        'color': Colors.orange,
+        'estimatedTime': '12 min',
+      },
+      'extracurricular': {
+        'totalWords': 18,
+        'difficulty': 'Intermediate',
+        'icon': Icons.sports_soccer,
+        'color': Colors.green,
+        'estimatedTime': '10 min',
+      },
+      'school stationery': {
+        'totalWords': 22,
+        'difficulty': 'Beginner',
+        'icon': Icons.edit,
+        'color': Colors.purple,
+        'estimatedTime': '13 min',
+      },
+      'school subjects': {
+        'totalWords': 15,
+        'difficulty': 'Beginner',
+        'icon': Icons.book,
+        'color': Colors.indigo,
+        'estimatedTime': '8 min',
+      },
+      'classroom': {
+        'totalWords': 28,
+        'difficulty': 'Beginner',
+        'icon': Icons.class_,
+        'color': Colors.teal,
+        'estimatedTime': '18 min',
+      },
+      'universities': {
+        'totalWords': 30,
+        'difficulty': 'Advanced',
+        'icon': Icons.account_balance,
+        'color': Colors.deepPurple,
+        'estimatedTime': '20 min',
+      },
+      'body': {
+        'totalWords': 35,
+        'difficulty': 'Beginner',
+        'icon': Icons.accessibility,
+        'color': Colors.pink,
+        'estimatedTime': '22 min',
+      },
+      'appearance': {
+        'totalWords': 25,
+        'difficulty': 'Intermediate',
+        'icon': Icons.face,
+        'color': Colors.cyan,
+        'estimatedTime': '15 min',
+      },
+      'characteristics': {
+        'totalWords': 20,
+        'difficulty': 'Advanced',
+        'icon': Icons.psychology,
+        'color': Colors.amber,
+        'estimatedTime': '12 min',
+      },
+      'age': {
+        'totalWords': 12,
+        'difficulty': 'Beginner',
+        'icon': Icons.cake,
+        'color': Colors.brown,
+        'estimatedTime': '6 min',
+      },
+      'feelings': {
+        'totalWords': 30,
+        'difficulty': 'Intermediate',
+        'icon': Icons.sentiment_satisfied,
+        'color': Colors.red,
+        'estimatedTime': '18 min',
+      },
+      'family': {
+        'totalWords': 18,
+        'difficulty': 'Beginner',
+        'icon': Icons.family_restroom,
+        'color': Colors.lightGreen,
+        'estimatedTime': '10 min',
+      },
+      'relationships': {
+        'totalWords': 22,
+        'difficulty': 'Advanced',
+        'icon': Icons.favorite,
+        'color': Colors.pinkAccent,
+        'estimatedTime': '14 min',
+      },
+      'colors': {
+        'totalWords': 15,
+        'difficulty': 'Beginner',
+        'icon': Icons.palette,
+        'color': Colors.deepOrange,
+        'estimatedTime': '8 min',
+      },
+      'shapes': {
+        'totalWords': 12,
+        'difficulty': 'Beginner',
+        'icon': Icons.category,
+        'color': Colors.blueGrey,
+        'estimatedTime': '6 min',
+      },
+      'numbers': {
+        'totalWords': 20,
+        'difficulty': 'Beginner',
+        'icon': Icons.numbers,
+        'color': Colors.lime,
+        'estimatedTime': '12 min',
+      },
+      'ordinal numbers': {
+        'totalWords': 15,
+        'difficulty': 'Intermediate',
+        'icon': Icons.format_list_numbered,
+        'color': Colors.lightBlue,
+        'estimatedTime': '8 min',
+      },
+      'days of the week': {
+        'totalWords': 7,
+        'difficulty': 'Beginner',
+        'icon': Icons.calendar_today,
+        'color': Colors.deepPurpleAccent,
+        'estimatedTime': '4 min',
+      },
+    };
+
+    return topicConfigs[topicName.toLowerCase()] ?? {
+      'totalWords': 20,
+      'difficulty': 'Beginner',
+      'icon': Icons.topic,
+      'color': Theme.of(context).primaryColor,
+      'estimatedTime': '12 min',
+    };
   }
 
   Widget _buildQuickActionButton(String title, IconData icon, VoidCallback onTap) {
