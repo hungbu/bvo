@@ -114,35 +114,57 @@ class _FlashcardState extends State<Flashcard> {
   Widget _buildCardBack(Word word) {
     return Card(
       key: const ValueKey('back'),
-      color: Colors.blueAccent,
       elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              word.vi,
-              style: const TextStyle(fontSize: 28, color: Colors.white),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Pronunciation: ${word.pronunciation}',
-              style: const TextStyle(fontSize: 18, color: Colors.white70),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Sentence: ${word.sentence}',
-              style: const TextStyle(fontSize: 16, color: Colors.white70),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Topic: ${word.topic}',
-              style: const TextStyle(fontSize: 16, color: Colors.white70),
-            ),
-          ],
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).primaryColor,
+              Theme.of(context).primaryColor.withOpacity(0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+              Text(
+                word.vi,
+                style: const TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Pronunciation: ${word.pronunciation}',
+                style: const TextStyle(fontSize: 16, color: Colors.white70),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Flexible(
+                child: Text(
+                  'Sentence: ${word.sentence}',
+                  style: const TextStyle(fontSize: 14, color: Colors.white70),
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Topic: ${word.topic}',
+                style: const TextStyle(fontSize: 14, color: Colors.white70),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
         ),
       ),
     );

@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // App Title
                     const Text(
-                      'Bun Vocabulary',
+                      'ĐÔNG SƠN Vocabulary',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,

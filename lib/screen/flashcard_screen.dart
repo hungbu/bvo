@@ -27,6 +27,11 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       CarouselSliderController();
   final FocusNode _inputFocusNode = FocusNode();
   late SharedPreferences _prefs;
+  
+  // Statistics tracking
+  int _correctAnswers = 0;
+  int _totalAttempts = 0;
+  DateTime? _sessionStartTime;
 
   @override
   void initState() {
@@ -37,6 +42,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
     await loadWords();
+    _sessionStartTime = DateTime.now(); // Start tracking session time
     if (widget.words.isNotEmpty) {
       _speakEnglish(widget.words[0].en);
     }
@@ -94,9 +100,12 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         .toLowerCase()
         .replaceAll("-", " ");
 
+    _totalAttempts++; // Track total attempts
+
     if (userAnswer == correctAnswer) {
       // Increment the reviewCount
       widget.words[_currentIndex].reviewCount += 1;
+      _correctAnswers++; // Track correct answers
 
       // Save the updated words
       saveWords();
@@ -121,11 +130,249 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         );
         _controller.clear();
       } else {
-        setState(() {
-          _feedbackMessage = 'You have reviewed all words in ${widget.topic}.';
-        });
+        // Show completion dialog instead of just text message
+        _showCompletionDialog();
       }
     });
+  }
+
+  void _showCompletionDialog() {
+    // Calculate session statistics
+    Duration sessionDuration = _sessionStartTime != null 
+        ? DateTime.now().difference(_sessionStartTime!) 
+        : Duration.zero;
+    
+    double accuracy = _totalAttempts > 0 
+        ? (_correctAnswers / _totalAttempts * 100) 
+        : 0.0;
+
+    String formatDuration(Duration duration) {
+      String twoDigits(int n) => n.toString().padLeft(2, "0");
+      String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+      String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+      return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.celebration,
+                color: Colors.amber,
+                size: 30,
+              ),
+              SizedBox(width: 10),
+              Text(
+                'Xuất sắc!',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Bạn đã hoàn thành chủ đề "${widget.topic}"',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 20),
+              
+              // Statistics section
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Thống kê phiên học',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    
+                    // Words learned
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.book, size: 20, color: Colors.blue),
+                            SizedBox(width: 8),
+                            Text('Số từ đã học:'),
+                          ],
+                        ),
+                        Text(
+                          '${widget.words.length}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    
+                    // Accuracy
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.track_changes, size: 20, color: Colors.green),
+                            SizedBox(width: 8),
+                            Text('Độ chính xác:'),
+                          ],
+                        ),
+                        Text(
+                          '${accuracy.toStringAsFixed(1)}%',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: accuracy >= 80 ? Colors.green : 
+                                   accuracy >= 60 ? Colors.orange : Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    
+                    // Session time
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.timer, size: 20, color: Colors.purple),
+                            SizedBox(width: 8),
+                            Text('Thời gian học:'),
+                          ],
+                        ),
+                        Text(
+                          formatDuration(sessionDuration),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    
+                    // Total attempts
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.quiz, size: 20, color: Colors.orange),
+                            SizedBox(width: 8),
+                            Text('Tổng lượt trả lời:'),
+                          ],
+                        ),
+                        Text(
+                          '$_totalAttempts',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            // Study Again button
+            TextButton.icon(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                _restartSession();
+              },
+              icon: Icon(Icons.refresh),
+              label: Text('Học lại'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.blue,
+              ),
+            ),
+            
+            // Back to Topics button
+            TextButton.icon(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(context); // Go back to previous screen
+              },
+              icon: Icon(Icons.arrow_back),
+              label: Text('Quay lại'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey[600],
+              ),
+            ),
+            
+            // Continue/Home button
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(context); // Go back to previous screen
+                // Could navigate to home or topic selection
+              },
+              icon: Icon(Icons.home),
+              label: Text('Trang chủ'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _restartSession() {
+    setState(() {
+      _currentIndex = 0;
+      _correctAnswers = 0;
+      _totalAttempts = 0;
+      _sessionStartTime = DateTime.now();
+      _feedbackMessage = '';
+      _controller.clear();
+    });
+    
+    // Reset carousel to first card
+    _carouselController.animateToPage(0);
+    
+    // Speak first word
+    if (widget.words.isNotEmpty) {
+      _speakEnglish(widget.words[0].en);
+    }
+    
+    // Focus input
+    _inputFocusNode.requestFocus();
   }
 
   @override
