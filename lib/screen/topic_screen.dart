@@ -186,10 +186,10 @@ class _TopicScreenState extends State<TopicScreen> {
                   ),
                 );
               },
-              icon: const Icon(Icons.psychology),
-              label: const Text('Start Memorize'),
+              icon: const Icon(Icons.add_task),
+              label: const Text('Add to Quiz'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
@@ -386,6 +386,45 @@ class _TopicScreenState extends State<TopicScreen> {
                   ),
                 ],
               ),
+              
+              const SizedBox(height: 12),
+              
+              // Action buttons for individual word
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _addWordToQuiz(word),
+                      icon: const Icon(Icons.add_task, size: 16),
+                      label: const Text('Add to Quiz'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.green,
+                        side: const BorderSide(color: Colors.green),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _practiceWord(word),
+                      icon: const Icon(Icons.quiz, size: 16),
+                      label: const Text('Practice'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Theme.of(context).primaryColor,
+                        side: BorderSide(color: Theme.of(context).primaryColor),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -447,6 +486,31 @@ class _TopicScreenState extends State<TopicScreen> {
           ],
         );
       },
+    );
+  }
+
+  void _addWordToQuiz(Word word) {
+    // TODO: Implement add word to quiz functionality
+    // This will save the word to a quiz/memorize list in SharedPreferences
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Added "${word.en}" to Quiz!'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _practiceWord(Word word) {
+    // Navigate to single word flashcard practice
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FlashCardScreen(
+          topic: widget.topic,
+          words: [word], // Practice just this one word
+        ),
+      ),
     );
   }
 

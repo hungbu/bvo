@@ -23,9 +23,9 @@ class _MainLayoutState extends State<MainLayout> {
 
   // Danh sách các màn hình được build dynamically để pass callback
   List<Widget> get _screens => [
-    HomeContent(onTabChange: (index) => setState(() => _currentIndex = index)), // Home - Topic selection & Dashboard
-    const FlashCardMainScreen(), // FlashCard - Main flashcard feature  
-    const MemorizeMainScreen(), // Memorize - Main memorize feature
+    HomeContent(onTabChange: (index) => setState(() => _currentIndex = index)), // Home - Dashboard & Overview
+    const TopicListScreen(), // Topics - All topics list
+    const QuizMainScreen(), // Quiz - Review & Testing unlearned words
     const ProfileScreen(), // Profile - Stats & Settings
   ];
 
@@ -43,8 +43,8 @@ class _MainLayoutState extends State<MainLayout> {
         height: 60,
         items: const [
           TabItem(icon: Icons.home, title: 'Home'),
-          TabItem(icon: Icons.quiz, title: 'FlashCard'),
-          TabItem(icon: Icons.psychology, title: 'Memorize'),
+          TabItem(icon: Icons.topic, title: 'Topics'),
+          TabItem(icon: Icons.quiz, title: 'Quiz'),
           TabItem(icon: Icons.person, title: 'Profile'),
         ],
         initialActiveIndex: 0,
@@ -271,14 +271,14 @@ class _FlashCardMainScreenState extends State<FlashCardMainScreen> {
   }
 }
 
-class MemorizeMainScreen extends StatefulWidget {
-  const MemorizeMainScreen({Key? key}) : super(key: key);
+class QuizMainScreen extends StatefulWidget {
+  const QuizMainScreen({Key? key}) : super(key: key);
 
   @override
-  State<MemorizeMainScreen> createState() => _MemorizeMainScreenState();
+  State<QuizMainScreen> createState() => _QuizMainScreenState();
 }
 
-class _MemorizeMainScreenState extends State<MemorizeMainScreen> {
+class _QuizMainScreenState extends State<QuizMainScreen> {
   List<Topic> topics = [];
   bool isLoading = true;
 
@@ -323,7 +323,7 @@ class _MemorizeMainScreenState extends State<MemorizeMainScreen> {
               backgroundColor: Theme.of(context).primaryColor,
               flexibleSpace: FlexibleSpaceBar(
                 title: const Text(
-                  'Memorize Training',
+                  'Quiz & Review',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
