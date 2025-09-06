@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'theme/purple_theme.dart';
 import 'screen/main_layout.dart';
 import 'screen/login_screen.dart';
 import 'service/auth_service.dart';
+import 'service/notification_service.dart';
+import 'service/local_notification_service.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -13,6 +16,13 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Set up background message handler
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  
+  // Initialize notification service
+  await NotificationService.initialize();
+  
   runApp(const MyApp());
 }
 

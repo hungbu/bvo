@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.bvo"
+    namespace = "com.vnwebsite.bvoca"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

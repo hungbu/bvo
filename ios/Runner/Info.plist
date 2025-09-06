@@ -49,6 +49,17 @@
 	<string>This app uses speech recognition to help users learn languages.</string>
 	<key>NSSpeechSynthesizerDelegate</key>
 	<string>This app uses speech synthesis to pronounce words.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>google-sign-in</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.387492232517-n2vrg0dii5ece96a04a449nt0mgo720b</string>
+			</array>
+		</dict>
+	</array>
 
 </dict>
 </plist>
