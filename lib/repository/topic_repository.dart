@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bvo/model/topic.dart';
+import 'package:bvo/model/word.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bvo/repository/dictionary.dart';
 
@@ -36,18 +37,27 @@ class TopicRepository {
     try {
       print("TopicRepository: Accessing dictionary with ${dictionary.length} words");
       
-      // Get unique topics from dictionary with explicit type casting
-      final Set<String> uniqueTopicNames = dictionary
-          .map((word) => word['topic'] as String?)
-          .where((topic) => topic != null && topic.isNotEmpty)
-          .cast<String>()
-          .toSet();
+      // Group words by topic
+      final Map<String, List<dWord>> wordsByTopic = {};
+      for (final word in dictionary) {
+        if (word.topic.isNotEmpty) {
+          wordsByTopic.putIfAbsent(word.topic, () => []).add(word);
+        }
+      }
 
-      print("TopicRepository: Found ${uniqueTopicNames.length} unique topic names");
+      print("TopicRepository: Found ${wordsByTopic.length} unique topic names");
 
-      final List<Topic> uniqueTopics = uniqueTopicNames
-          .map((topicName) => Topic(id: topicName, topic: topicName))
+      // Create topics with word information
+      final List<Topic> uniqueTopics = wordsByTopic.entries
+          .map((entry) => Topic.fromWords(entry.key, entry.value))
           .toList();
+
+      // Sort topics by level and name
+      uniqueTopics.sort((a, b) {
+        final levelComparison = a.level.index.compareTo(b.level.index);
+        if (levelComparison != 0) return levelComparison;
+        return a.displayName.compareTo(b.displayName);
+      });
 
       print("Generated ${uniqueTopics.length} topics from dictionary");
       return uniqueTopics;

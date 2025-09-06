@@ -27,23 +27,22 @@ class WordRepository {
 
   Future<List<Word>> getDictionary(String topic) async {
     try {
-      List<dynamic> dictionary = await loadDictionary(topic);
-      List<Word> words = dictionary.map((e) => Word.fromJson(e)).toList();
+      List<dWord> dictionaryWords = await loadDictionary(topic);
       
       // Cache the words automatically
-      await saveWords(topic, words);
+      await saveWords(topic, dictionaryWords);
       
-      return words;
+      return dictionaryWords;
     } catch (e) {
       print("Error getting dictionary for topic $topic: $e");
       return [];
     }
   }
 
-  Future<List<dynamic>> loadDictionary(String topic) async {
+  Future<List<dWord>> loadDictionary(String topic) async {
     try {
       // filter dictionary by topic
-      final result = dictionary.where((e) => e['topic'] == topic).toList();
+      final result = dictionary.where((word) => word.topic == topic).toList();
       return result;
     } catch (e) {
       print("Error loading dictionary for topic $topic: $e");

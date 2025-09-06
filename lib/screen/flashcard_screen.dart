@@ -103,8 +103,13 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     _totalAttempts++; // Track total attempts
 
     if (userAnswer == correctAnswer) {
-      // Increment the reviewCount
-      widget.words[_currentIndex].reviewCount += 1;
+      // Update the word with incremented reviewCount using copyWith
+      widget.words[_currentIndex] = widget.words[_currentIndex].copyWith(
+        reviewCount: widget.words[_currentIndex].reviewCount + 1,
+        correctAnswers: widget.words[_currentIndex].correctAnswers + 1,
+        totalAttempts: widget.words[_currentIndex].totalAttempts + 1,
+        lastReviewed: DateTime.now(),
+      );
       _correctAnswers++; // Track correct answers
 
       // Save the updated words

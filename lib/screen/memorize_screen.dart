@@ -66,14 +66,24 @@ class _MemorizeScreenState extends State<MemorizeScreen> {
         .toList();
   }
 
-  void updateWord(Word word, bool remembered) {
+  Word updateWord(Word word, bool remembered) {
     if (remembered) {
-      word.reviewCount += 1;
-      int intervalDays = getIntervalDays(word.reviewCount);
-      word.nextReview = DateTime.now().add(Duration(days: intervalDays));
+      int newReviewCount = word.reviewCount + 1;
+      int intervalDays = getIntervalDays(newReviewCount);
+      return word.copyWith(
+        reviewCount: newReviewCount,
+        nextReview: DateTime.now().add(Duration(days: intervalDays)),
+        correctAnswers: word.correctAnswers + 1,
+        totalAttempts: word.totalAttempts + 1,
+        lastReviewed: DateTime.now(),
+      );
     } else {
-      word.reviewCount = 0;
-      word.nextReview = DateTime.now().add(Duration(days: 1));
+      return word.copyWith(
+        reviewCount: 0,
+        nextReview: DateTime.now().add(Duration(days: 1)),
+        totalAttempts: word.totalAttempts + 1,
+        lastReviewed: DateTime.now(),
+      );
     }
   }
 
@@ -84,7 +94,7 @@ class _MemorizeScreenState extends State<MemorizeScreen> {
 
   void onRemembered(bool remembered) async {
     Word currentWord = dueWords[currentWordIndex];
-    updateWord(currentWord, remembered);
+    dueWords[currentWordIndex] = updateWord(currentWord, remembered);
     await saveWords();
 
     setState(() {
