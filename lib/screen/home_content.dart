@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart'; // For CupertinoIcons
+import 'package:flutter/cupertino.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:math' as math;
 
 import 'package:bvo/model/word.dart';
 import 'package:bvo/model/topic.dart';
@@ -20,13 +22,44 @@ class _HomeContentState extends State<HomeContent> {
   Map<String, List<Word>> reviewedWordsByTopic = {};
   List<Topic> topics = [];
   bool isLoadingTopics = true;
-  bool showAllTopics = false;
+  
+  // New dashboard data
+  String userName = "Bạn";
+  int streakDays = 0;
+  int totalWordsLearned = 0;
+  int dailyGoal = 10;
+  int todayWordsLearned = 0;
+  String lastTopic = "";
+  Map<String, dynamic> wordOfTheDay = {};
+  
+  final int totalTargetWords = 10000;
 
   @override
   void initState() {
     super.initState();
+    _loadDashboardData();
     _loadTopics();
     _loadReviewedWords();
+  }
+
+  Future<void> _loadDashboardData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('user_name') ?? "Bạn";
+      streakDays = prefs.getInt('streak_days') ?? 7; // Demo value
+      totalWordsLearned = prefs.getInt('total_words_learned') ?? 2500; // Demo value
+      todayWordsLearned = prefs.getInt('today_words_learned') ?? 5; // Demo value
+      lastTopic = prefs.getString('last_topic') ?? "food";
+      
+      // Word of the day (demo data)
+      wordOfTheDay = {
+        'word': 'Ambition',
+        'pronunciation': '/æmˈbɪʃ.ən/',
+        'meaning': 'Tham vọng, hoài bão',
+        'example': 'She has big ambitions to become a doctor.',
+        'exampleVi': 'Cô ấy có tham vọng lớn trở thành bác sĩ.',
+      };
+    });
   }
 
   Future<void> _loadTopics() async {
@@ -76,213 +109,193 @@ class _HomeContentState extends State<HomeContent> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome Section
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).primaryColor,
-                    Theme.of(context).primaryColor.withOpacity(0.8),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Welcome Back!',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Continue your vocabulary journey',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildQuickActionButton(
-                          'FlashCard',
-                          Icons.quiz,
-                          () {
-                            // Use callback to parent to change tab
-                            if (widget.onTabChange != null) {
-                              widget.onTabChange!(1);
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildQuickActionButton(
-                          'Memorize',
-                          Icons.psychology,
-                          () {
-                            // Use callback to parent to change tab
-                            if (widget.onTabChange != null) {
-                              widget.onTabChange!(2);
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
+            // 1. Header with greeting and streak
+            _buildHeader(),
+            
             const SizedBox(height: 24),
-
-            // Quick Stats
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatCard(
-                    'Topics',
-                    topics.length.toString(),
-                    Icons.topic,
-                    Colors.blue,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildStatCard(
-                    'Words Learned',
-                    reviewedWordsByTopic.values
-                        .fold<int>(0, (sum, words) => sum + words.length)
-                        .toString(),
-                    Icons.school,
-                    Colors.green,
-                  ),
-                ),
-              ],
-            ),
-
+            
+            // 2. Overall Progress Circle
+            _buildOverallProgress(),
+            
             const SizedBox(height: 24),
-
-            // Recent Topics Section
-            const Text(
-              'Your Topics',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            if (isLoadingTopics)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: CircularProgressIndicator(),
-                ),
-              )
-            else if (topics.isEmpty)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: Text(
-                    'No topics available yet.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-              )
-            else
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1.2,
-                ),
-                itemCount: showAllTopics ? topics.length : (topics.length > 6 ? 6 : topics.length),
-                itemBuilder: (context, index) {
-                  final topic = topics[index];
-                  final reviewedCount = reviewedWordsByTopic[topic.topic]?.length ?? 0;
-                  
-                  return _buildTopicCard(topic, reviewedCount);
-                },
-              ),
-
-            if (topics.length > 6)
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Center(
-                  child: TextButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        showAllTopics = !showAllTopics;
-                      });
-                    },
-                    icon: Icon(
-                      showAllTopics ? Icons.expand_less : Icons.expand_more,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    label: Text(
-                      showAllTopics ? 'Show Less' : 'View All Topics (${topics.length})',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: TextButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            
+            // 3. Daily Goal Tracker
+            _buildDailyGoal(),
+            
+            const SizedBox(height: 24),
+            
+            // 4. Primary Action Button
+            _buildContinueLearningButton(),
+            
+            const SizedBox(height: 24),
+            
+            // 5. Recommended Topics
+            _buildRecommendedTopics(),
+            
+            const SizedBox(height: 24),
+            
+            // 6. Word of the Day
+            _buildWordOfTheDay(),
+            
+            const SizedBox(height: 24),
+            
+            // 7. Footer Stats
+            _buildFooterStats(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(context).primaryColor,
+            Theme.of(context).primaryColor.withOpacity(0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Greeting
+          Text(
+            'Chào $userName, hôm nay học $dailyGoal từ mới nhé! 🌟',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Streak Counter
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.orange,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🔥', style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 6),
+                Text(
+                  '$streakDays ngày liên tiếp',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 8),
+          
+          const Text(
+            'Giữ nguyên để nhận badge mới!',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOverallProgress() {
+    final progress = totalWordsLearned / totalTargetWords;
+    final currentLevel = (totalWordsLearned / 1000).floor() + 1;
+    final wordsToNextLevel = ((currentLevel * 1000) - totalWordsLearned);
+    
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
+          // Large circular progress
+          SizedBox(
+            width: 150,
+            height: 150,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 150,
+                  height: 150,
+                  child: CircularProgressIndicator(
+                    value: progress,
+                    strokeWidth: 12,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      progress >= 0.5 ? Colors.green : Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${(progress * 100).round()}%',
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      '$totalWordsLearned/$totalTargetWords từ',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
+          
+          const SizedBox(height: 16),
+          
           Text(
-            title,
+            'Bạn đang ở Level $currentLevel/10',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          
+          const SizedBox(height: 4),
+          
+          Text(
+            'Chỉ cần ${wordsToNextLevel > 0 ? wordsToNextLevel : 0} từ nữa để lên level!',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
               color: Colors.grey[600],
             ),
           ),
@@ -291,236 +304,438 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildTopicCard(Topic topic, int reviewedCount) {
-    // Get topic-specific data
-    final topicData = _getTopicData(topic.topic);
-    final totalWords = topicData['totalWords'] as int;
-    final difficulty = topicData['difficulty'] as String;
-    final icon = topicData['icon'] as IconData;
-    final color = topicData['color'] as Color;
-    final estimatedTime = topicData['estimatedTime'] as String;
+  Widget _buildDailyGoal() {
+    final progress = todayWordsLearned / dailyGoal;
+    final remainingWords = dailyGoal - todayWordsLearned;
     
-    // Calculate progress
-    final progress = totalWords > 0 ? (reviewedCount / totalWords).clamp(0.0, 1.0) : 0.0;
-    final progressPercentage = (progress * 100).round();
-    
-    // Determine completion status
-    final isCompleted = progress >= 1.0;
-    final isStarted = reviewedCount > 0;
-    
-    return Card(
-      elevation: 3,
-      shadowColor: color.withOpacity(0.3),
-      shape: RoundedRectangleBorder(
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.blue[100]!),
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.book, color: Colors.blue[600], size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Mục tiêu hôm nay',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Progress bar
+          Row(
+            children: [
+              Expanded(
+                child: LinearProgressIndicator(
+                  value: progress.clamp(0.0, 1.0),
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
+                  minHeight: 8,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                '$todayWordsLearned/$dailyGoal từ',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue[600],
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 8),
+          
+          Text(
+            remainingWords > 0 
+                ? 'Học thêm $remainingWords từ để hoàn thành mục tiêu hôm nay!'
+                : 'Tuyệt vời! Bạn đã hoàn thành mục tiêu hôm nay! 🎉',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[700],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContinueLearningButton() {
+    return Container(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TopicScreen(topic: topic.topic),
+              builder: (context) => TopicScreen(topic: lastTopic),
             ),
           );
         },
-        child: Container(
-          decoration: BoxDecoration(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              colors: [
-                color.withOpacity(0.1),
-                color.withOpacity(0.05),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
           ),
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header with icon and status
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Icon(
-                      icon,
-                      color: color,
-                      size: 18,
-                    ),
+          elevation: 4,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.play_arrow, size: 24),
+            const SizedBox(width: 8),
+            Text(
+              lastTopic.isNotEmpty 
+                  ? 'Tiếp tục học chủ đề ${lastTopic.toUpperCase()}'
+                  : 'Bắt đầu học',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecommendedTopics() {
+    if (isLoadingTopics) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    final recommendedTopics = topics.take(4).toList();
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text('💡', style: TextStyle(fontSize: 20)),
+            const SizedBox(width: 8),
+            const Text(
+              'Dành cho bạn',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: 16),
+        
+        SizedBox(
+          height: 130,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: recommendedTopics.length,
+            itemBuilder: (context, index) {
+              final topic = recommendedTopics[index];
+              final reviewedCount = reviewedWordsByTopic[topic.topic]?.length ?? 0;
+              return _buildRecommendedTopicCard(topic, reviewedCount);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecommendedTopicCard(Topic topic, int reviewedCount) {
+    final topicData = _getTopicData(topic.topic);
+    final totalWords = topicData['totalWords'] as int;
+    final icon = topicData['icon'] as IconData;
+    final color = topicData['color'] as Color;
+    final progress = totalWords > 0 ? (reviewedCount / totalWords).clamp(0.0, 1.0) : 0.0;
+    
+    return Container(
+      width: 120,
+      margin: const EdgeInsets.only(right: 12),
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TopicScreen(topic: topic.topic),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  if (isCompleted)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.check, color: Colors.white, size: 8),
-                          SizedBox(width: 1),
-                          Text(
-                            'Done',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  else if (isStarted)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text(
-                        'Learning',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    )
-                  else
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text(
-                        'New',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              
-              const SizedBox(height: 6),
-              
-              // Topic title
-              Text(
-                topic.topic.toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.2,
-                  height: 1.1,
+                  child: Icon(icon, color: color, size: 18),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              
-              const SizedBox(height: 4),
-              
-              // Difficulty and time
-              Row(
-                children: [
-                  _buildDifficultyStars(difficulty),
-                  const Spacer(),
-                  Icon(
-                    Icons.access_time,
-                    size: 10,
+                
+                const SizedBox(height: 6),
+                
+                // Topic name
+                Text(
+                  topic.topic.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                
+                const SizedBox(height: 3),
+                
+                // Progress
+                Text(
+                  '${(progress * 100).round()}%',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                
+                const SizedBox(height: 2),
+                
+                // Words count
+                Text(
+                  '$reviewedCount/$totalWords từ',
+                  style: TextStyle(
+                    fontSize: 9,
                     color: Colors.grey[600],
                   ),
-                  const SizedBox(width: 2),
-                  Text(
-                    estimatedTime,
-                    style: TextStyle(
-                      fontSize: 9,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 6),
-              
-              // Progress section
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          '$reviewedCount/$totalWords words',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey[700],
-                            fontWeight: FontWeight.w500,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text(
-                        '$progressPercentage%',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: color,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 3),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(2),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      backgroundColor: Colors.grey[300],
-                      valueColor: AlwaysStoppedAnimation<Color>(color),
-                      minHeight: 3,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                ),
+                
+                const SizedBox(height: 4),
+                
+                // Progress bar
+                LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                  minHeight: 2,
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDifficultyStars(String difficulty) {
-    int stars = difficulty == 'Beginner' ? 1 : 
-                difficulty == 'Intermediate' ? 2 : 3;
+  Widget _buildWordOfTheDay() {
+    if (wordOfTheDay.isEmpty) return const SizedBox();
     
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(3, (index) {
-        return Icon(
-          index < stars ? Icons.star : Icons.star_border,
-          size: 10,
-          color: index < stars ? Colors.amber : Colors.grey[400],
-        );
-      }),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.purple[50]!,
+            Colors.blue[50]!,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.purple[100]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.purple[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.star, color: Colors.purple[600], size: 20),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Từ vựng trong ngày',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Word
+          Text(
+            wordOfTheDay['word'] ?? '',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          
+          const SizedBox(height: 4),
+          
+          // Pronunciation
+          Text(
+            wordOfTheDay['pronunciation'] ?? '',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          
+          const SizedBox(height: 8),
+          
+          // Meaning
+          Text(
+            wordOfTheDay['meaning'] ?? '',
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.black87,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Example
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  wordOfTheDay['example'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  wordOfTheDay['exampleVi'] ?? '',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Add to quiz button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Đã thêm vào danh sách ôn tập!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.add_task, size: 16),
+              label: const Text('Thêm vào ôn tập'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.purple[600],
+                side: BorderSide(color: Colors.purple[300]!),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooterStats() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Quick stats
+          Text(
+            'Tổng: ${totalWordsLearned.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} từ | Level: ${(totalWordsLearned / 1000).floor() + 1} | Hôm qua: ${todayWordsLearned - 2} từ',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Subtle CTA
+          GestureDetector(
+            onTap: () {
+              if (widget.onTabChange != null) {
+                widget.onTabChange!(1); // Navigate to Topics tab
+              }
+            },
+            child: Text(
+              'Khám phá ${(totalTargetWords - totalWordsLearned).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} từ còn lại →',
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Map<String, dynamic> _getTopicData(String topicName) {
-    // Topic-specific configurations
     final topicConfigs = {
       'schools': {
         'totalWords': 25,
@@ -538,168 +753,68 @@ class _HomeContentState extends State<HomeContent> {
       },
       'extracurricular': {
         'totalWords': 18,
-        'difficulty': 'Intermediate',
+        'difficulty': 'Beginner',
         'icon': Icons.sports_soccer,
         'color': Colors.green,
         'estimatedTime': '10 min',
       },
-      'school stationery': {
+      'family': {
         'totalWords': 22,
         'difficulty': 'Beginner',
-        'icon': Icons.edit,
-        'color': Colors.purple,
+        'icon': Icons.family_restroom,
+        'color': Colors.pink,
         'estimatedTime': '13 min',
       },
-      'school subjects': {
-        'totalWords': 15,
-        'difficulty': 'Beginner',
-        'icon': Icons.book,
-        'color': Colors.indigo,
-        'estimatedTime': '8 min',
-      },
-      'classroom': {
-        'totalWords': 28,
-        'difficulty': 'Beginner',
-        'icon': Icons.class_,
-        'color': Colors.teal,
-        'estimatedTime': '18 min',
-      },
-      'universities': {
-        'totalWords': 30,
-        'difficulty': 'Advanced',
-        'icon': Icons.account_balance,
-        'color': Colors.deepPurple,
-        'estimatedTime': '20 min',
-      },
-      'body': {
-        'totalWords': 35,
-        'difficulty': 'Beginner',
-        'icon': Icons.accessibility,
-        'color': Colors.pink,
-        'estimatedTime': '22 min',
-      },
-      'appearance': {
-        'totalWords': 25,
-        'difficulty': 'Intermediate',
-        'icon': Icons.face,
-        'color': Colors.cyan,
-        'estimatedTime': '15 min',
-      },
-      'characteristics': {
-        'totalWords': 20,
-        'difficulty': 'Advanced',
-        'icon': Icons.psychology,
-        'color': Colors.amber,
-        'estimatedTime': '12 min',
-      },
-      'age': {
-        'totalWords': 12,
-        'difficulty': 'Beginner',
-        'icon': Icons.cake,
-        'color': Colors.brown,
-        'estimatedTime': '6 min',
-      },
-      'feelings': {
+      'food': {
         'totalWords': 30,
         'difficulty': 'Intermediate',
-        'icon': Icons.sentiment_satisfied,
+        'icon': Icons.restaurant,
         'color': Colors.red,
         'estimatedTime': '18 min',
       },
-      'family': {
-        'totalWords': 18,
+      'animals': {
+        'totalWords': 28,
         'difficulty': 'Beginner',
-        'icon': Icons.family_restroom,
-        'color': Colors.lightGreen,
-        'estimatedTime': '10 min',
-      },
-      'relationships': {
-        'totalWords': 22,
-        'difficulty': 'Advanced',
-        'icon': Icons.favorite,
-        'color': Colors.pinkAccent,
-        'estimatedTime': '14 min',
+        'icon': Icons.pets,
+        'color': Colors.brown,
+        'estimatedTime': '16 min',
       },
       'colors': {
         'totalWords': 15,
         'difficulty': 'Beginner',
         'icon': Icons.palette,
-        'color': Colors.deepOrange,
+        'color': Colors.purple,
         'estimatedTime': '8 min',
-      },
-      'shapes': {
-        'totalWords': 12,
-        'difficulty': 'Beginner',
-        'icon': Icons.category,
-        'color': Colors.blueGrey,
-        'estimatedTime': '6 min',
       },
       'numbers': {
         'totalWords': 20,
         'difficulty': 'Beginner',
         'icon': Icons.numbers,
-        'color': Colors.lime,
+        'color': Colors.indigo,
         'estimatedTime': '12 min',
       },
-      'ordinal numbers': {
-        'totalWords': 15,
+      'weather': {
+        'totalWords': 16,
         'difficulty': 'Intermediate',
-        'icon': Icons.format_list_numbered,
-        'color': Colors.lightBlue,
-        'estimatedTime': '8 min',
+        'icon': Icons.wb_sunny,
+        'color': Colors.amber,
+        'estimatedTime': '9 min',
       },
-      'days of the week': {
-        'totalWords': 7,
-        'difficulty': 'Beginner',
-        'icon': Icons.calendar_today,
-        'color': Colors.deepPurpleAccent,
-        'estimatedTime': '4 min',
+      'transportation': {
+        'totalWords': 24,
+        'difficulty': 'Intermediate',
+        'icon': Icons.directions_car,
+        'color': Colors.cyan,
+        'estimatedTime': '14 min',
       },
     };
 
-    return topicConfigs[topicName.toLowerCase()] ?? {
+    return topicConfigs[topicName] ?? {
       'totalWords': 20,
       'difficulty': 'Beginner',
-      'icon': Icons.topic,
-      'color': Theme.of(context).primaryColor,
+      'icon': Icons.book,
+      'color': Colors.grey,
       'estimatedTime': '12 min',
     };
-  }
-
-  Widget _buildQuickActionButton(String title, IconData icon, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.3),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: Colors.white,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
