@@ -155,6 +155,7 @@ class _NotificationTestScreenState extends State<NotificationTestScreen> {
         title: const Text('Push Notifications'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

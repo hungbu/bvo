@@ -472,6 +472,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         title: Text('FlashCard - ${widget.topic}'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
+        elevation: 0,
         actions: [
           // Hide English Text Toggle
           IconButton(

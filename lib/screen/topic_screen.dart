@@ -1,426 +1,326 @@
-import 'package:bvo/screen/memorize_screen.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:convex_bottom_bar/convex_bottom_bar.dart';
-
-import 'package:bvo/model/word.dart';
+import 'package:bvo/model/topic.dart';
+import 'package:bvo/repository/topic_repository.dart';
 import 'package:bvo/repository/word_repository.dart';
-import 'package:bvo/screen/flashcard_screen.dart';
+import 'package:bvo/repository/topic_configs_repository.dart';
+import 'package:bvo/screen/topic_detail_screen.dart';
 
 class TopicScreen extends StatefulWidget {
-  final String topic;
-  const TopicScreen({super.key, required this.topic});
+  const TopicScreen({Key? key}) : super(key: key);
 
   @override
   State<TopicScreen> createState() => _TopicScreenState();
 }
 
 class _TopicScreenState extends State<TopicScreen> {
-  List<Word> words = [];
+  List<Topic> topics = [];
+  Map<String, int> reviewedWordsByTopic = {};
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    init();
+    _loadTopics();
   }
 
-  Future<void> init() async {
-    setState(() => isLoading = true);
-    words = await WordRepository().loadWords(widget.topic);
-    if (words.isEmpty) {
-      // If no words are loaded, fetch from initial source and save
-      words = await WordRepository().getWordsOfTopic(widget.topic);
-      await WordRepository().saveWords(widget.topic, words);
+  Future<void> _loadTopics() async {
+    try {
+      final loadedTopics = await TopicRepository().getTopics();
+      final reviewedWords = await WordRepository().getReviewedWordsGroupedByTopic();
+      
+      setState(() {
+        topics = loadedTopics;
+        reviewedWordsByTopic = reviewedWords.map((key, value) => MapEntry(key, value.length));
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading topics: $e')),
+        );
+      }
     }
-    setState(() => isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.topic),
+        title: const Text('All Topics'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : Column(
-            children: [
-              // Topic Header with Stats
-              _buildTopicHeader(),
-              
-              // Action Buttons
-              _buildActionButtons(),
-              
-              // Words List
-              Expanded(child: _buildWordsList()),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).primaryColor.withOpacity(0.1),
+              Colors.white,
             ],
-          ),
-    );
-  }
-
-  Widget _buildTopicHeader() {
-    int newWords = words.where((w) => w.reviewCount == 0).length;
-    int learningWords = words.where((w) => w.reviewCount > 0 && w.reviewCount < 7).length;
-    int masteredWords = words.where((w) => w.reviewCount >= 7).length;
-    
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).primaryColor,
-            Theme.of(context).primaryColor.withOpacity(0.8),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).primaryColor.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            '${words.length} Words',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatItem('New', newWords, Colors.blue),
-              _buildStatItem('Learning', learningWords, Colors.orange),
-              _buildStatItem('Mastered', masteredWords, Colors.green),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String label, int count, Color color) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            count.toString(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FlashCardScreen(
-                      topic: widget.topic,
-                      words: words,
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : topics.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No topics available yet.',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ListView.builder(
+                      itemCount: (topics.length + 1) ~/ 2, // Ceiling division
+                      itemBuilder: (context, index) {
+                        // Create rows of 2 cards each
+                        if (index * 2 >= topics.length) return null;
+                        
+                        final leftTopic = topics[index * 2];
+                        final leftReviewedCount = reviewedWordsByTopic[leftTopic.topic] ?? 0;
+                        
+                        Widget? rightCard;
+                        if (index * 2 + 1 < topics.length) {
+                          final rightTopic = topics[index * 2 + 1];
+                          final rightReviewedCount = reviewedWordsByTopic[rightTopic.topic] ?? 0;
+                          rightCard = Expanded(
+                            child: _buildTopicCard(rightTopic, rightReviewedCount),
+                          );
+                        }
+                        
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: _buildTopicCard(leftTopic, leftReviewedCount),
+                              ),
+                              if (rightCard != null) ...[
+                                const SizedBox(width: 12),
+                                rightCard,
+                              ] else
+                                const Expanded(child: SizedBox()),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
-                );
-              },
-              icon: const Icon(Icons.quiz),
-              label: const Text('Start FlashCard'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MemorizeScreen(
-                      topic: widget.topic,
-                      words: words,
-                    ),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.add_task),
-              label: const Text('Add to Quiz'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildWordsList() {
-    return Container(
-      margin: const EdgeInsets.only(top: 16),
-      child: ListView.builder(
-        itemCount: words.length,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemBuilder: (context, index) {
-          final word = words[index];
-          return _buildWordCard(word, index + 1);
-        },
-      ),
-    );
-  }
-
-
-
-  Widget _buildWordCard(Word word, int wordNumber) {
-    // Calculate progress based on review count (simple logic)
-    double progress = word.reviewCount > 0 ? (word.reviewCount / 10.0).clamp(0.0, 1.0) : 0.0;
-    String difficultyLevel = word.reviewCount == 0 ? 'New' : 
-                           word.reviewCount < 3 ? 'Learning' :
-                           word.reviewCount < 7 ? 'Familiar' : 'Mastered';
+  Widget _buildTopicCard(Topic topic, int reviewedCount) {
+    // Get topic-specific data
+    final topicData = _getTopicData(topic.topic);
+    final totalWords = topicData['totalWords'] as int;
+    final difficulty = topicData['difficulty'] as String;
+    final icon = topicData['icon'] as IconData;
+    final color = topicData['color'] as Color;
+    final estimatedTime = topicData['estimatedTime'] as String;
     
-    Color difficultyColor = word.reviewCount == 0 ? Colors.blue :
-                          word.reviewCount < 3 ? Colors.orange :
-                          word.reviewCount < 7 ? Colors.green : Colors.purple;
-
+    // Calculate progress
+    final progress = totalWords > 0 ? (reviewedCount / totalWords).clamp(0.0, 1.0) : 0.0;
+    final progressPercentage = (progress * 100).round();
+    
+    // Determine completion status
+    final isCompleted = progress >= 1.0;
+    final isStarted = reviewedCount > 0;
+    
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 3,
+      shadowColor: color.withOpacity(0.3),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          // Có thể thêm hành động khi nhấn vào từ vựng
-          _showWordDetails(word);
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(16),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TopicDetailScreen(topic: topic.topic),
+                            ),
+                          );
+                        },
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [
+                color.withOpacity(0.1),
+                color.withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Header with word number and difficulty level
+              // Header with icon and status
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '#$wordNumber',
-                          style: TextStyle(
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: difficultyColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          difficultyLevel,
-                          style: TextStyle(
-                            color: difficultyColor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: color,
+                      size: 18,
+                    ),
                   ),
-                  Row(
-                    children: [
-                      Icon(
-                        CupertinoIcons.heart_fill,
-                        size: 16,
-                        color: difficultyColor,
+                  if (isCompleted)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        "${word.reviewCount}",
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check, color: Colors.white, size: 8),
+                          SizedBox(width: 1),
+                          Text(
+                            'Done',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (isStarted)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'Learning',
                         style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: difficultyColor,
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ],
-                  ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'New',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                 ],
               ),
               
-              const SizedBox(height: 12),
+              const SizedBox(height: 6),
               
-              // English word with icon
+              // Topic title
+              Text(
+                topic.topic.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.2,
+                  height: 1.1,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              
+              const SizedBox(height: 4),
+              
+              // Difficulty and time
               Row(
                 children: [
+                  _buildDifficultyStars(difficulty),
+                  const Spacer(),
                   Icon(
-                    Icons.language,
-                    color: Theme.of(context).primaryColor,
-                    size: 20,
+                    Icons.access_time,
+                    size: 10,
+                    color: Colors.grey[600],
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      word.en,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  const SizedBox(width: 2),
+                  Text(
+                    estimatedTime,
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: Colors.grey[600],
                     ),
                   ),
                 ],
               ),
               
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               
-              // Vietnamese translation
-              Padding(
-                padding: const EdgeInsets.only(left: 28),
-                child: Text(
-                  word.vi,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                    fontStyle: FontStyle.italic,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              
-              const SizedBox(height: 12),
-              
-              // Progress indicator with label
+              // Progress section
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Learning Progress',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
+                      Flexible(
+                        child: Text(
+                          '$reviewedCount/$totalWords words',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Text(
-                        '${(progress * 100).toInt()}%',
+                        '$progressPercentage%',
                         style: TextStyle(
-                          fontSize: 12,
-                          color: difficultyColor,
+                          fontSize: 10,
+                          color: color,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: Colors.grey[300],
-                    valueColor: AlwaysStoppedAnimation<Color>(difficultyColor),
+                  const SizedBox(height: 3),
+                  ClipRRect(
                     borderRadius: BorderRadius.circular(2),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 12),
-              
-              // Action buttons for individual word
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _addWordToQuiz(word),
-                      icon: const Icon(Icons.add_task, size: 16),
-                      label: const Text('Add to Quiz'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.green,
-                        side: const BorderSide(color: Colors.green),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _practiceWord(word),
-                      icon: const Icon(Icons.quiz, size: 16),
-                      label: const Text('Practice'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Theme.of(context).primaryColor,
-                        side: BorderSide(color: Theme.of(context).primaryColor),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: Colors.grey[300],
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                      minHeight: 3,
                     ),
                   ),
                 ],
@@ -432,87 +332,23 @@ class _TopicScreenState extends State<TopicScreen> {
     );
   }
 
-  void _showWordDetails(Word word) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.info_outline,
-                color: Theme.of(context).primaryColor,
-              ),
-              const SizedBox(width: 8),
-              const Text('Word Details'),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'English: ${word.en}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Vietnamese: ${word.vi}',
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Topic: ${word.topic}',
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Review Count: ${word.reviewCount}',
-                style: const TextStyle(fontSize: 14),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-          ],
+  Widget _buildDifficultyStars(String difficulty) {
+    int stars = difficulty == 'Beginner' ? 1 : 
+                difficulty == 'Intermediate' ? 2 : 3;
+    
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (index) {
+        return Icon( 
+          index < stars ? Icons.star : Icons.star_border,
+          size: 10,
+          color: index < stars ? Colors.amber : Colors.grey[400],
         );
-      },
+      }),
     );
   }
 
-  void _addWordToQuiz(Word word) {
-    // TODO: Implement add word to quiz functionality
-    // This will save the word to a quiz/memorize list in SharedPreferences
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Added "${word.en}" to Quiz!'),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+  Map<String, dynamic> _getTopicData(String topicName) {
+    return TopicConfigsRepository.getTopicData(topicName);
   }
-
-  void _practiceWord(Word word) {
-    // Navigate to single word flashcard practice
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => FlashCardScreen(
-          topic: widget.topic,
-          words: [word], // Practice just this one word
-        ),
-      ),
-    );
-  }
-
-
 }

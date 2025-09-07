@@ -9,18 +9,18 @@ import 'package:bvo/repository/word_repository.dart';
 import 'package:bvo/repository/topic_repository.dart';
 import 'package:bvo/repository/topic_configs_repository.dart';
 import 'package:bvo/repository/dictionary.dart';
-import 'package:bvo/screen/topic_screen.dart';
+import 'package:bvo/screen/topic_detail_screen.dart';
 
-class HomeContent extends StatefulWidget {
+class HomeScreen extends StatefulWidget {
   final Function(int)? onTabChange;
   
-  const HomeContent({super.key, this.onTabChange});
+  const HomeScreen({super.key, this.onTabChange});
 
   @override
-  State<HomeContent> createState() => _HomeContentState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeContentState extends State<HomeContent> {
+class _HomeScreenState extends State<HomeScreen> {
   Map<String, List<Word>> reviewedWordsByTopic = {};
   List<Topic> topics = [];
   bool isLoadingTopics = true;
@@ -832,7 +832,7 @@ class _HomeContentState extends State<HomeContent> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TopicScreen(topic: lastTopic),
+              builder: (context) => TopicDetailScreen(topic: lastTopic),
             ),
           );
         },
@@ -926,12 +926,12 @@ class _HomeContentState extends State<HomeContent> {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => TopicScreen(topic: topic.topic),
-              ),
-            );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TopicDetailScreen(topic: topic.topic),
+                          ),
+                        );
           },
           child: Padding(
             padding: const EdgeInsets.all(10),
