@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bvo/model/topic.dart';
 import 'package:bvo/repository/topic_repository.dart';
 import 'package:bvo/repository/word_repository.dart';
+import 'package:bvo/repository/topic_configs_repository.dart';
 import 'package:bvo/screen/topic_screen.dart';
 
 class TopicListScreen extends StatefulWidget {
@@ -368,7 +369,7 @@ class _TopicListScreenState extends State<TopicListScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (index) {
-        return Icon(
+        return Icon( 
           index < stars ? Icons.star : Icons.star_border,
           size: 10,
           color: index < stars ? Colors.amber : Colors.grey[400],
@@ -378,86 +379,6 @@ class _TopicListScreenState extends State<TopicListScreen> {
   }
 
   Map<String, dynamic> _getTopicData(String topicName) {
-    // Topic-specific configurations
-    final topicConfigs = {
-      'schools': {
-        'totalWords': 25,
-        'difficulty': 'Beginner',
-        'icon': Icons.school,
-        'color': Colors.blue,
-        'estimatedTime': '15 min',
-      },
-      'examination': {
-        'totalWords': 20,
-        'difficulty': 'Intermediate',
-        'icon': Icons.quiz,
-        'color': Colors.orange,
-        'estimatedTime': '12 min',
-      },
-      'extracurricular': {
-        'totalWords': 18,
-        'difficulty': 'Beginner',
-        'icon': Icons.sports_soccer,
-        'color': Colors.green,
-        'estimatedTime': '10 min',
-      },
-      'family': {
-        'totalWords': 22,
-        'difficulty': 'Beginner',
-        'icon': Icons.family_restroom,
-        'color': Colors.pink,
-        'estimatedTime': '13 min',
-      },
-      'food': {
-        'totalWords': 30,
-        'difficulty': 'Intermediate',
-        'icon': Icons.restaurant,
-        'color': Colors.red,
-        'estimatedTime': '18 min',
-      },
-      'animals': {
-        'totalWords': 28,
-        'difficulty': 'Beginner',
-        'icon': Icons.pets,
-        'color': Colors.brown,
-        'estimatedTime': '16 min',
-      },
-      'colors': {
-        'totalWords': 15,
-        'difficulty': 'Beginner',
-        'icon': Icons.palette,
-        'color': Colors.purple,
-        'estimatedTime': '8 min',
-      },
-      'numbers': {
-        'totalWords': 20,
-        'difficulty': 'Beginner',
-        'icon': Icons.numbers,
-        'color': Colors.indigo,
-        'estimatedTime': '12 min',
-      },
-      'weather': {
-        'totalWords': 16,
-        'difficulty': 'Intermediate',
-        'icon': Icons.wb_sunny,
-        'color': Colors.amber,
-        'estimatedTime': '9 min',
-      },
-      'transportation': {
-        'totalWords': 24,
-        'difficulty': 'Intermediate',
-        'icon': Icons.directions_car,
-        'color': Colors.cyan,
-        'estimatedTime': '14 min',
-      },
-    };
-
-    return topicConfigs[topicName] ?? {
-      'totalWords': 20,
-      'difficulty': 'Beginner',
-      'icon': Icons.book,
-      'color': Colors.grey,
-      'estimatedTime': '12 min',
-    };
+    return TopicConfigsRepository.getTopicData(topicName);
   }
 }

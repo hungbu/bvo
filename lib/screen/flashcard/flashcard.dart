@@ -54,6 +54,8 @@ class _FlashcardState extends State<Flashcard> {
     await _flutterTts.setPitch(1.0);
     await _flutterTts.setSpeechRate(0.1); // Slow speed
     await _flutterTts.speak(widget.word.en);
+    await Future.delayed(const Duration(seconds: 1));
+    await _flutterTts.setSpeechRate(0.5);
   }
 
   Future<void> _speakVietnamese() async {
