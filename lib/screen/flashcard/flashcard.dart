@@ -45,6 +45,14 @@ class _FlashcardState extends State<Flashcard> {
   Future<void> _speakEnglish() async {
     await _flutterTts.setLanguage("en-US");
     await _flutterTts.setPitch(1.0);
+    await _flutterTts.setSpeechRate(0.5); // Normal speed
+    await _flutterTts.speak(widget.word.en);
+  }
+
+  Future<void> _speakEnglishSlow() async {
+    await _flutterTts.setLanguage("en-US");
+    await _flutterTts.setPitch(1.0);
+    await _flutterTts.setSpeechRate(0.1); // Slow speed
     await _flutterTts.speak(widget.word.en);
   }
 
@@ -84,11 +92,26 @@ class _FlashcardState extends State<Flashcard> {
           height: 145,
           child: Column(
             children: [
-              IconButton(
-                  onPressed: () {
-                    _speakEnglish();
-                  },
-                  icon: const Icon(Icons.volume_up, size: 32)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      _speakEnglish();
+                    },
+                    icon: const Icon(Icons.volume_up, size: 32),
+                    tooltip: 'Phát âm bình thường',
+                  ),
+                  const SizedBox(width: 16),
+                  IconButton(
+                    onPressed: () {
+                      _speakEnglishSlow();
+                    },
+                    icon: const Icon(Icons.hearing, size: 32),
+                    tooltip: 'Phát âm chậm',
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
               Text(
                 word.en,
