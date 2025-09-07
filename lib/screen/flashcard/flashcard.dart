@@ -7,8 +7,15 @@ import 'package:flutter_tts/flutter_tts.dart';
 
 class Flashcard extends StatefulWidget {
   final Word word;
+  final bool sessionHideEnglishText;
+  final Function(String)? onAnswerSubmitted;
 
-  const Flashcard({super.key, required this.word});
+  const Flashcard({
+    super.key, 
+    required this.word,
+    this.sessionHideEnglishText = false,
+    this.onAnswerSubmitted,
+  });
 
   @override
   _FlashcardState createState() => _FlashcardState();
@@ -16,12 +23,24 @@ class Flashcard extends StatefulWidget {
 
 class _FlashcardState extends State<Flashcard> {
   bool _isFlipped = false;
+  bool _showEnglishText = true;
   final FlutterTts _flutterTts = FlutterTts();
 
   @override
   void initState() {
     super.initState();
-    //_speakEnglish(); // Speak English word when card is displayed
+    _showEnglishText = !widget.sessionHideEnglishText; // Use session setting
+  }
+
+  @override
+  void didUpdateWidget(Flashcard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update visibility when session setting changes
+    if (oldWidget.sessionHideEnglishText != widget.sessionHideEnglishText) {
+      setState(() {
+        _showEnglishText = !widget.sessionHideEnglishText;
+      });
+    }
   }
 
   @override
@@ -64,6 +83,14 @@ class _FlashcardState extends State<Flashcard> {
     await _flutterTts.speak(widget.word.vi);
   }
 
+  void _toggleEnglishText() {
+    setState(() {
+      _showEnglishText = !_showEnglishText;
+    });
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -91,9 +118,10 @@ class _FlashcardState extends State<Flashcard> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Center(
         child: SizedBox(
-          height: 145,
+          height: 160,
           child: Column(
             children: [
+              // Audio controls row
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -112,15 +140,29 @@ class _FlashcardState extends State<Flashcard> {
                     icon: const Icon(Icons.hearing, size: 32),
                     tooltip: 'Phát âm chậm',
                   ),
+                  const SizedBox(width: 16),
+                  IconButton(
+                    onPressed: _toggleEnglishText,
+                    icon: Icon(
+                      _showEnglishText ? Icons.visibility : Icons.visibility_off,
+                      size: 32,
+                    ),
+                    tooltip: _showEnglishText ? 'Ẩn từ tiếng Anh' : 'Hiện từ tiếng Anh',
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
-              Text(
-                word.en,
-                style:
-                    const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              // English text (can be hidden)
+              AnimatedOpacity(
+                opacity: _showEnglishText ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  _showEnglishText ? word.en : '???',
+                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
+              const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -194,6 +236,7 @@ class _FlashcardState extends State<Flashcard> {
       ),
     );
   }
+
 }
 
 // Helper widget for rotation animation

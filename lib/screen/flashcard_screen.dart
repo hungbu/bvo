@@ -32,6 +32,9 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   int _correctAnswers = 0;
   int _totalAttempts = 0;
   DateTime? _sessionStartTime;
+  
+  // Flashcard settings
+  bool _sessionHideEnglishText = false;
 
   @override
   void initState() {
@@ -71,6 +74,103 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     await _prefs.setStringList('words_${widget.topic}', wordsJson);
   }
 
+
+  Future<void> _saveCompletionStatistics(Duration sessionDuration, double accuracy) async {
+    try {
+      final now = DateTime.now();
+      final todayKey = '${now.year}-${now.month}-${now.day}';
+      
+      // 1. Update daily progress
+      final currentWordsLearned = _prefs.getInt('words_learned_$todayKey') ?? 0;
+      await _prefs.setInt('words_learned_$todayKey', currentWordsLearned + widget.words.length);
+      
+      // 2. Mark today as learned
+      await _prefs.setBool('learned_$todayKey', true);
+      
+      // 3. Update total words learned
+      final totalWords = _prefs.getInt('total_words_learned') ?? 0;
+      await _prefs.setInt('total_words_learned', totalWords + widget.words.length);
+      
+      // 4. Save session statistics
+      final sessionKey = 'session_${now.millisecondsSinceEpoch}';
+      await _prefs.setString('${sessionKey}_topic', widget.topic);
+      await _prefs.setInt('${sessionKey}_words_count', widget.words.length);
+      await _prefs.setInt('${sessionKey}_correct_answers', _correctAnswers);
+      await _prefs.setInt('${sessionKey}_total_attempts', _totalAttempts);
+      await _prefs.setDouble('${sessionKey}_accuracy', accuracy);
+      await _prefs.setInt('${sessionKey}_duration_seconds', sessionDuration.inSeconds);
+      await _prefs.setString('${sessionKey}_date', now.toIso8601String());
+      
+      // 5. Update topic-specific statistics
+      final topicCorrect = _prefs.getInt('${widget.topic}_correct_answers') ?? 0;
+      final topicTotal = _prefs.getInt('${widget.topic}_total_attempts') ?? 0;
+      final topicSessions = _prefs.getInt('${widget.topic}_sessions') ?? 0;
+      
+      await _prefs.setInt('${widget.topic}_correct_answers', topicCorrect + _correctAnswers);
+      await _prefs.setInt('${widget.topic}_total_attempts', topicTotal + _totalAttempts);
+      await _prefs.setInt('${widget.topic}_sessions', topicSessions + 1);
+      await _prefs.setString('${widget.topic}_last_studied', now.toIso8601String());
+      
+      // 6. Update streak and learning statistics
+      await _updateStreakStatistics();
+      
+      // 7. Save best accuracy for this topic
+      final bestAccuracy = _prefs.getDouble('${widget.topic}_best_accuracy') ?? 0.0;
+      if (accuracy > bestAccuracy) {
+        await _prefs.setDouble('${widget.topic}_best_accuracy', accuracy);
+      }
+      
+      print('✅ Completion statistics saved successfully');
+    } catch (e) {
+      print('❌ Error saving completion statistics: $e');
+    }
+  }
+
+  Future<void> _updateStreakStatistics() async {
+    try {
+      final now = DateTime.now();
+      final todayKey = '${now.year}-${now.month}-${now.day}';
+      final yesterdayKey = '${now.subtract(const Duration(days: 1)).year}-${now.subtract(const Duration(days: 1)).month}-${now.subtract(const Duration(days: 1)).day}';
+      
+      // Check if already learned today
+      final learnedToday = _prefs.getBool('learned_$todayKey') ?? false;
+      
+      if (!learnedToday) {
+        // First session today, update streak
+        final currentStreak = _prefs.getInt('streak_days') ?? 0;
+        final learnedYesterday = _prefs.getBool('learned_$yesterdayKey') ?? false;
+        
+        int newStreak;
+        if (learnedYesterday || currentStreak == 0) {
+          // Continue streak or start new one
+          newStreak = currentStreak + 1;
+        } else {
+          // Streak broken, restart
+          newStreak = 1;
+        }
+        
+        await _prefs.setInt('streak_days', newStreak);
+        
+        // Update longest streak
+        final longestStreak = _prefs.getInt('longest_streak') ?? 0;
+        if (newStreak > longestStreak) {
+          await _prefs.setInt('longest_streak', newStreak);
+        }
+      }
+      
+      // Update total study time
+      final totalStudyTime = _prefs.getInt('total_study_time_seconds') ?? 0;
+      final sessionDuration = _sessionStartTime != null 
+          ? DateTime.now().difference(_sessionStartTime!).inSeconds 
+          : 0;
+      await _prefs.setInt('total_study_time_seconds', totalStudyTime + sessionDuration);
+      
+    } catch (e) {
+      print('❌ Error updating streak statistics: $e');
+    }
+  }
+
+
   @override
   void dispose() {
     _controller.dispose();
@@ -86,12 +186,6 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     await _flutterTts.speak(text);
   }
 
-  Future<void> _speakVietnamese(String text) async {
-    await _flutterTts.stop();
-    await _flutterTts.setLanguage("vi-VN");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.speak(text);
-  }
 
   void _checkAnswer() {
     String userAnswer = _controller.text.trim().toLowerCase();
@@ -141,7 +235,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     });
   }
 
-  void _showCompletionDialog() {
+  void _showCompletionDialog() async {
     // Calculate session statistics
     Duration sessionDuration = _sessionStartTime != null 
         ? DateTime.now().difference(_sessionStartTime!) 
@@ -150,6 +244,9 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     double accuracy = _totalAttempts > 0 
         ? (_correctAnswers / _totalAttempts * 100) 
         : 0.0;
+
+    // Save completion statistics to SharedPreferences
+    await _saveCompletionStatistics(sessionDuration, accuracy);
 
     String formatDuration(Duration duration) {
       String twoDigits(int n) => n.toString().padLeft(2, "0");
@@ -184,10 +281,11 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
               ),
             ],
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Text(
                 'Bạn đã hoàn thành chủ đề "${widget.topic}"',
                 style: TextStyle(
@@ -307,45 +405,32 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                 ),
               ),
             ],
+            ),
           ),
           actions: [
-            // Study Again button
-            TextButton.icon(
-              onPressed: () {
-                Navigator.pop(context); // Close dialog
-                _restartSession();
-              },
-              icon: Icon(Icons.refresh),
-              label: Text('Học lại'),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.blue,
-              ),
-            ),
-            
             // Back to Topics button
             TextButton.icon(
               onPressed: () {
                 Navigator.pop(context); // Close dialog
                 Navigator.pop(context); // Go back to previous screen
               },
-              icon: Icon(Icons.arrow_back),
-              label: Text('Quay lại'),
+              icon: const Icon(Icons.arrow_back),
+              label: const Text('Quay lại'),
               style: TextButton.styleFrom(
                 foregroundColor: Colors.grey[600],
               ),
             ),
             
-            // Continue/Home button
+            // Study Again button
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Go back to previous screen
-                // Could navigate to home or topic selection
+                _restartSession();
               },
-              icon: Icon(Icons.home),
-              label: Text('Trang chủ'),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Học lại'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -387,6 +472,24 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         title: Text('FlashCard - ${widget.topic}'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
+        actions: [
+          // Hide English Text Toggle
+          IconButton(
+            icon: Icon(_sessionHideEnglishText ? Icons.visibility_off : Icons.visibility),
+            onPressed: () {
+              setState(() {
+                _sessionHideEnglishText = !_sessionHideEnglishText;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(_sessionHideEnglishText ? 'Ẩn từ tiếng Anh' : 'Hiện từ tiếng Anh'),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+            tooltip: _sessionHideEnglishText ? 'Hiện từ tiếng Anh' : 'Ẩn từ tiếng Anh',
+          ),
+        ],
       ),
       body: widget.words.isEmpty 
           ? const Center(child: CircularProgressIndicator())
@@ -434,7 +537,13 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         },
       ),
       itemBuilder: (context, index, realIndex) {
-        return Flashcard(word: widget.words[index]);
+        return Flashcard(
+          word: widget.words[index],
+          sessionHideEnglishText: _sessionHideEnglishText,
+          onAnswerSubmitted: (answer) {
+            _checkAnswer();
+          },
+        );
       },
     );
   }
