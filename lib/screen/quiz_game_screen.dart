@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../model/word.dart';
 import '../repository/quiz_repository.dart';
+import '../service/notification_service.dart';
 
 enum QuizType {
   multipleChoice,    // Trắc nghiệm 4 đáp án
@@ -230,8 +231,28 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
     _progressController.forward();
   }
 
-  void _showFinalResults() {
+  void _showFinalResults() async {
     final accuracy = totalQuestions > 0 ? (correctAnswers / totalQuestions * 100) : 0.0;
+    
+    // Mark quiz as completed and trigger notifications
+    final notificationService = NotificationService();
+    await notificationService.markQuizCompleted();
+    await notificationService.updateLastActiveDate();
+    
+    // Check for accuracy achievements
+    if (accuracy == 100.0) {
+      await notificationService.showAchievementNotification(
+        achievementTitle: 'Perfect Score!',
+        achievementDescription: '100% accuracy! Your memory is amazing!',
+        achievementType: 'accuracy',
+      );
+    } else if (accuracy >= 90.0) {
+      await notificationService.showAchievementNotification(
+        achievementTitle: 'Quiz Master',
+        achievementDescription: 'Excellent performance! 90%+ accuracy!',
+        achievementType: 'quiz_master',
+      );
+    }
     
     showDialog(
       context: context,

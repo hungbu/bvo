@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../service/auth_service.dart';
+import '../service/notification_service.dart';
+import '../repository/word_repository.dart';
+import '../repository/topic_repository.dart';
+import '../repository/quiz_repository.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  final Function(VoidCallback)? onRefreshCallback;
+  
+  const ProfileScreen({Key? key, this.onRefreshCallback}) : super(key: key);
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -12,86 +18,143 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, List<dynamic>> reviewedWordsByTopic = {};
   int totalWordsLearned = 0;
-  int currentStreak = 7; // Mock data
-  int longestStreak = 15; // Mock data
+  int totalWordsInQuiz = 0;
+  int dueWordsCount = 0;
+  int currentStreak = 0;
+  int longestStreak = 0;
+  double accuracy = 0.0;
+  int totalTopics = 0;
+  int todayWordsLearned = 0;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadUserStats();
+    // Đăng ký callback với MainLayout
+    widget.onRefreshCallback?.call(_loadUserStats);
   }
 
   Future<void> _loadUserStats() async {
-    // Mock loading user statistics
-    setState(() {
-      totalWordsLearned = 128; // Mock data
-    });
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final wordRepo = WordRepository();
+      final topicRepo = TopicRepository();
+      final quizRepo = QuizRepository();
+
+      // Use same logic as HomePage - get reviewed words from repository
+      final reviewedWords = await wordRepo.getReviewedWordsGroupedByTopic();
+      final totalLearned = reviewedWords.values.fold(0, (sum, words) => sum + words.length);
+
+      // Get all topics for total count
+      final topics = await topicRepo.getTopics();
+
+      // Get quiz statistics
+      final quizStats = await quizRepo.getQuizStats();
+      final quizWords = await quizRepo.getQuizWords();
+      final dueWords = await quizRepo.getDueWords();
+
+      // Calculate accuracy from quiz stats
+      double calculatedAccuracy = 0.0;
+      if (quizStats['totalAttempts'] > 0) {
+        calculatedAccuracy = (quizStats['correctAnswers'] / quizStats['totalAttempts']) * 100;
+      }
+
+      // Use same streak keys as HomePage
+      final currentStreakValue = prefs.getInt('streak_days') ?? 0;
+      final longestStreakValue = prefs.getInt('longest_streak') ?? 0;
+
+      // Get today's words learned
+      final today = DateTime.now();
+      final todayKey = '${today.year}-${today.month}-${today.day}';
+      final todayWords = prefs.getInt('words_learned_$todayKey') ?? 0;
+
+      setState(() {
+        totalWordsLearned = totalLearned;
+        reviewedWordsByTopic = reviewedWords;
+        totalWordsInQuiz = quizWords.length;
+        dueWordsCount = dueWords.length;
+        accuracy = calculatedAccuracy;
+        currentStreak = currentStreakValue;
+        longestStreak = longestStreakValue;
+        totalTopics = topics.length;
+        todayWordsLearned = todayWords;
+        isLoading = false;
+      });
+
+    } catch (error) {
+      print('Error loading user stats: $error');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // Helper method to update streak data (can be called from other screens like QuizGameScreen)
+  static Future<void> updateStreakData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final today = DateTime.now();
+      final lastActiveDate = prefs.getString('last_active_date');
+      
+      if (lastActiveDate == null) {
+        // First time user
+        await prefs.setInt('current_streak', 1);
+        await prefs.setInt('longest_streak', 1);
+        await prefs.setString('last_active_date', today.toIso8601String());
+      } else {
+        final lastActive = DateTime.parse(lastActiveDate);
+        final daysDifference = today.difference(lastActive).inDays;
+        
+        if (daysDifference == 1) {
+          // Consecutive day
+          final currentStreak = prefs.getInt('current_streak') ?? 0;
+          final newStreak = currentStreak + 1;
+          await prefs.setInt('current_streak', newStreak);
+          
+          // Update longest streak if needed
+          final longestStreak = prefs.getInt('longest_streak') ?? 0;
+          if (newStreak > longestStreak) {
+            await prefs.setInt('longest_streak', newStreak);
+          }
+          
+          await prefs.setString('last_active_date', today.toIso8601String());
+        } else if (daysDifference > 1) {
+          // Streak broken
+          await prefs.setInt('current_streak', 1);
+          await prefs.setString('last_active_date', today.toIso8601String());
+        }
+        // If daysDifference == 0, same day, no update needed
+      }
+    } catch (error) {
+      print('Error updating streak data: $error');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
+      body: isLoading 
+        ? const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Loading your progress...'),
+              ],
+            ),
+          )
+        : RefreshIndicator(
+            onRefresh: _loadUserStats,
+            child: SingleChildScrollView(
         child: Column(
           children: [
-            // Header with user info
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(30),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).primaryColor,
-                    Theme.of(context).primaryColor.withOpacity(0.8),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-              child: Column(
-                children: [
-                  // Avatar
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                      image: const DecorationImage(
-                        image: NetworkImage('https://via.placeholder.com/80'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // User name
-                  const Text(
-                    'John Doe',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Join date
-                  Text(
-                    'Member since January 2024',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
+          
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -101,11 +164,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Text(
                     'Your Progress',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   
                   Row(
                     children: [
@@ -117,7 +180,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Colors.blue,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildStatCard(
+                          'Today\'s Words',
+                          todayWordsLearned.toString(),
+                          Icons.today,
+                          Colors.cyan,
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  Row(
+                    children: [
                       Expanded(
                         child: _buildStatCard(
                           'Current Streak',
@@ -126,13 +204,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Colors.orange,
                         ),
                       ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  Row(
-                    children: [
+                      const SizedBox(width: 8),
                       Expanded(
                         child: _buildStatCard(
                           'Longest Streak',
@@ -141,61 +213,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Colors.green,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
                       Expanded(
                         child: _buildStatCard(
                           'Accuracy',
-                          '92%',
+                          '${accuracy.toStringAsFixed(1)}%',
                           Icons.trending_up,
                           Colors.purple,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildStatCard(
+                          'Quiz Words',
+                          totalWordsInQuiz.toString(),
+                          Icons.quiz,
+                          Colors.indigo,
                         ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 8),
+                  
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          'Due Words',
+                          dueWordsCount.toString(),
+                          Icons.schedule,
+                          Colors.red,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildStatCard(
+                          'Total Topics',
+                          totalTopics.toString(),
+                          Icons.topic,
+                          Colors.teal,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
 
                   // Achievements Section
                   const Text(
                     'Achievements',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   
                   SizedBox(
                     height: 100,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      children: [
-                        _buildAchievementBadge('First Word', Icons.star, Colors.amber),
-                        _buildAchievementBadge('7 Day Streak', Icons.local_fire_department, Colors.orange),
-                        _buildAchievementBadge('100 Words', Icons.school, Colors.blue),
-                        _buildAchievementBadge('Quick Learner', Icons.speed, Colors.green),
-                      ],
+                      children: _buildAchievementsList(),
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
                   // Settings Section
                   const Text(
                     'Settings',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
                   _buildSettingsItem(
                     icon: Icons.notifications,
                     title: 'Notifications',
                     subtitle: 'Daily reminders and updates',
                     onTap: () {
-                      // Handle notifications settings
+                      _showNotificationSettings();
                     },
                   ),
 
@@ -297,35 +401,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ],
         ),
-      ),
+            ),
+          ),
     );
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 6),
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: color,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             title,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 10,
               color: Colors.grey[600],
             ),
             textAlign: TextAlign.center,
@@ -333,6 +438,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  List<Widget> _buildAchievementsList() {
+    List<Widget> achievements = [];
+
+    // First Word Achievement
+    if (totalWordsLearned > 0) {
+      achievements.add(_buildAchievementBadge('First Word', Icons.star, Colors.amber));
+    }
+
+    // Streak Achievements
+    if (currentStreak >= 3) {
+      achievements.add(_buildAchievementBadge('3 Day Streak', Icons.local_fire_department, Colors.orange));
+    }
+    if (currentStreak >= 7) {
+      achievements.add(_buildAchievementBadge('7 Day Streak', Icons.local_fire_department, Colors.deepOrange));
+    }
+    if (longestStreak >= 30) {
+      achievements.add(_buildAchievementBadge('30 Day Streak', Icons.emoji_events, Colors.red));
+    }
+
+    // Words Learned Achievements
+    if (totalWordsLearned >= 10) {
+      achievements.add(_buildAchievementBadge('10 Words', Icons.school, Colors.blue));
+    }
+    if (totalWordsLearned >= 50) {
+      achievements.add(_buildAchievementBadge('50 Words', Icons.school, Colors.indigo));
+    }
+    if (totalWordsLearned >= 100) {
+      achievements.add(_buildAchievementBadge('100 Words', Icons.school, Colors.purple));
+    }
+
+    // Quiz Achievements
+    if (totalWordsInQuiz >= 20) {
+      achievements.add(_buildAchievementBadge('Quiz Master', Icons.quiz, Colors.green));
+    }
+    if (accuracy >= 80.0) {
+      achievements.add(_buildAchievementBadge('High Accuracy', Icons.trending_up, Colors.teal));
+    }
+
+    // Topic Achievements
+    if (reviewedWordsByTopic.length >= 3) {
+      achievements.add(_buildAchievementBadge('Explorer', Icons.explore, Colors.cyan));
+    }
+
+    // Daily Achievements
+    if (todayWordsLearned >= 5) {
+      achievements.add(_buildAchievementBadge('Daily Goal', Icons.today, Colors.lightBlue));
+    }
+    if (todayWordsLearned >= 10) {
+      achievements.add(_buildAchievementBadge('Super Learner', Icons.star_rate, Colors.amber));
+    }
+
+    // If no achievements, show placeholder
+    if (achievements.isEmpty) {
+      achievements.add(_buildAchievementBadge('Start Learning', Icons.play_arrow, Colors.grey));
+    }
+
+    return achievements;
   }
 
   Widget _buildAchievementBadge(String title, IconData icon, Color color) {
@@ -567,6 +731,438 @@ class _ProfileScreenState extends State<ProfileScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  void _showNotificationSettings() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const NotificationSettingsSheet(),
+    );
+  }
+}
+
+class NotificationSettingsSheet extends StatefulWidget {
+  const NotificationSettingsSheet({Key? key}) : super(key: key);
+
+  @override
+  State<NotificationSettingsSheet> createState() => _NotificationSettingsSheetState();
+}
+
+class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
+  bool _notificationsEnabled = true;
+  bool _morningReminderEnabled = true;
+  bool _eveningReminderEnabled = true;
+  bool _streakWarningEnabled = true;
+  bool _dueWordsEnabled = true;
+  bool _goalProgressEnabled = true;
+  
+  // Phase 2 settings
+  bool _achievementEnabled = true;
+  bool _weeklySummaryEnabled = true;
+  bool _streakMilestoneEnabled = true;
+  bool _quizReminderEnabled = true;
+  bool _comebackEnabled = true;
+  
+  TimeOfDay _morningTime = const TimeOfDay(hour: 8, minute: 0);
+  TimeOfDay _eveningTime = const TimeOfDay(hour: 19, minute: 0);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+      _morningReminderEnabled = prefs.getBool('morning_reminder_enabled') ?? true;
+      _eveningReminderEnabled = prefs.getBool('evening_reminder_enabled') ?? true;
+      _streakWarningEnabled = prefs.getBool('streak_warning_enabled') ?? true;
+      _dueWordsEnabled = prefs.getBool('due_words_enabled') ?? true;
+      _goalProgressEnabled = prefs.getBool('goal_progress_enabled') ?? true;
+      
+      // Phase 2 settings
+      _achievementEnabled = prefs.getBool('achievement_enabled') ?? true;
+      _weeklySummaryEnabled = prefs.getBool('weekly_summary_enabled') ?? true;
+      _streakMilestoneEnabled = prefs.getBool('streak_milestone_enabled') ?? true;
+      _quizReminderEnabled = prefs.getBool('quiz_reminder_enabled') ?? true;
+      _comebackEnabled = prefs.getBool('comeback_enabled') ?? true;
+      
+      final morningHour = prefs.getInt('morning_reminder_hour') ?? 8;
+      final morningMinute = prefs.getInt('morning_reminder_minute') ?? 0;
+      final eveningHour = prefs.getInt('evening_reminder_hour') ?? 19;
+      final eveningMinute = prefs.getInt('evening_reminder_minute') ?? 0;
+      
+      _morningTime = TimeOfDay(hour: morningHour, minute: morningMinute);
+      _eveningTime = TimeOfDay(hour: eveningHour, minute: eveningMinute);
+    });
+  }
+
+  Future<void> _saveSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notifications_enabled', _notificationsEnabled);
+    await prefs.setBool('morning_reminder_enabled', _morningReminderEnabled);
+    await prefs.setBool('evening_reminder_enabled', _eveningReminderEnabled);
+    await prefs.setBool('streak_warning_enabled', _streakWarningEnabled);
+    await prefs.setBool('due_words_enabled', _dueWordsEnabled);
+    await prefs.setBool('goal_progress_enabled', _goalProgressEnabled);
+    
+    // Phase 2 settings
+    await prefs.setBool('achievement_enabled', _achievementEnabled);
+    await prefs.setBool('weekly_summary_enabled', _weeklySummaryEnabled);
+    await prefs.setBool('streak_milestone_enabled', _streakMilestoneEnabled);
+    await prefs.setBool('quiz_reminder_enabled', _quizReminderEnabled);
+    await prefs.setBool('comeback_enabled', _comebackEnabled);
+    
+    await prefs.setInt('morning_reminder_hour', _morningTime.hour);
+    await prefs.setInt('morning_reminder_minute', _morningTime.minute);
+    await prefs.setInt('evening_reminder_hour', _eveningTime.hour);
+    await prefs.setInt('evening_reminder_minute', _eveningTime.minute);
+
+    // Update notification service
+    final notificationService = NotificationService();
+    await notificationService.setNotificationsEnabled(_notificationsEnabled);
+    if (_notificationsEnabled) {
+      await notificationService.scheduleDailyReminders();
+      await notificationService.runExtendedNotificationChecks();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+          // Drag handle
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          
+          // Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Notification Settings',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Scrollable content
+          Expanded(
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+          // Master toggle
+          _buildSwitchTile(
+            title: 'Enable Notifications',
+            subtitle: 'Turn on/off all notifications',
+            value: _notificationsEnabled,
+            onChanged: (value) {
+              setState(() {
+                _notificationsEnabled = value;
+              });
+              _saveSettings();
+            },
+            icon: Icons.notifications,
+          ),
+          
+          if (_notificationsEnabled) ...[
+            const Divider(height: 30),
+            
+            // Daily Reminders Section
+            const Text(
+              'Daily Reminders',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 10),
+            
+            _buildSwitchTile(
+              title: 'Morning Reminder',
+              subtitle: 'Daily study reminder at ${_morningTime.format(context)}',
+              value: _morningReminderEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _morningReminderEnabled = value;
+                });
+                _saveSettings();
+              },
+              icon: Icons.wb_sunny,
+              trailing: _morningReminderEnabled 
+                ? IconButton(
+                    icon: const Icon(Icons.access_time),
+                    onPressed: () => _selectTime(true),
+                  )
+                : null,
+            ),
+            
+            _buildSwitchTile(
+              title: 'Evening Review',
+              subtitle: 'Review reminder at ${_eveningTime.format(context)}',
+              value: _eveningReminderEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _eveningReminderEnabled = value;
+                });
+                _saveSettings();
+              },
+              icon: Icons.nightlight_round,
+              trailing: _eveningReminderEnabled 
+                ? IconButton(
+                    icon: const Icon(Icons.access_time),
+                    onPressed: () => _selectTime(false),
+                  )
+                : null,
+            ),
+            
+            const Divider(height: 30),
+            
+            // Other Notifications Section
+            const Text(
+              'Learning Alerts',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 10),
+            
+            _buildSwitchTile(
+              title: 'Streak Warnings',
+              subtitle: 'Remind me to maintain my learning streak',
+              value: _streakWarningEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _streakWarningEnabled = value;
+                });
+                _saveSettings();
+              },
+              icon: Icons.local_fire_department,
+            ),
+            
+            _buildSwitchTile(
+              title: 'Review Reminders',
+              subtitle: 'Alert when words need review',
+              value: _dueWordsEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _dueWordsEnabled = value;
+                });
+                _saveSettings();
+              },
+              icon: Icons.quiz,
+            ),
+            
+            _buildSwitchTile(
+              title: 'Goal Progress',
+              subtitle: 'Updates on daily learning progress',
+              value: _goalProgressEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _goalProgressEnabled = value;
+                });
+                _saveSettings();
+              },
+              icon: Icons.track_changes,
+            ),
+            
+            const Divider(height: 30),
+            
+            // Phase 2 Notifications Section
+            const Text(
+              'Achievements & Milestones',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 10),
+            
+            _buildSwitchTile(
+              title: 'Achievement Alerts',
+              subtitle: 'Celebrate your learning milestones',
+              value: _achievementEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _achievementEnabled = value;
+                });
+                _saveSettings();
+              },
+              icon: Icons.emoji_events,
+            ),
+            
+            _buildSwitchTile(
+              title: 'Streak Milestones',
+              subtitle: 'Celebrate 7, 30, 100+ day streaks',
+              value: _streakMilestoneEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _streakMilestoneEnabled = value;
+                });
+                _saveSettings();
+              },
+              icon: Icons.local_fire_department,
+            ),
+            
+            _buildSwitchTile(
+              title: 'Weekly Summary',
+              subtitle: 'Sunday evening progress reports',
+              value: _weeklySummaryEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _weeklySummaryEnabled = value;
+                });
+                _saveSettings();
+              },
+              icon: Icons.bar_chart,
+            ),
+            
+            const Divider(height: 30),
+            
+            // Engagement Notifications Section
+            const Text(
+              'Engagement & Motivation',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 10),
+            
+            _buildSwitchTile(
+              title: 'Quiz Reminders',
+              subtitle: 'Remind to take quizzes every 2 days',
+              value: _quizReminderEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _quizReminderEnabled = value;
+                });
+                _saveSettings();
+              },
+              icon: Icons.quiz,
+            ),
+            
+            _buildSwitchTile(
+              title: 'Comeback Messages',
+              subtitle: 'Encouraging messages when inactive',
+              value: _comebackEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _comebackEnabled = value;
+                });
+                _saveSettings();
+              },
+              icon: Icons.favorite,
+            ),
+          ],
+          
+          const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSwitchTile({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required IconData icon,
+    Widget? trailing,
+  }) {
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          icon,
+          color: Theme.of(context).primaryColor,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+      subtitle: Text(subtitle),
+      trailing: trailing ?? Switch(
+        value: value,
+        onChanged: onChanged,
+        activeColor: Theme.of(context).primaryColor,
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+    );
+  }
+
+  Future<void> _selectTime(bool isMorning) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: isMorning ? _morningTime : _eveningTime,
+    );
+    
+    if (picked != null) {
+      setState(() {
+        if (isMorning) {
+          _morningTime = picked;
+        } else {
+          _eveningTime = picked;
+        }
+      });
+      await _saveSettings();
     }
   }
 }

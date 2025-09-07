@@ -9,6 +9,7 @@ import 'package:bvo/repository/word_repository.dart';
 import 'package:bvo/repository/topic_repository.dart';
 import 'package:bvo/repository/topic_configs_repository.dart';
 import 'package:bvo/repository/dictionary.dart';
+import 'package:bvo/service/notification_service.dart';
 import 'package:bvo/screen/topic_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -1283,10 +1284,74 @@ class _HomeScreenState extends State<HomeScreen> {
     
     // Update total words learned
     final totalWords = prefs.getInt('total_words_learned') ?? 0;
-    await prefs.setInt('total_words_learned', totalWords + wordsLearned);
+    final newTotalWords = totalWords + wordsLearned;
+    await prefs.setInt('total_words_learned', newTotalWords);
+    
+    // Check for achievements and trigger notifications
+    await _checkAndTriggerAchievements(newTotalWords, newCount);
+    
+    // Update last active date and check streak
+    final notificationService = NotificationService();
+    await notificationService.updateLastActiveDate();
+    
+    // Check for streak milestone
+    final currentStreak = prefs.getInt('streak_days') ?? 0;
+    if (currentStreak > 0 && (currentStreak == 7 || currentStreak == 30 || currentStreak == 100 || (currentStreak % 50 == 0 && currentStreak > 100))) {
+      await notificationService.showStreakMilestone(currentStreak);
+    }
     
     // Refresh dashboard data
     await _loadDashboardData();
+  }
+
+  Future<void> _checkAndTriggerAchievements(int totalWords, int todayWords) async {
+    final notificationService = NotificationService();
+    
+    // First word achievement
+    if (totalWords == 1) {
+      await notificationService.showAchievementNotification(
+        achievementTitle: 'First Word',
+        achievementDescription: 'Your vocabulary journey begins!',
+        achievementType: 'first_word',
+      );
+    }
+    
+    // Word milestone achievements
+    if (totalWords == 10) {
+      await notificationService.showAchievementNotification(
+        achievementTitle: '10 Words Learned',
+        achievementDescription: 'Great start! Keep building your vocabulary',
+        achievementType: 'words_milestone',
+      );
+    } else if (totalWords == 50) {
+      await notificationService.showAchievementNotification(
+        achievementTitle: '50 Words Mastered',
+        achievementDescription: 'You\'re making excellent progress!',
+        achievementType: 'words_milestone',
+      );
+    } else if (totalWords == 100) {
+      await notificationService.showAchievementNotification(
+        achievementTitle: 'Century Club',
+        achievementDescription: '100 words learned! You\'re unstoppable!',
+        achievementType: 'words_milestone',
+      );
+    } else if (totalWords % 100 == 0 && totalWords > 100) {
+      await notificationService.showAchievementNotification(
+        achievementTitle: '$totalWords Words Champion',
+        achievementDescription: 'Your dedication is inspiring!',
+        achievementType: 'words_milestone',
+      );
+    }
+    
+    // Daily goal achievements
+    final dailyGoal = await SharedPreferences.getInstance().then((prefs) => prefs.getInt('daily_goal') ?? 10);
+    if (todayWords >= dailyGoal) {
+      await notificationService.showAchievementNotification(
+        achievementTitle: 'Daily Goal Achieved',
+        achievementDescription: 'You completed today\'s learning goal!',
+        achievementType: 'daily_goal',
+      );
+    }
   }
 
   // Method to refresh dashboard when returning from other screens
