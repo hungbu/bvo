@@ -742,6 +742,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context) => const NotificationSettingsSheet(),
     );
   }
+
 }
 
 class NotificationSettingsSheet extends StatefulWidget {
@@ -1165,4 +1166,5 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
       await _saveSettings();
     }
   }
+
 }

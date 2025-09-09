@@ -8,7 +8,7 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin notifications = FlutterLocalNotificationsPlugin();
 
   // Notification IDs
   static const int morningReminderId = 1;
@@ -40,7 +40,7 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    await _notifications.initialize(
+    await notifications.initialize(
       settings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
@@ -50,11 +50,11 @@ class NotificationService {
   }
 
   Future<void> _requestPermissions() async {
-    await _notifications
+    await notifications
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
     
-    await _notifications
+    await notifications
         .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
         ?.requestPermissions(
       alert: true,
@@ -116,7 +116,7 @@ class NotificationService {
     required int minute,
     required String payload,
   }) async {
-      await _notifications.zonedSchedule(
+      await notifications.zonedSchedule(
         id,
         title,
         body,
@@ -161,7 +161,7 @@ class NotificationService {
         final warningTime = DateTime(today.year, today.month, today.day, 22, 0);
         
         if (today.isBefore(warningTime)) {
-          await _notifications.zonedSchedule(
+          await notifications.zonedSchedule(
             streakWarningId,
             'Don\'t break your streak! 🔥',
             'You have a $currentStreak-day streak. Just 5 minutes of study!',
@@ -200,7 +200,7 @@ class NotificationService {
       final dueWords = await quizRepo.getDueWords();
       
       if (dueWords.isNotEmpty) {
-        await _notifications.show(
+        await notifications.show(
           dueWordsId,
           'Review Time! 📝',
           '${dueWords.length} words are due for review. Perfect your memory!',
@@ -260,7 +260,7 @@ class NotificationService {
       }
 
       if (title != null && body != null) {
-        await _notifications.show(
+        await notifications.show(
           dailyGoalProgressId,
           title,
           body,
@@ -300,12 +300,12 @@ class NotificationService {
 
   /// Cancel specific notification
   Future<void> cancelNotification(int id) async {
-    await _notifications.cancel(id);
+    await notifications.cancel(id);
   }
 
   /// Cancel all notifications
   Future<void> cancelAllNotifications() async {
-    await _notifications.cancelAll();
+    await notifications.cancelAll();
   }
 
   /// Check if notifications are enabled
@@ -373,7 +373,7 @@ class NotificationService {
         break;
     }
 
-    await _notifications.show(
+    await notifications.show(
       achievementId,
       'Achievement Unlocked! $emoji',
       '$achievementTitle - $achievementDescription',
@@ -412,7 +412,7 @@ class NotificationService {
     // Calculate weekly stats
     final weeklyStats = await _calculateWeeklyStats();
     
-    await _notifications.zonedSchedule(
+    await notifications.zonedSchedule(
       weeklySummaryId,
       'Weekly Progress Report 📊',
       'This week: ${weeklyStats['wordsLearned']} words, ${weeklyStats['streakDays']} day streak, ${weeklyStats['accuracy']}% accuracy!',
@@ -463,7 +463,7 @@ class NotificationService {
       return; // Only celebrate specific milestones
     }
 
-    await _notifications.show(
+    await notifications.show(
       streakMilestoneId,
       title,
       body,
@@ -504,7 +504,7 @@ class NotificationService {
       }
 
       if (lastQuiz == null || today.difference(lastQuiz).inDays >= 2) {
-        await _notifications.show(
+        await notifications.show(
           quizReminderId,
           'Quiz Time! ❓',
           'Test your vocabulary knowledge with a quick quiz!',
@@ -550,7 +550,7 @@ class NotificationService {
         
         final randomMessage = messages[DateTime.now().millisecond % messages.length];
 
-        await _notifications.show(
+        await notifications.show(
           comebackEncouragementId,
           'Come Back! 🎯',
           randomMessage,
