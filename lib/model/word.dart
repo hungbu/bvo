@@ -1,12 +1,7 @@
 enum WordLevel {
   BASIC,
-  BASIC1,
-  BASIC2,
-  BASIC3,
+  INTERMEDIATE,
   ADVANCED,
-  ADVANCED1,
-  ADVANCED2,
-  ADVANCED3,
 }
 
 enum WordType {

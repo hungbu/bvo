@@ -1,12 +1,9 @@
 import 'word.dart';
 
 enum TopicLevel {
-  BASIC1,
-  BASIC2, 
-  BASIC3,
-  ADVANCED1,
-  ADVANCED2,
-  ADVANCED3,
+  BASIC,
+  INTERMEDIATE,
+  ADVANCED,
 }
 
 enum TopicCategory {
@@ -109,7 +106,7 @@ class Topic {
       description: json['description'] ?? '',
       level: TopicLevel.values.firstWhere(
         (e) => e.toString() == 'TopicLevel.${json['level']}',
-        orElse: () => TopicLevel.BASIC1,
+        orElse: () => TopicLevel.BASIC,
       ),
       category: TopicCategory.values.firstWhere(
         (e) => e.toString() == 'TopicCategory.${json['category']}',
@@ -187,23 +184,18 @@ class Topic {
   // Helper methods
   bool get isCompleted => progressPercentage >= 1.0;
   bool get isStarted => learnedWords > 0;
-  bool get isBasicLevel => level.toString().contains('BASIC');
-  bool get isAdvancedLevel => level.toString().contains('ADVANCED');
+  bool get isBasicLevel => level == TopicLevel.BASIC;
+  bool get isIntermediateLevel => level == TopicLevel.INTERMEDIATE;
+  bool get isAdvancedLevel => level == TopicLevel.ADVANCED;
   
   String get levelDisplayName {
     switch (level) {
-      case TopicLevel.BASIC1:
-        return 'Cơ bản 1';
-      case TopicLevel.BASIC2:
-        return 'Cơ bản 2';
-      case TopicLevel.BASIC3:
-        return 'Cơ bản 3';
-      case TopicLevel.ADVANCED1:
-        return 'Nâng cao 1';
-      case TopicLevel.ADVANCED2:
-        return 'Nâng cao 2';
-      case TopicLevel.ADVANCED3:
-        return 'Nâng cao 3';
+      case TopicLevel.BASIC:
+        return 'Cơ bản';
+      case TopicLevel.INTERMEDIATE:
+        return 'Trung cấp';
+      case TopicLevel.ADVANCED:
+        return 'Nâng cao';
     }
   }
 
@@ -309,15 +301,13 @@ class Topic {
   }
 
   static TopicLevel _determineLevel(String topicName) {
-    const basicTopics1 = ['schools', 'family', 'colors'];
-    const basicTopics2 = ['numbers', 'body', 'examination'];
-    const basicTopics3 = ['classroom', 'food', 'animals'];
+    const basicTopics = ['schools', 'family', 'colors', 'numbers', 'body', 'food', 'animals', 'clothing', 'house', 'weather', 'transportation', 'school_basic', 'verbs_basic'];
+    const intermediateTopics = ['school_subjects', 'classroom', 'examination', 'sports', 'hobbies', 'feelings', 'health', 'technology', 'nature', 'community', 'time', 'personality'];
     
-    if (basicTopics1.contains(topicName)) return TopicLevel.BASIC1;
-    if (basicTopics2.contains(topicName)) return TopicLevel.BASIC2;
-    if (basicTopics3.contains(topicName)) return TopicLevel.BASIC3;
+    if (basicTopics.contains(topicName)) return TopicLevel.BASIC;
+    if (intermediateTopics.contains(topicName)) return TopicLevel.INTERMEDIATE;
     
-    return TopicLevel.ADVANCED1;
+    return TopicLevel.ADVANCED;
   }
 
   static TopicCategory _determineCategory(String topicName) {
@@ -376,19 +366,11 @@ extension WordLevelExtension on WordLevel {
   TopicLevel toTopicLevel() {
     switch (this) {
       case WordLevel.BASIC:
-      case WordLevel.BASIC1:
-        return TopicLevel.BASIC1;
-      case WordLevel.BASIC2:
-        return TopicLevel.BASIC2;
-      case WordLevel.BASIC3:
-        return TopicLevel.BASIC3;
+        return TopicLevel.BASIC;
+      case WordLevel.INTERMEDIATE:
+        return TopicLevel.INTERMEDIATE;
       case WordLevel.ADVANCED:
-      case WordLevel.ADVANCED1:
-        return TopicLevel.ADVANCED1;
-      case WordLevel.ADVANCED2:
-        return TopicLevel.ADVANCED2;
-      case WordLevel.ADVANCED3:
-        return TopicLevel.ADVANCED3;
+        return TopicLevel.ADVANCED;
     }
   }
 }

@@ -1,0 +1,7153 @@
+[
+  {
+    "en": "family",
+    "vi": "gia đình",
+    "pronunciation": "/ˈfæməli/",
+    "sentence": "Family is the most important thing.",
+    "sentenceVi": "Gia đình là điều quan trọng nhất.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "father",
+    "vi": "cha",
+    "pronunciation": "/ˈfɑːðər/",
+    "sentence": "My father works in a hospital.",
+    "sentenceVi": "Cha tôi làm việc trong bệnh viện.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "mother",
+    "vi": "mẹ",
+    "pronunciation": "/ˈmʌðər/",
+    "sentence": "My mother cooks dinner every day.",
+    "sentenceVi": "Mẹ tôi nấu bữa tối mỗi ngày.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "son",
+    "vi": "con trai",
+    "pronunciation": "/sʌn/",
+    "sentence": "He is my youngest son.",
+    "sentenceVi": "Anh ấy là con trai út của tôi.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "daughter",
+    "vi": "con gái",
+    "pronunciation": "/ˈdɔːtər/",
+    "sentence": "My daughter is five years old.",
+    "sentenceVi": "Con gái tôi năm tuổi.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "brother",
+    "vi": "anh/em trai",
+    "pronunciation": "/ˈbrʌðər/",
+    "sentence": "My brother is studying abroad.",
+    "sentenceVi": "Anh trai tôi đang du học.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sister",
+    "vi": "chị/em gái",
+    "pronunciation": "/ˈsɪstər/",
+    "sentence": "I have one sister and two brothers.",
+    "sentenceVi": "Tôi có một chị/em gái và hai anh/em trai.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "grandfather",
+    "vi": "ông nội, ông ngoại",
+    "pronunciation": "/ˈɡrændˌfɑːðər/",
+    "sentence": "My grandfather tells me stories every night.",
+    "sentenceVi": "Ông tôi kể chuyện cho tôi mỗi đêm.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "grandmother",
+    "vi": "bà nội/ngoại",
+    "pronunciation": "/ˈɡrændˌmʌðər/",
+    "sentence": "We visit my grandmother every weekend.",
+    "sentenceVi": "Chúng tôi thăm bà mỗi cuối tuần.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "uncle",
+    "vi": "chú / bác / cậu",
+    "pronunciation": "/ˈʌŋkəl/",
+    "sentence": "My uncle lives next door.",
+    "sentenceVi": "Chú tôi sống ngay bên cạnh.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "aunt",
+    "vi": "cô, dì, thím",
+    "pronunciation": "/ænt/",
+    "sentence": "My aunt is visiting us this weekend.",
+    "sentenceVi": "Cô tôi sẽ đến thăm chúng tôi cuối tuần này.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cousin",
+    "vi": "anh em họ",
+    "pronunciation": "/ˈkʌzən/",
+    "sentence": "My cousin is coming to the party.",
+    "sentenceVi": "Anh em họ tôi sẽ đến dự tiệc.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "nephew",
+    "vi": "cháu trai",
+    "pronunciation": "/ˈnefjuː/",
+    "sentence": "He is my nephew and he loves football.",
+    "sentenceVi": "Cậu ấy là cháu trai tôi và rất thích bóng đá.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "niece",
+    "vi": "cháu gái",
+    "pronunciation": "/niːs/",
+    "sentence": "My niece loves to draw pictures.",
+    "sentenceVi": "Cháu gái tôi thích vẽ tranh.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "parent",
+    "vi": "bố mẹ",
+    "pronunciation": "/ˈpeərənt/",
+    "sentence": "All parents love their children.",
+    "sentenceVi": "Tất cả bố mẹ đều yêu con cái họ.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "child",
+    "vi": "con cái",
+    "pronunciation": "/tʃaɪld/",
+    "sentence": "Children should listen to their parents.",
+    "sentenceVi": "Trẻ em nên nghe lời cha mẹ.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sibling",
+    "vi": "anh em",
+    "pronunciation": "/ˈsɪblɪŋ/",
+    "sentence": "Do you have any siblings?",
+    "sentenceVi": "Bạn có anh em không?",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "relative",
+    "vi": "người thân",
+    "pronunciation": "/ˈrelətɪv/",
+    "sentence": "We are visiting our relatives this weekend.",
+    "sentenceVi": "Chúng tôi sẽ đến thăm người thân cuối tuần này.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "household",
+    "vi": "hộ gia đình",
+    "pronunciation": "/ˈhaʊshəʊld/",
+    "sentence": "There are five people in our household.",
+    "sentenceVi": "Gia đình chúng tôi có năm người.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "raise",
+    "vi": "nuôi dưỡng",
+    "pronunciation": "/reɪz/",
+    "sentence": "Parents raise their children with love.",
+    "sentenceVi": "Bố mẹ nuôi dưỡng con cái bằng tình yêu.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "love",
+    "vi": "yêu thương",
+    "pronunciation": "/lʌv/",
+    "sentence": "Family members love each other.",
+    "sentenceVi": "Các thành viên trong gia đình yêu thương nhau.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "care",
+    "vi": "chăm sóc",
+    "pronunciation": "/keər/",
+    "sentence": "Parents care for their children.",
+    "sentenceVi": "Bố mẹ chăm sóc con cái.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "support",
+    "vi": "ủng hộ / hỗ trợ",
+    "pronunciation": "/səˈpɔːrt/",
+    "sentence": "My family supports me in everything.",
+    "sentenceVi": "Gia đình tôi ủng hộ tôi trong mọi việc.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "visit",
+    "vi": "thăm viếng",
+    "pronunciation": "/ˈvɪzɪt/",
+    "sentence": "We visit our grandparents every weekend.",
+    "sentenceVi": "Chúng tôi đến thăm ông bà mỗi cuối tuần.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "live",
+    "vi": "sống",
+    "pronunciation": "/lɪv/",
+    "sentence": "They live in the same house.",
+    "sentenceVi": "Họ sống trong cùng một ngôi nhà.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "help",
+    "vi": "giúp đỡ",
+    "pronunciation": "/help/",
+    "sentence": "Children help their parents at home.",
+    "sentenceVi": "Trẻ em giúp đỡ bố mẹ ở nhà.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "teach",
+    "vi": "dạy",
+    "pronunciation": "/tiːtʃ/",
+    "sentence": "Parents teach their children good values.",
+    "sentenceVi": "Bố mẹ dạy con cái những giá trị tốt đẹp.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "protect",
+    "vi": "bảo vệ",
+    "pronunciation": "/prəˈtekt/",
+    "sentence": "Parents protect their children.",
+    "sentenceVi": "Bố mẹ bảo vệ con cái.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 3,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "share",
+    "vi": "chia sẻ",
+    "pronunciation": "/ʃeər/",
+    "sentence": "I like to share my toys with friends.",
+    "sentenceVi": "Tôi thích chia sẻ đồ chơi với bạn bè.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "children",
+    "vi": "trẻ em (số nhiều)",
+    "pronunciation": "/ˈtʃɪldrən/",
+    "sentence": "Children are playing in the park.",
+    "sentenceVi": "Trẻ em đang chơi trong công viên.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "nuclear family",
+    "vi": "gia đình hạt nhân",
+    "pronunciation": "/ˈnjuːkliər ˈfæməli/",
+    "sentence": "A nuclear family includes parents and children.",
+    "sentenceVi": "Gia đình hạt nhân gồm cha mẹ và con cái.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "extended family",
+    "vi": "gia đình mở rộng",
+    "pronunciation": "/ɪkˈstendɪd ˈfæməli/",
+    "sentence": "An extended family includes uncles, aunts and cousins.",
+    "sentenceVi": "Gia đình mở rộng gồm chú bác, cô dì và anh em họ.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "to love",
+    "vi": "yêu thương",
+    "pronunciation": "/lʌv/",
+    "sentence": "I love my family very much.",
+    "sentenceVi": "Tôi rất yêu thương gia đình mình.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "to support",
+    "vi": "ủng hộ",
+    "pronunciation": "/səˈpɔːt/",
+    "sentence": "My family always supports me.",
+    "sentenceVi": "Gia đình tôi luôn ủng hộ tôi.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "to care",
+    "vi": "quan tâm",
+    "pronunciation": "/keər/",
+    "sentence": "My mother cares about my health.",
+    "sentenceVi": "Mẹ tôi quan tâm đến sức khỏe của tôi.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "to live",
+    "vi": "sống",
+    "pronunciation": "/lɪv/",
+    "sentence": "We live together as a family.",
+    "sentenceVi": "Chúng tôi sống chung như một gia đình.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "to visit",
+    "vi": "thăm",
+    "pronunciation": "/ˈvɪzɪt/",
+    "sentence": "We visit our grandparents every Sunday.",
+    "sentenceVi": "Chúng tôi thăm ông bà mỗi Chủ Nhật.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "to help",
+    "vi": "giúp đỡ",
+    "pronunciation": "/help/",
+    "sentence": "Children should help their parents.",
+    "sentenceVi": "Trẻ em nên giúp đỡ cha mẹ.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "to cook",
+    "vi": "nấu ăn",
+    "pronunciation": "/kʊk/",
+    "sentence": "My sister cooks dinner every day.",
+    "sentenceVi": "Chị tôi nấu bữa tối mỗi ngày.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "to share",
+    "vi": "chia sẻ",
+    "pronunciation": "/ʃeər/",
+    "sentence": "Brothers should share their toys.",
+    "sentenceVi": "Anh em nên chia sẻ đồ chơi với nhau.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "to talk",
+    "vi": "nói chuyện",
+    "pronunciation": "/tɔːk/",
+    "sentence": "We often talk about family matters.",
+    "sentenceVi": "Chúng tôi thường nói chuyện về chuyện gia đình.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "to play",
+    "vi": "chơi",
+    "pronunciation": "/pleɪ/",
+    "sentence": "Children play games with their cousins.",
+    "sentenceVi": "Trẻ em chơi trò chơi với các em họ của chúng.",
+    "topic": "family",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "family",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "blue",
+    "vi": "xanh dương",
+    "pronunciation": "/bluː/",
+    "sentence": "The sky is blue today.",
+    "sentenceVi": "Bầu trời hôm nay màu xanh dương.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "green",
+    "vi": "xanh lá",
+    "pronunciation": "/ɡriːn/",
+    "sentence": "The grass is green after the rain.",
+    "sentenceVi": "Cỏ màu xanh lá sau cơn mưa.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "yellow",
+    "vi": "vàng",
+    "pronunciation": "/ˈjɛloʊ/",
+    "sentence": "Sunflowers are yellow.",
+    "sentenceVi": "Hoa hướng dương màu vàng.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "orange",
+    "vi": "cam / cam quýt",
+    "pronunciation": "/ˈɔːrɪndʒ/",
+    "sentence": "Juice made from oranges is very healthy.",
+    "sentenceVi": "Nước ép cam rất tốt cho sức khỏe.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "purple",
+    "vi": "tím",
+    "pronunciation": "/ˈpɜrpl/",
+    "sentence": "Grapes can be purple.",
+    "sentenceVi": "Nho có thể màu tím.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pink",
+    "vi": "hồng",
+    "pronunciation": "/pɪŋk/",
+    "sentence": "She wore a pink dress to the party.",
+    "sentenceVi": "Cô ấy mặc váy màu hồng đi dự tiệc.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "black",
+    "vi": "đen",
+    "pronunciation": "/blæk/",
+    "sentence": "The night is black.",
+    "sentenceVi": "Đêm trời màu đen.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "white",
+    "vi": "trắng",
+    "pronunciation": "/waɪt/",
+    "sentence": "Snow is white.",
+    "sentenceVi": "Tuyết có màu trắng.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "brown",
+    "vi": "nâu",
+    "pronunciation": "/braʊn/",
+    "sentence": "The dog has brown fur.",
+    "sentenceVi": "Con chó có bộ lông màu nâu.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "gray",
+    "vi": "xám",
+    "pronunciation": "/ɡreɪ/",
+    "sentence": "Clouds are gray before rain.",
+    "sentenceVi": "Mây thường màu xám trước cơn mưa.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "color",
+    "vi": "màu sắc",
+    "pronunciation": "/ˈkʌlər/",
+    "sentence": "Rainbows have many colors.",
+    "sentenceVi": "Cầu vồng có nhiều màu sắc.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "paint",
+    "vi": "sơn",
+    "pronunciation": "/peɪnt/",
+    "sentence": "She paints the wall white.",
+    "sentenceVi": "Cô ấy sơn bức tường màu trắng.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "dye",
+    "vi": "nhuộm",
+    "pronunciation": "/daɪ/",
+    "sentence": "She dyes her hair purple.",
+    "sentenceVi": "Cô ấy nhuộm tóc màu tím.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "shade",
+    "vi": "bóng đổ",
+    "pronunciation": "/ʃeɪd/",
+    "sentence": "We sat in the shade of the tree.",
+    "sentenceVi": "Chúng tôi ngồi dưới bóng đổ của cây.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bright",
+    "vi": "sáng",
+    "pronunciation": "/braɪt/",
+    "sentence": "The sun is very bright today.",
+    "sentenceVi": "Hôm nay mặt trời rất sáng.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 2,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "dark",
+    "vi": "tối",
+    "pronunciation": "/dɑːrk/",
+    "sentence": "It",
+    "sentenceVi": "Trời quá tối để nhìn rõ.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 1,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "fade",
+    "vi": "phai màu",
+    "pronunciation": "/feɪd/",
+    "sentence": "The color in this shirt faded after washing.",
+    "sentenceVi": "Màu của chiếc áo này bị phai sau khi giặt.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "mix",
+    "vi": "trộn",
+    "pronunciation": "/mɪks/",
+    "sentence": "Mix blue and yellow to make green.",
+    "sentenceVi": "Trộn màu xanh dương và vàng để tạo ra màu xanh lá.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "tone",
+    "vi": "âm điệu",
+    "pronunciation": "/toʊn/",
+    "sentence": "Her voice had a happy tone.",
+    "sentenceVi": "Giọng cô ấy có âm điệu vui vẻ.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "vivid",
+    "vi": "sặc sỡ",
+    "pronunciation": "/ˈvɪvɪd/",
+    "sentence": "The flowers have vivid colors.",
+    "sentenceVi": "Những bông hoa có màu sắc sặc sỡ.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pale",
+    "vi": "nhạt",
+    "pronunciation": "/peɪl/",
+    "sentence": "The walls are painted in pale blue.",
+    "sentenceVi": "Những bức tường được sơn màu xanh dương nhạt.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "contrast",
+    "vi": "tương phản",
+    "pronunciation": "/ˈkɑːntræst/",
+    "sentence": "Black and white contrast well.",
+    "sentenceVi": "Màu đen và trắng tương phản rõ rệt.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "blend",
+    "vi": "pha trộn",
+    "pronunciation": "/blɛnd/",
+    "sentence": "The colors blend well together.",
+    "sentenceVi": "Những màu sắc này pha trộn tốt với nhau.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "hue",
+    "vi": "sắc thái",
+    "pronunciation": "/hjuː/",
+    "sentence": "The leaves change to different hues in autumn.",
+    "sentenceVi": "Lá cây thay đổi sang nhiều sắc thái khác nhau vào mùa thu.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "highlight",
+    "vi": "làm nổi bật",
+    "pronunciation": "/ˈhaɪlaɪt/",
+    "sentence": "She highlights her hair with blonde streaks.",
+    "sentenceVi": "Cô ấy làm nổi bật mái tóc bằng những sợi nhuộm vàng.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "tint",
+    "vi": "phủ màu",
+    "pronunciation": "/tɪnt/",
+    "sentence": "The glass has a green tint.",
+    "sentenceVi": "Tấm kính có màu xanh lá phủ lên.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "dull",
+    "vi": "tối màu",
+    "pronunciation": "/dʌl/",
+    "sentence": "The colors of the painting look dull.",
+    "sentenceVi": "Màu sắc của bức tranh trông tối màu.",
+    "topic": "colors",
+    "level": "BASIC",
+    "difficulty": 1,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "beige",
+    "vi": "màu be",
+    "pronunciation": "/beɪʒ/",
+    "sentence": "Her dress was beige.",
+    "sentenceVi": "Chiếc váy của cô ấy màu be.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "maroon",
+    "vi": "đỏ sậm",
+    "pronunciation": "/məˈruːn/",
+    "sentence": "He wore a maroon shirt.",
+    "sentenceVi": "Anh ấy mặc áo màu đỏ sậm.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "navy",
+    "vi": "xanh navy",
+    "pronunciation": "/ˈneɪvi/",
+    "sentence": "She bought a navy coat.",
+    "sentenceVi": "Cô ấy mua một chiếc áo khoác xanh navy.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "teal",
+    "vi": "xanh lơ",
+    "pronunciation": "/tiːl/",
+    "sentence": "The bird had teal feathers.",
+    "sentenceVi": "Con chim có bộ lông xanh lơ.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "indigo",
+    "vi": "chàm",
+    "pronunciation": "/ˈɪndɪɡoʊ/",
+    "sentence": "Je blue jeans are dyed with indigo.",
+    "sentenceVi": "Quần jeans xanh được nhuộm bằng màu chàm.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "violet",
+    "vi": "tím nhạt",
+    "pronunciation": "/ˈvaɪələt/",
+    "sentence": "Violet flowers smell lovely.",
+    "sentenceVi": "Hoa violet có mùi thơm dễ chịu.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "lavender",
+    "vi": "oải hương",
+    "pronunciation": "/ˌlævˈɛndər/",
+    "sentence": "Lavender fields are beautiful.",
+    "sentenceVi": "Những cánh đồng hoa oải hương rất đẹp.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "turquoise",
+    "vi": "xanh ngọc",
+    "pronunciation": "/ˈtɜːrkwaɪz/",
+    "sentence": "The sea was turquoise.",
+    "sentenceVi": "Biển có màu xanh ngọc.",
+    "topic": "colors",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "colors",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "one",
+    "vi": "một",
+    "pronunciation": "/wʌn/",
+    "sentence": "There is one apple on the table.",
+    "sentenceVi": "Có một quả táo trên bàn.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "two",
+    "vi": "hai",
+    "pronunciation": "/tuː/",
+    "sentence": "I have two books in my bag.",
+    "sentenceVi": "Tôi có hai cuốn sách trong túi.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "three",
+    "vi": "ba",
+    "pronunciation": "/θriː/",
+    "sentence": "She has three cats at home.",
+    "sentenceVi": "Cô ấy có ba con mèo ở nhà.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "four",
+    "vi": "bốn",
+    "pronunciation": "/fɔːr/",
+    "sentence": "We need four chairs for the meeting.",
+    "sentenceVi": "Chúng ta cần bốn cái ghế cho buổi họp.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "five",
+    "vi": "năm",
+    "pronunciation": "/faɪv/",
+    "sentence": "He scored five goals in the game.",
+    "sentenceVi": "Anh ấy ghi được năm bàn thắng trong trận đấu.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "six",
+    "vi": "sáu",
+    "pronunciation": "/sɪks/",
+    "sentence": "There are six students in the classroom.",
+    "sentenceVi": "Có sáu học sinh trong lớp học.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "seven",
+    "vi": "bảy",
+    "pronunciation": "/ˈsɛv.ən/",
+    "sentence": "We saw seven birds on the tree.",
+    "sentenceVi": "Chúng tôi thấy bảy con chim trên cây.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "eight",
+    "vi": "tám",
+    "pronunciation": "/eɪt/",
+    "sentence": "A spider has eight legs.",
+    "sentenceVi": "Nhện có tám cái chân.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "nine",
+    "vi": "chín",
+    "pronunciation": "/naɪn/",
+    "sentence": "There are nine planets in the solar system.",
+    "sentenceVi": "Có chín hành tinh trong hệ mặt trời.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "ten",
+    "vi": "mười",
+    "pronunciation": "/ten/",
+    "sentence": "There are ten students in the class.",
+    "sentenceVi": "Có mười học sinh trong lớp.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "eleven",
+    "vi": "mười một",
+    "pronunciation": "/ɪˈlevn/",
+    "sentence": "The meeting starts at eleven o",
+    "sentenceVi": "Cuộc họp bắt đầu lúc mười một giờ.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "twelve",
+    "vi": "mười hai",
+    "pronunciation": "/twɛlv/",
+    "sentence": "We have twelve months in a year.",
+    "sentenceVi": "Chúng ta có mười hai tháng trong năm.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "thirteen",
+    "vi": "mười ba",
+    "pronunciation": "/ˈθɜːr.tiːn/",
+    "sentence": "She is thirteen years old.",
+    "sentenceVi": "Cô ấy mười ba tuổi.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "fourteen",
+    "vi": "mười bốn",
+    "pronunciation": "/ˈfɔːr.tiːn/",
+    "sentence": "He has fourteen toys in his collection.",
+    "sentenceVi": "Anh ấy có mười bốn món đồ chơi trong bộ sưu tập.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "fifteen",
+    "vi": "mười lăm",
+    "pronunciation": "/ˈfɪfˌtiːn/",
+    "sentence": "They have been waiting for fifteen minutes.",
+    "sentenceVi": "Họ đã chờ mười lăm phút.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sixteen",
+    "vi": "mười sáu",
+    "pronunciation": "/ˈsɪks.tiːn/",
+    "sentence": "She turned sixteen last week.",
+    "sentenceVi": "Cô ấy vừa tròn mười sáu tuổi tuần trước.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "seventeen",
+    "vi": "mười bảy",
+    "pronunciation": "/ˈsɛv.ən.tiːn/",
+    "sentence": "They arrived at seventeen past two.",
+    "sentenceVi": "Họ đến lúc hai giờ mười bảy phút.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "eighteen",
+    "vi": "mười tám",
+    "pronunciation": "/ˈeɪ.tiːn/",
+    "sentence": "My birthday is on the eighteenth of August.",
+    "sentenceVi": "Sinh nhật tôi là ngày mùng tám tháng Tám.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "nineteen",
+    "vi": "mười chín",
+    "pronunciation": "/ˈnaɪnˌtiːn/",
+    "sentence": "They have nineteen students in the class.",
+    "sentenceVi": "Họ có mười chín học sinh trong lớp.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "twenty",
+    "vi": "hai mươi",
+    "pronunciation": "/ˈtwɛni/",
+    "sentence": "There are twenty students in the class.",
+    "sentenceVi": "Có hai mươi học sinh trong lớp.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "thirty",
+    "vi": "ba mươi",
+    "pronunciation": "/ˈθɜːr.ti/",
+    "sentence": "He is thirty years old.",
+    "sentenceVi": "Anh ấy ba mươi tuổi.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "forty",
+    "vi": "bốn mươi",
+    "pronunciation": "/ˈfɔːr.ti/",
+    "sentence": "The temperature is forty degrees today.",
+    "sentenceVi": "Nhiệt độ hôm nay là bốn mươi độ.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "fifty",
+    "vi": "năm mươi",
+    "pronunciation": "/ˈfɪf.ti/",
+    "sentence": "The book costs fifty dollars.",
+    "sentenceVi": "Cuốn sách có giá năm mươi đô la.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sixty",
+    "vi": "sáu mươi",
+    "pronunciation": "/ˈsɪk.sti/",
+    "sentence": "There are sixty seconds in a minute.",
+    "sentenceVi": "Có sáu mươi giây trong một phút.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "seventy",
+    "vi": "bảy mươi",
+    "pronunciation": "/ˈsɛv.ən.ti/",
+    "sentence": "The room is seventy square meters.",
+    "sentenceVi": "Căn phòng rộng bảy mươi mét vuông.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "eighty",
+    "vi": "tám mươi",
+    "pronunciation": "/ˈeɪ.ti/",
+    "sentence": "She has eighty books on her shelf.",
+    "sentenceVi": "Cô ấy có tám mươi cuốn sách trên kệ.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "ninety",
+    "vi": "chín mươi",
+    "pronunciation": "/ˈnaɪn.ti/",
+    "sentence": "The building is ninety meters tall.",
+    "sentenceVi": "Tòa nhà cao chín mươi mét.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "hundred",
+    "vi": "trăm",
+    "pronunciation": "/ˈhʌn.drəd/",
+    "sentence": "One hundred equals ten times ten.",
+    "sentenceVi": "Một trăm bằng mười nhân mười.",
+    "topic": "numbers",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "numbers",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "head",
+    "vi": "đầu",
+    "pronunciation": "/hed/",
+    "sentence": "She has a headache today.",
+    "sentenceVi": "Cô ấy bị đau đầu hôm nay.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "hand",
+    "vi": "tay",
+    "pronunciation": "/hænd/",
+    "sentence": "Please raise your hand if you know the answer.",
+    "sentenceVi": "Hãy giơ tay lên nếu bạn biết câu trả lời.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "foot",
+    "vi": "chân",
+    "pronunciation": "/fʊt/",
+    "sentence": "He hurt his foot while playing soccer.",
+    "sentenceVi": "Anh ấy bị đau chân khi chơi bóng đá.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "eye",
+    "vi": "mắt",
+    "pronunciation": "/aɪ/",
+    "sentence": "She has beautiful blue eyes.",
+    "sentenceVi": "Cô ấy có đôi mắt xanh rất đẹp.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "nose",
+    "vi": "mũi",
+    "pronunciation": "/noʊz/",
+    "sentence": "The baby has a runny nose.",
+    "sentenceVi": "Đứa bé bị sổ mũi.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "mouth",
+    "vi": "miệng",
+    "pronunciation": "/maʊθ/",
+    "sentence": "Keep your mouth closed while chewing.",
+    "sentenceVi": "Hãy ngậm miệng lại khi nhai.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "ear",
+    "vi": "tai",
+    "pronunciation": "/ɪr/",
+    "sentence": "She wears earrings on her ears.",
+    "sentenceVi": "Cô ấy đeo bông tai ở tai.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "arm",
+    "vi": "cánh tay",
+    "pronunciation": "/ɑːrm/",
+    "sentence": "He broke his arm after falling off a ladder.",
+    "sentenceVi": "Anh ấy gãy tay sau khi ngã từ thang xuống.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "leg",
+    "vi": "chân",
+    "pronunciation": "/leɡ/",
+    "sentence": "She has strong legs for running.",
+    "sentenceVi": "Cô ấy có đôi chân khỏe để chạy.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "finger",
+    "vi": "ngón tay",
+    "pronunciation": "/ˈfɪŋɡər/",
+    "sentence": "She burned her finger while cooking.",
+    "sentenceVi": "Cô ấy bị bỏng ngón tay khi nấu ăn.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "toe",
+    "vi": "ngón chân",
+    "pronunciation": "/toʊ/",
+    "sentence": "He stubbed his toe on the table.",
+    "sentenceVi": "Anh ấy va ngón chân vào bàn.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "face",
+    "vi": "mặt",
+    "pronunciation": "/feɪs/",
+    "sentence": "She washed her face with cold water.",
+    "sentenceVi": "Cô ấy rửa mặt bằng nước lạnh.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "hair",
+    "vi": "tóc",
+    "pronunciation": "/her/",
+    "sentence": "She dyed her hair red.",
+    "sentenceVi": "Cô ấy nhuộm tóc đỏ.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "neck",
+    "vi": "cổ",
+    "pronunciation": "/nek/",
+    "sentence": "She wears a necklace around her neck.",
+    "sentenceVi": "Cô ấy đeo vòng cổ quanh cổ.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "shoulder",
+    "vi": "vai",
+    "pronunciation": "/ˈʃoʊldər/",
+    "sentence": "He lifted the heavy box with one shoulder.",
+    "sentenceVi": "Anh ấy nhấc chiếc hộp nặng bằng một vai.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "back",
+    "vi": "lưng",
+    "pronunciation": "/bæk/",
+    "sentence": "She has a backache after sitting all day.",
+    "sentenceVi": "Cô ấy bị đau lưng sau một ngày ngồi.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "chest",
+    "vi": "ngực",
+    "pronunciation": "/tʃest/",
+    "sentence": "He took a deep breath and puffed out his chest.",
+    "sentenceVi": "Anh ấy hít một hơi sâu và phồng ngực ra.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "stomach",
+    "vi": "bụng",
+    "pronunciation": "/ˈstʌmək/",
+    "sentence": "I have a stomachache after eating too much.",
+    "sentenceVi": "Tôi bị đau bụng sau khi ăn quá nhiều.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "knee",
+    "vi": "đầu gối",
+    "pronunciation": "/niː/",
+    "sentence": "She fell and hurt her knee.",
+    "sentenceVi": "Cô ấy ngã và làm đau đầu gối.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "elbow",
+    "vi": "khuỷu tay",
+    "pronunciation": "/ˈelboʊ/",
+    "sentence": "He rested his elbow on the table.",
+    "sentenceVi": "Anh ấy để khuỷu tay lên bàn.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "wrist",
+    "vi": "cổ tay",
+    "pronunciation": "/rɪst/",
+    "sentence": "She wore a bracelet around her wrist.",
+    "sentenceVi": "Cô ấy đeo vòng tay quanh cổ tay.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "ankle",
+    "vi": "mắt cá chân",
+    "pronunciation": "/ˈæŋkəl/",
+    "sentence": "She sprained her ankle while running.",
+    "sentenceVi": "Cô ấy bị bong gân mắt cá chân khi chạy.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "thumb",
+    "vi": "ngón cái",
+    "pronunciation": "/θʌm/",
+    "sentence": "He gave a thumbs up to show approval.",
+    "sentenceVi": "Anh ấy giơ ngón cái lên để thể hiện sự đồng ý.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "palm",
+    "vi": "lòng bàn tay",
+    "pronunciation": "/pɑːm/",
+    "sentence": "She opened her palm to show the coin.",
+    "sentenceVi": "Cô ấy mở lòng bàn tay ra để cho thấy đồng xu.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "heel",
+    "vi": "gót chân",
+    "pronunciation": "/hiːl/",
+    "sentence": "She walked in high heels.",
+    "sentenceVi": "Cô ấy đi giày cao gót.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "chin",
+    "vi": "cằm",
+    "pronunciation": "/tʃɪn/",
+    "sentence": "He scratched his chin thoughtfully.",
+    "sentenceVi": "Anh ấy gãi cằm đầy suy nghĩ.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cheek",
+    "vi": "má",
+    "pronunciation": "/tʃiːk/",
+    "sentence": "She blushed and her cheeks turned red.",
+    "sentenceVi": "Cô ấy đỏ mặt và má cô ấy chuyển sang màu đỏ.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "lip",
+    "vi": "môi",
+    "pronunciation": "/lɪp/",
+    "sentence": "She applied lipstick on her lips.",
+    "sentenceVi": "Cô ấy thoa son lên môi.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "heart",
+    "vi": "tim",
+    "pronunciation": "/hɑːrt/",
+    "sentence": "The heart pumps blood through the body.",
+    "sentenceVi": "Tim bơm máu khắp cơ thể.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "brain",
+    "vi": "não",
+    "pronunciation": "/breɪn/",
+    "sentence": "The brain controls the body.",
+    "sentenceVi": "Não điều khiển cơ thể.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "lungs",
+    "vi": "phổi",
+    "pronunciation": "/lʌŋz/",
+    "sentence": "Smoking is bad for your lungs.",
+    "sentenceVi": "Hút thuốc có hại cho phổi của bạn.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "kidneys",
+    "vi": "thận",
+    "pronunciation": "/ˈkɪdni/",
+    "sentence": "The kidneys filter waste from the blood.",
+    "sentenceVi": "Thận lọc chất thải khỏi máu.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "liver",
+    "vi": "gan",
+    "pronunciation": "/ˈlɪvər/",
+    "sentence": "The liver helps digest food.",
+    "sentenceVi": "Gan giúp tiêu hóa thức ăn.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "teeth",
+    "vi": "răng",
+    "pronunciation": "/tiθ/",
+    "sentence": "Brush your teeth twice a day.",
+    "sentenceVi": "Chải răng hai lần mỗi ngày.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "tongue",
+    "vi": "lưỡi",
+    "pronunciation": "/tʌŋ/",
+    "sentence": "She burned her tongue on hot soup.",
+    "sentenceVi": "Cô ấy bị bỏng lưỡi vì súp nóng.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "forehead",
+    "vi": "trán",
+    "pronunciation": "/ˈfɔːrhed/",
+    "sentence": "She wiped sweat from her forehead.",
+    "sentenceVi": "Cô ấy lau mồ hôi trên trán.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "eyebrow",
+    "vi": "lông mày",
+    "pronunciation": "/ˈaɪbraʊ/",
+    "sentence": "She plucked her eyebrows.",
+    "sentenceVi": "Cô ấy tỉa lông mày.",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "jaw",
+    "vi": "hàm",
+    "pronunciation": "/dʒɔː/",
+    "sentence": "He broke his jaw in the accident.",
+    "sentenceVi": "Anh ấy gãy hàm trong tai\n\ndWord(\n  en:",
+    "topic": "body",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "body",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "heart\n\n\n  // ==========================================\n  // FOOD TOPIC (400 words)\n  // ==========================================\n\ndWord(\n  en:",
+    "vi": "táo",
+    "pronunciation": "/ˈæpəl/",
+    "sentence": "I eat an apple every day.",
+    "sentenceVi": "Tôi ăn một quả táo mỗi ngày.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "banana",
+    "vi": "chuối",
+    "pronunciation": "/bəˈnænə/",
+    "sentence": "Bananas are rich in potassium.",
+    "sentenceVi": "Chuối rất giàu kali.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bread",
+    "vi": "bánh mì",
+    "pronunciation": "/bred/",
+    "sentence": "She baked fresh bread this morning.",
+    "sentenceVi": "Cô ấy nướng bánh mì tươi sáng nay.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cake",
+    "vi": "bánh ngọt",
+    "pronunciation": "/keɪk/",
+    "sentence": "We ate a chocolate cake at the party.",
+    "sentenceVi": "Chúng tôi ăn bánh sô-cô-la ở bữa tiệc.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "carrot",
+    "vi": "cà rốt",
+    "pronunciation": "/ˈkærət/",
+    "sentence": "Carrots are good for your eyes.",
+    "sentenceVi": "Cà rốt tốt cho mắt của bạn.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cheese",
+    "vi": "phô mai",
+    "pronunciation": "/tʃiːz/",
+    "sentence": "This pizza has a lot of cheese.",
+    "sentenceVi": "Chiếc pizza này có nhiều phô mai.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "chicken",
+    "vi": "gà",
+    "pronunciation": "/ˈtʃɪkɪn/",
+    "sentence": "We had fried chicken for dinner.",
+    "sentenceVi": "Chúng tôi ăn gà rán cho bữa tối.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "coffee",
+    "vi": "cà phê",
+    "pronunciation": "/ˈkɒfi/",
+    "sentence": "She drinks coffee every morning.",
+    "sentenceVi": "Cô ấy uống cà phê mỗi sáng.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "egg",
+    "vi": "trứng",
+    "pronunciation": "/ɛɡ/",
+    "sentence": "I like fried eggs for breakfast.",
+    "sentenceVi": "Tôi thích trứng rán cho bữa sáng.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "fish",
+    "vi": "cá",
+    "pronunciation": "/fɪʃ/",
+    "sentence": "I saw a big fish in the aquarium.",
+    "sentenceVi": "Tôi thấy một con cá lớn trong bể cá.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "fruit",
+    "vi": "trái cây",
+    "pronunciation": "/fruːt/",
+    "sentence": "Eating more fruit is good for health.",
+    "sentenceVi": "Ăn nhiều trái cây tốt cho sức khỏe.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "grape",
+    "vi": "nho",
+    "pronunciation": "/ɡreɪp/",
+    "sentence": "These grapes are very sweet.",
+    "sentenceVi": "Những quả nho này rất ngọt.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "honey",
+    "vi": "mật ong",
+    "pronunciation": "/ˈhʌni/",
+    "sentence": "She added honey to her tea.",
+    "sentenceVi": "Cô ấy thêm mật ong vào trà của mình.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "juice",
+    "vi": "nước ép",
+    "pronunciation": "/dʒuːs/",
+    "sentence": "Orange juice is my favorite.",
+    "sentenceVi": "Nước cam ép là đồ uống yêu thích của tôi.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "lemon",
+    "vi": "chanh",
+    "pronunciation": "/ˈlemən/",
+    "sentence": "Lemon is sour but good for health.",
+    "sentenceVi": "Chanh có vị chua nhưng tốt cho sức khỏe.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "milk",
+    "vi": "sữa",
+    "pronunciation": "/mɪlk/",
+    "sentence": "Children should drink milk every day.",
+    "sentenceVi": "Trẻ em nên uống sữa mỗi ngày.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "peach",
+    "vi": "đào",
+    "pronunciation": "/piːtʃ/",
+    "sentence": "Peach is a soft and sweet fruit.",
+    "sentenceVi": "Đào là một loại trái cây mềm và ngọt.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pear",
+    "vi": "lê",
+    "pronunciation": "/per/",
+    "sentence": "Pears are similar to apples.",
+    "sentenceVi": "Lê giống với táo.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pepper",
+    "vi": "tiêu",
+    "pronunciation": "/ˈpepər/",
+    "sentence": "Black pepper is used in many dishes.",
+    "sentenceVi": "Tiêu đen được dùng trong nhiều món ăn.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pineapple",
+    "vi": "dứa",
+    "pronunciation": "/ˈpaɪnæpəl/",
+    "sentence": "Pineapple makes a great fruit salad.",
+    "sentenceVi": "Dứa làm món salad trái cây tuyệt vời.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "potato",
+    "vi": "khoai tây",
+    "pronunciation": "/pəˈteɪtoʊ/",
+    "sentence": "Potatoes are good for making fries.",
+    "sentenceVi": "Khoai tây rất tốt để làm khoai tây chiên.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "rice",
+    "vi": "gạo",
+    "pronunciation": "/raɪs/",
+    "sentence": "Rice is the main food in many countries.",
+    "sentenceVi": "Gạo là lương thực chính ở nhiều nước.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "salt",
+    "vi": "muối",
+    "pronunciation": "/sɔːlt/",
+    "sentence": "Don’t add too much salt to the soup.",
+    "sentenceVi": "Đừng thêm quá nhiều muối vào món súp.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sugar",
+    "vi": "đường",
+    "pronunciation": "/ˈʃʊɡər/",
+    "sentence": "Add sugar to make the tea sweet.",
+    "sentenceVi": "Thêm đường để trà ngọt hơn.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "tea",
+    "vi": "trà",
+    "pronunciation": "/tiː/",
+    "sentence": "Green tea is popular in Asia.",
+    "sentenceVi": "Trà xanh phổ biến ở châu Á.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "tomato",
+    "vi": "cà chua",
+    "pronunciation": "/təˈmeɪtoʊ/",
+    "sentence": "Tomatoes make the soup taste better.",
+    "sentenceVi": "Cà chua làm cho canh ngon hơn.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "water",
+    "vi": "nước",
+    "pronunciation": "/ˈwɔːtər/",
+    "sentence": "Drink plenty of water every day.",
+    "sentenceVi": "Hãy uống nhiều nước mỗi ngày.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "yogurt",
+    "vi": "sữa chua",
+    "pronunciation": "/ˈjoʊɡərt/",
+    "sentence": "Yogurt is good for digestion.",
+    "sentenceVi": "Sữa chua tốt cho hệ tiêu hóa.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "apple",
+    "vi": "táo",
+    "pronunciation": "/ˈæpəl/",
+    "sentence": "I eat an apple every day.",
+    "sentenceVi": "Tôi ăn một quả táo mỗi ngày.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "strawberry",
+    "vi": "dâu tây",
+    "pronunciation": "/ˈstrɔːberi/",
+    "sentence": "Strawberries are red and sweet.",
+    "sentenceVi": "Dâu tây đỏ và ngọt.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "onion",
+    "vi": "hành tây",
+    "pronunciation": "/ˈʌniən/",
+    "sentence": "Onions make you cry when you cut them.",
+    "sentenceVi": "Hành tây khiến bạn khóc khi cắt chúng.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "garlic",
+    "vi": "tỏi",
+    "pronunciation": "/ˈɡɑːlɪk/",
+    "sentence": "Garlic is used in many dishes.",
+    "sentenceVi": "Tỏi được dùng trong nhiều món ăn.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "oil",
+    "vi": "dầu",
+    "pronunciation": "/ɔɪl/",
+    "sentence": "Pour some oil into the pan.",
+    "sentenceVi": "Đổ một ít dầu vào chảo.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "butter",
+    "vi": "bơ",
+    "pronunciation": "/ˈbʌtər/",
+    "sentence": "I spread butter on the bread.",
+    "sentenceVi": "Tôi phết bơ lên bánh mì.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "jam",
+    "vi": "mứt",
+    "pronunciation": "/dʒæm/",
+    "sentence": "I like jam on my toast.",
+    "sentenceVi": "Tôi thích mứt trên bánh mì nướng.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "kiwi",
+    "vi": "kiwi",
+    "pronunciation": "/ˈkiːwi/",
+    "sentence": "Kiwi is a green fruit with black seeds.",
+    "sentenceVi": "Kiwi là một loại trái cây xanh có hạt đen.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "watermelon",
+    "vi": "dưa hấu",
+    "pronunciation": "/ˈwɔːtərˌmelən/",
+    "sentence": "Watermelon is perfect for hot days.",
+    "sentenceVi": "Dưa hấu rất tuyệt vào những ngày nóng.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "mango",
+    "vi": "xoài",
+    "pronunciation": "/ˈmæŋɡoʊ/",
+    "sentence": "Mango is a tropical fruit.",
+    "sentenceVi": "Xoài là một loại trái cây nhiệt đới.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "coconut",
+    "vi": "dừa",
+    "pronunciation": "/ˈkoʊkənʌt/",
+    "sentence": "Coconut water is very refreshing.",
+    "sentenceVi": "Nước dừa rất giải khát.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "avocado",
+    "vi": "bơ",
+    "pronunciation": "/ˌævəˈkædoʊ/",
+    "sentence": "Avocado is often used in salads.",
+    "sentenceVi": "Bơ thường được dùng trong món salad.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "soup",
+    "vi": "canh",
+    "pronunciation": "/suːp/",
+    "sentence": "Chicken soup is warm and delicious.",
+    "sentenceVi": "Canh gà vừa ấm áp vừa ngon miệng.",
+    "topic": "food",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "food",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "eat",
+    "vi": "ăn\n\n\n  // ==========================================\n  // ANIMALS TOPIC (350 words)\n  // ==========================================\n\ndWord(\n  en:",
+    "pronunciation": "/kæt/",
+    "sentence": "The cat is sleeping on the sofa.",
+    "sentenceVi": "Con mèo đang ngủ trên ghế sofa.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "dog",
+    "vi": "chó",
+    "pronunciation": "/dɔːɡ/",
+    "sentence": "My dog loves to play in the park.",
+    "sentenceVi": "Con chó của tôi thích chơi ở công viên.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bird",
+    "vi": "chim",
+    "pronunciation": "/bɜːrd/",
+    "sentence": "A small bird is singing on the tree.",
+    "sentenceVi": "Một con chim nhỏ đang hót trên cây.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "elephant",
+    "vi": "voi",
+    "pronunciation": "/ˈɛlɪfənt/",
+    "sentence": "The elephant has a long trunk.",
+    "sentenceVi": "Con voi có một cái vòi dài.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "lion",
+    "vi": "sư tử",
+    "pronunciation": "/ˈlaɪən/",
+    "sentence": "The lion is the king of the jungle.",
+    "sentenceVi": "Sư tử là vua của rừng xanh.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "tiger",
+    "vi": "hổ",
+    "pronunciation": "/ˈtaɪɡər/",
+    "sentence": "Tigers have stripes on their bodies.",
+    "sentenceVi": "Hổ có những vằn trên cơ thể.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bear",
+    "vi": "gấu",
+    "pronunciation": "/ber/",
+    "sentence": "Bears can be dangerous if they are angry.",
+    "sentenceVi": "Gấu có thể nguy hiểm nếu chúng tức giận.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "rabbit",
+    "vi": "thỏ",
+    "pronunciation": "/ˈræbɪt/",
+    "sentence": "Rabbits have long ears and like carrots.",
+    "sentenceVi": "Thỏ có đôi tai dài và thích cà rốt.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "horse",
+    "vi": "ngựa",
+    "pronunciation": "/hɔːrs/",
+    "sentence": "We rode horses at the farm last weekend.",
+    "sentenceVi": "Chúng tôi đã cưỡi ngựa ở nông trại vào cuối tuần trước.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cow",
+    "vi": "bò",
+    "pronunciation": "/kaʊ/",
+    "sentence": "The cow gives us milk.",
+    "sentenceVi": "Con bò cung cấp sữa cho chúng ta.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sheep",
+    "vi": "cừu",
+    "pronunciation": "/ʃiːp/",
+    "sentence": "The sheep are grazing in the field.",
+    "sentenceVi": "Những con cừu đang gặm cỏ ngoài đồng.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pig",
+    "vi": "lợn",
+    "pronunciation": "/pɪɡ/",
+    "sentence": "Pigs are often pink and like mud.",
+    "sentenceVi": "Lợn thường màu hồng và thích bùn.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "goat",
+    "vi": "dê",
+    "pronunciation": "/ɡoʊt/",
+    "sentence": "Goats can climb steep hills easily.",
+    "sentenceVi": "Dê có thể leo đồi dốc dễ dàng.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "duck",
+    "vi": "vịt",
+    "pronunciation": "/dʌk/",
+    "sentence": "The duck is swimming in the pond.",
+    "sentenceVi": "Con vịt đang bơi trong ao.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "rooster",
+    "vi": "gà trống",
+    "pronunciation": "/ˈruːstər/",
+    "sentence": "The rooster wakes us up every morning.",
+    "sentenceVi": "Gà trống đánh thức chúng tôi mỗi sáng.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "hen",
+    "vi": "gà mái",
+    "pronunciation": "/hen/",
+    "sentence": "The hen is sitting on her eggs.",
+    "sentenceVi": "Gà mái đang ấp trứng.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "turkey",
+    "vi": "gà tây",
+    "pronunciation": "/ˈtɜːrki/",
+    "sentence": "We eat turkey on Thanksgiving.",
+    "sentenceVi": "Chúng ta ăn gà tây vào ngày lễ Tạ Ơn.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "parrot",
+    "vi": "vẹt",
+    "pronunciation": "/ˈpæroʊt/",
+    "sentence": "Parrots can talk like humans.",
+    "sentenceVi": "Vẹt có thể nói như con người.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "snake",
+    "vi": "rắn",
+    "pronunciation": "/sneɪk/",
+    "sentence": "Be careful, there is a snake in the grass.",
+    "sentenceVi": "Cẩn thận, có con rắn trong bụi cỏ.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "frog",
+    "vi": "ếch",
+    "pronunciation": "/frɒɡ/",
+    "sentence": "The frog is jumping into the pond.",
+    "sentenceVi": "Con ếch đang nhảy vào ao.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "turtle",
+    "vi": "rùa",
+    "pronunciation": "/ˈtuːrtəl/",
+    "sentence": "Turtles have a hard shell.",
+    "sentenceVi": "Rùa có một cái mai cứng.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "crocodile",
+    "vi": "cá sấu",
+    "pronunciation": "/ˈkrɑːdɪleɪt/",
+    "sentence": "Crocodiles have big teeth.",
+    "sentenceVi": "Cá sấu có răng lớn.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "zebra",
+    "vi": "ngựa vằn",
+    "pronunciation": "/ˈzeɪbrə/",
+    "sentence": "Zebras have black and white stripes.",
+    "sentenceVi": "Ngựa vằn có sọc đen và trắng.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "giraffe",
+    "vi": "hươu cao cổ",
+    "pronunciation": "/dʒəˈræf/",
+    "sentence": "Giraffes have very long necks.",
+    "sentenceVi": "Hươu cao cổ có cổ rất dài.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "monkey",
+    "vi": "khỉ",
+    "pronunciation": "/ˈmʌŋki/",
+    "sentence": "Monkeys like to climb trees.",
+    "sentenceVi": "Khỉ thích leo trèo trên cây.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "panda",
+    "vi": "gấu trúc",
+    "pronunciation": "/ˈpændə/",
+    "sentence": "Pandas eat bamboo.",
+    "sentenceVi": "Gấu trúc ăn tre.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cat",
+    "vi": "mèo",
+    "pronunciation": "/kæt/",
+    "sentence": "The cat is sleeping on the couch.",
+    "sentenceVi": "Con mèo đang ngủ trên ghế sofa.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "mouse",
+    "vi": "chuột",
+    "pronunciation": "/maʊs/",
+    "sentence": "A mouse is hiding under the table.",
+    "sentenceVi": "Một con chuột đang trốn dưới gầm bàn.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "rat",
+    "vi": "chuột",
+    "pronunciation": "/ræt/",
+    "sentence": "There is a rat in the kitchen.",
+    "sentenceVi": "Có một con chuột trong bếp.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "crab",
+    "vi": "cua",
+    "pronunciation": "/kræb/",
+    "sentence": "Crabs walk sideways on the beach.",
+    "sentenceVi": "Cua bò ngang trên bãi biển.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "shark",
+    "vi": "cá mập",
+    "pronunciation": "/ʃɑːrk/",
+    "sentence": "Sharks are dangerous in the ocean.",
+    "sentenceVi": "Cá mập rất nguy hiểm dưới đại dương.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "whale",
+    "vi": "cá voi",
+    "pronunciation": "/weɪl/",
+    "sentence": "Whales sing beautiful songs.",
+    "sentenceVi": "Cá voi hát những bài ca tuyệt vời.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "octopus",
+    "vi": "bạch tuộc",
+    "pronunciation": "/ˈɑːktəpəs/",
+    "sentence": "An octopus has eight arms.",
+    "sentenceVi": "Bạch tuộc có tám chân.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "spider",
+    "vi": "nhện",
+    "pronunciation": "/ˈspaɪdər/",
+    "sentence": "Spiders make webs to catch insects.",
+    "sentenceVi": "Nhện tạo mạng nhện để bắt côn trùng.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "goose",
+    "vi": "ngỗng",
+    "pronunciation": "/ɡuːs/",
+    "sentence": "A goose is flying in the sky.",
+    "sentenceVi": "Một con ngỗng đang bay trên bầu trời.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "ant",
+    "vi": "kiến",
+    "pronunciation": "/ænt/",
+    "sentence": "Ants work together to carry food.",
+    "sentenceVi": "Kiến làm việc cùng nhau để vận chuyển thức ăn.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bee",
+    "vi": "ong",
+    "pronunciation": "/biː/",
+    "sentence": "Bees make honey from flowers.",
+    "sentenceVi": "Ong làm mật từ hoa.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "butterfly",
+    "vi": "bướm",
+    "pronunciation": "/ˈbʌtərflaɪ/",
+    "sentence": "The butterfly is flying around the flowers.",
+    "sentenceVi": "Con bướm đang bay quanh những bông hoa.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "mosquito",
+    "vi": "muỗi",
+    "pronunciation": "/məˈskiːtoʊ/",
+    "sentence": "Mosquitoes are annoying in the summer.",
+    "sentenceVi": "Muỗi rất phiền toái vào mùa hè.",
+    "topic": "animals",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "animals",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "shirt",
+    "vi": "áo sơ mi",
+    "pronunciation": "/ʃɜːrt/",
+    "sentence": "He wears a white shirt to work every day.",
+    "sentenceVi": "Anh ấy mặc áo sơ mi trắng đi làm mỗi ngày.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pants",
+    "vi": "quần dài",
+    "pronunciation": "/pænts/",
+    "sentence": "These pants are comfortable to wear.",
+    "sentenceVi": "Chiếc quần này mặc rất thoải mái.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "dress",
+    "vi": "váy liền",
+    "pronunciation": "/dres/",
+    "sentence": "She bought a red dress for the party.",
+    "sentenceVi": "Cô ấy mua một chiếc váy đỏ để đi dự tiệc.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "shoes",
+    "vi": "giày",
+    "pronunciation": "/ʃuːz/",
+    "sentence": "My shoes are dirty after walking in the park.",
+    "sentenceVi": "Giày của tôi bẩn sau khi đi công viên.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "hat",
+    "vi": "mũ",
+    "pronunciation": "/hæt/",
+    "sentence": "He always wears a hat in summer.",
+    "sentenceVi": "Anh ấy luôn đội mũ vào mùa hè.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "jacket",
+    "vi": "áo khoác",
+    "pronunciation": "/ˈdʒækɪt/",
+    "sentence": "I took my jacket because it was cold.",
+    "sentenceVi": "Tôi lấy áo khoác vì trời lạnh.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "socks",
+    "vi": "tất",
+    "pronunciation": "/sɑːks/",
+    "sentence": "I need new socks for running.",
+    "sentenceVi": "Tôi cần đôi tất mới để chạy bộ.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "belt",
+    "vi": "dây nịt",
+    "pronunciation": "/belt/",
+    "sentence": "This belt is made of leather.",
+    "sentenceVi": "Chiếc dây nịt này làm bằng da.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "skirt",
+    "vi": "váy ngắn",
+    "pronunciation": "/skɜːrt/",
+    "sentence": "She wore a long skirt to school.",
+    "sentenceVi": "Cô ấy mặc chiếc váy dài đến trường.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "coat",
+    "vi": "áo choàng",
+    "pronunciation": "/koʊt/",
+    "sentence": "She put on her coat before going out.",
+    "sentenceVi": "Cô ấy mặc áo choàng trước khi ra ngoài.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "jeans",
+    "vi": "quần jean",
+    "pronunciation": "/dʒiːnz/",
+    "sentence": "She loves wearing jeans on weekends.",
+    "sentenceVi": "Cô ấy thích mặc quần jean vào cuối tuần.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "blouse",
+    "vi": "áo nữ",
+    "pronunciation": "/blaʊs/",
+    "sentence": "She wore a white blouse to the meeting.",
+    "sentenceVi": "Cô ấy mặc áo sơ mi trắng đi họp.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "tie",
+    "vi": "cà vạt",
+    "pronunciation": "/taɪ/",
+    "sentence": "He wore a red tie to the interview.",
+    "sentenceVi": "Anh ấy đeo cà vạt đỏ đi phỏng vấn.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cap",
+    "vi": "mũ lưỡi trai",
+    "pronunciation": "/kæp/",
+    "sentence": "He wore a baseball cap to school.",
+    "sentenceVi": "Anh ấy đội mũ lưỡi trai bóng chày đến trường.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "gloves",
+    "vi": "găng tay",
+    "pronunciation": "/ɡlʌvz/",
+    "sentence": "Put on gloves to keep your hands warm.",
+    "sentenceVi": "Đeo găng tay để giữ ấm tay.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "scarf",
+    "vi": "khăn quàng cổ",
+    "pronunciation": "/skɑːrf/",
+    "sentence": "She wore a colorful scarf in winter.",
+    "sentenceVi": "Cô ấy đeo khăn quàng cổ sặc sỡ vào mùa đông.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sweater",
+    "vi": "áo len",
+    "pronunciation": "/ˈswɛtər/",
+    "sentence": "She knitted a sweater for her brother.",
+    "sentenceVi": "Cô ấy đan áo len cho em trai.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "raincoat",
+    "vi": "áo mưa",
+    "pronunciation": "/ˈreɪnkoʊt/",
+    "sentence": "Take your raincoat if it rains.",
+    "sentenceVi": "Hãy mang theo áo mưa nếu trời mưa.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "underwear",
+    "vi": "đồ lót",
+    "pronunciation": "/ˈʌndərwer/",
+    "sentence": "Wear comfortable underwear for sports.",
+    "sentenceVi": "Mặc đồ lót thoải mái khi chơi thể thao.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "flip-flops",
+    "vi": "dép xỏ ngón",
+    "pronunciation": "/ˈflɪp flɒps/",
+    "sentence": "I love wearing flip-flops in summer.",
+    "sentenceVi": "Tôi thích mang dép xỏ ngón vào mùa hè.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "shorts",
+    "vi": "quần short",
+    "pronunciation": "/ʃɔːrts/",
+    "sentence": "He plays football in shorts and a T-shirt.",
+    "sentenceVi": "Anh ấy chơi bóng đá với quần short và áo thun.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "suit",
+    "vi": "bộ đồ",
+    "pronunciation": "/suːt/",
+    "sentence": "He wore a black suit to the wedding.",
+    "sentenceVi": "Anh ấy mặc bộ đồ đen đi đám cưới.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pyjamas",
+    "vi": "đồ ngủ",
+    "pronunciation": "/pəˈdʒɑːməz/",
+    "sentence": "I wear pyjamas at home.",
+    "sentenceVi": "Tôi mặc đồ ngủ ở nhà.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "boots",
+    "vi": "giày cao cổ",
+    "pronunciation": "/buːts/",
+    "sentence": "These boots are good for hiking.",
+    "sentenceVi": "Đôi giày cao cổ này tốt cho việc đi bộ đường dài.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sunglasses",
+    "vi": "kính mát",
+    "pronunciation": "/ˈsʌnˌɡlæsɪz/",
+    "sentence": "She always wears sunglasses in summer.",
+    "sentenceVi": "Cô ấy luôn đeo kính mát vào mùa hè.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "umbrella",
+    "vi": "ô",
+    "pronunciation": "/ʌmˈberə/",
+    "sentence": "Take an umbrella if it rains.",
+    "sentenceVi": "Hãy mang theo ô nếu trời mưa.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "t-shirt",
+    "vi": "áo phông",
+    "pronunciation": "/ˈtiːʃɜːrt/",
+    "sentence": "He wears a black T-shirt every day.",
+    "sentenceVi": "Anh ấy mặc áo phông đen mỗi ngày.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sneakers",
+    "vi": "giày thể thao",
+    "pronunciation": "/ˈsniːkərz/",
+    "sentence": "He bought new sneakers for running.",
+    "sentenceVi": "Anh ấy mua đôi giày thể thao mới để chạy bộ.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "purse",
+    "vi": "túi xách nữ",
+    "pronunciation": "/pɜːrs/",
+    "sentence": "She put her phone in the purse.",
+    "sentenceVi": "Cô ấy bỏ điện thoại vào túi xách.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cardigan",
+    "vi": "áo khoác len",
+    "pronunciation": "/ˈkɑːrdɪɡən/",
+    "sentence": "I love wearing my cardigan in autumn.",
+    "sentenceVi": "Tôi thích mặc áo khoác len vào mùa thu.",
+    "topic": "clothing",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "clothing",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "room",
+    "vi": "phòng",
+    "pronunciation": "/ruːm/",
+    "sentence": "This is my favorite room in the house.",
+    "sentenceVi": "Đây là phòng yêu thích của tôi trong nhà.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "kitchen",
+    "vi": "bếp",
+    "pronunciation": "/ˈkɪtʃɪn/",
+    "sentence": "She cooks dinner in the kitchen.",
+    "sentenceVi": "Cô ấy nấu bữa tối trong bếp.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bedroom",
+    "vi": "phòng ngủ",
+    "pronunciation": "/ˈbedruːm/",
+    "sentence": "I sleep in the bedroom every night.",
+    "sentenceVi": "Tôi ngủ trong phòng ngủ mỗi đêm.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bathroom",
+    "vi": "phòng tắm",
+    "pronunciation": "/ˈbæθruːm/",
+    "sentence": "There is a shower in the bathroom.",
+    "sentenceVi": "Có một vòi sen trong phòng tắm.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "door",
+    "vi": "cửa",
+    "pronunciation": "/dɔːr/",
+    "sentence": "Please close the door when you leave.",
+    "sentenceVi": "Làm ơn đóng cửa khi bạn rời đi.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "window",
+    "vi": "cửa sổ",
+    "pronunciation": "/ˈwɪndoʊ/",
+    "sentence": "The window is open to let fresh air in.",
+    "sentenceVi": "Cửa sổ đang mở để không khí trong lành vào.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "table",
+    "vi": "bàn",
+    "pronunciation": "/ˈteɪbəl/",
+    "sentence": "Put the books on the table.",
+    "sentenceVi": "Đặt sách lên bàn.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "chair",
+    "vi": "ghế",
+    "pronunciation": "/tʃeər/",
+    "sentence": "Please sit on the chair.",
+    "sentenceVi": "Làm ơn ngồi lên cái ghế.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bed",
+    "vi": "giường",
+    "pronunciation": "/bed/",
+    "sentence": "The baby is sleeping in the bed.",
+    "sentenceVi": "Em bé đang ngủ trên giường.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sofa",
+    "vi": "ghế dài",
+    "pronunciation": "/ˈsoʊfə/",
+    "sentence": "We are sitting on the sofa.",
+    "sentenceVi": "Chúng tôi đang ngồi trên ghế dài.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "lamp",
+    "vi": "đèn",
+    "pronunciation": "/læmp/",
+    "sentence": "Turn on the lamp to see better.",
+    "sentenceVi": "Bật đèn lên để nhìn rõ hơn.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "mirror",
+    "vi": "gương",
+    "pronunciation": "/ˈmɪrər/",
+    "sentence": "She looked at herself in the mirror.",
+    "sentenceVi": "Cô ấy nhìn bản thân trong gương.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "curtain",
+    "vi": "rèm cửa",
+    "pronunciation": "/ˈkɜːrtən/",
+    "sentence": "Close the curtain to keep the sunlight out.",
+    "sentenceVi": "Kéo rèm xuống để ngăn ánh nắng chiếu vào.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "carpet",
+    "vi": "thảm",
+    "pronunciation": "/ˈkɑːrpɪt/",
+    "sentence": "There is a red carpet on the floor.",
+    "sentenceVi": "Có một tấm thảm đỏ trên sàn nhà.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "rug",
+    "vi": "thảm",
+    "pronunciation": "/rʌɡ/",
+    "sentence": "The rug makes the room warm.",
+    "sentenceVi": "Chiếc thảm làm cho phòng ấm hơn.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pillow",
+    "vi": "gối",
+    "pronunciation": "/ˈpɪloʊ/",
+    "sentence": "Use a pillow to support your head.",
+    "sentenceVi": "Dùng gối để đỡ đầu.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "blanket",
+    "vi": "chăn",
+    "pronunciation": "/ˈblæŋkɪt/",
+    "sentence": "She wrapped herself in a blanket.",
+    "sentenceVi": "Cô ấy quấn mình trong một cái chăn.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "shower",
+    "vi": "vòi sen",
+    "pronunciation": "/ˈʃaʊər/",
+    "sentence": "I take a shower every morning.",
+    "sentenceVi": "Tôi tắm vòi sen mỗi sáng.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "toilet",
+    "vi": "nhà vệ sinh",
+    "pronunciation": "/ˈtɔɪlət/",
+    "sentence": "The toilet is not working properly.",
+    "sentenceVi": "Nhà vệ sinh không hoạt động tốt.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sink",
+    "vi": "bồn rửa",
+    "pronunciation": "/sɪŋk/",
+    "sentence": "Wash your hands in the sink.",
+    "sentenceVi": "Rửa tay trong bồn rửa.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "refrigerator",
+    "vi": "tủ lạnh",
+    "pronunciation": "/rɪˈfrɪdʒəreɪtər/",
+    "sentence": "Put the milk in the refrigerator.",
+    "sentenceVi": "Đặt sữa vào tủ lạnh.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "oven",
+    "vi": "lò nướng",
+    "pronunciation": "/ˈʌvən/",
+    "sentence": "She baked a cake in the oven.",
+    "sentenceVi": "Cô ấy nướng bánh trong lò.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "microwave",
+    "vi": "lò vi sóng",
+    "pronunciation": "/ˈmaɪkrəweɪv/",
+    "sentence": "Heat the food in the microwave.",
+    "sentenceVi": "Hâm nóng thức ăn trong lò vi sóng.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "stove",
+    "vi": "bếp",
+    "pronunciation": "/stoʊv/",
+    "sentence": "Cook the soup on the stove.",
+    "sentenceVi": "Nấu canh trên bếp.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cupboard",
+    "vi": "tủ bếp",
+    "pronunciation": "/ˈkʌbərd/",
+    "sentence": "The plates are in the cupboard.",
+    "sentenceVi": "Những cái đĩa ở trong tủ bếp.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "drawer",
+    "vi": "ngăn kéo",
+    "pronunciation": "/drɔːər/",
+    "sentence": "My socks are in the drawer.",
+    "sentenceVi": "Tất của tôi nằm trong ngăn kéo.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "shelf",
+    "vi": "kệ",
+    "pronunciation": "/ʃelf/",
+    "sentence": "The books are on the shelf.",
+    "sentenceVi": "Những cuốn sách đang trên kệ.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "house",
+    "vi": "nhà",
+    "pronunciation": "/haʊs/",
+    "sentence": "I live in a big house with my family.",
+    "sentenceVi": "Tôi sống trong một ngôi nhà lớn cùng gia đình.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "floor",
+    "vi": "tầng",
+    "pronunciation": "/flɔːr/",
+    "sentence": "Our apartment is on the fifth floor.",
+    "sentenceVi": "Căn hộ của chúng tôi ở tầng năm.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "ceiling",
+    "vi": "trần nhà",
+    "pronunciation": "/ˈsiːlɪŋ/",
+    "sentence": "There is a light on the ceiling.",
+    "sentenceVi": "Có một cái đèn trên trần nhà.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "wall",
+    "vi": "tường",
+    "pronunciation": "/wɔːl/",
+    "sentence": "The picture is on the wall.",
+    "sentenceVi": "Bức tranh đang trên tường.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "roof",
+    "vi": "mái nhà",
+    "pronunciation": "/ruːf/",
+    "sentence": "Rain falls on the roof.",
+    "sentenceVi": "Mưa rơi trên mái nhà.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "doorbell",
+    "vi": "chuông cửa",
+    "pronunciation": "/ˈdɔːrbɛl/",
+    "sentence": "The doorbell rang, so I opened the door.",
+    "sentenceVi": "Chuông cửa reo, vì vậy tôi mở cửa ra.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "key",
+    "vi": "chìa khóa",
+    "pronunciation": "/kiː/",
+    "sentence": "I lost my key to the house.",
+    "sentenceVi": "Tôi làm mất chìa khóa nhà.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "lock",
+    "vi": "ổ khóa",
+    "pronunciation": "/lɒk/",
+    "sentence": "Make sure to lock the door.",
+    "sentenceVi": "Hãy chắc chắn rằng bạn đã khóa cửa.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "balcony",
+    "vi": "ban công",
+    "pronunciation": "/ˈbælkəni/",
+    "sentence": "We have breakfast on the balcony every morning.",
+    "sentenceVi": "Chúng tôi ăn sáng trên ban công mỗi sáng.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "painting",
+    "vi": "tranh",
+    "pronunciation": "/ˈpeɪntɪŋ/",
+    "sentence": "The painting is beautiful.",
+    "sentenceVi": "Bức tranh rất đẹp.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "lampshade",
+    "vi": "chụp đèn",
+    "pronunciation": "/ˈlæmpʃeɪd/",
+    "sentence": "The lampshade makes the light softer.",
+    "sentenceVi": "Chụp đèn làm ánh sáng dịu hơn.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "wardrobe",
+    "vi": "tủ quần áo",
+    "pronunciation": "/ˈwɔːrdroʊb/",
+    "sentence": "My clothes are in the wardrobe.",
+    "sentenceVi": "Quần áo của tôi ở trong tủ quần áo.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "fridge",
+    "vi": "tủ lạnh",
+    "pronunciation": "/frɪdʒ/",
+    "sentence": "Put the milk in the fridge.",
+    "sentenceVi": "Đặt sữa vào tủ lạnh.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bathtub",
+    "vi": "bồn tắm",
+    "pronunciation": "/ˈbæθtʌb/",
+    "sentence": "She fills the bathtub with water.",
+    "sentenceVi": "Cô ấy đổ đầy nước vào bồn tắm.",
+    "topic": "house",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 1,
+    "tags": [
+      "house",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "rainy",
+    "vi": "mưa",
+    "pronunciation": "/ˈreɪni/",
+    "sentence": "I brought an umbrella because it is rainy.",
+    "sentenceVi": "Tôi mang theo ô vì trời mưa.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 1,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cloudy",
+    "vi": "có mây",
+    "pronunciation": "/ˈklaʊdi/",
+    "sentence": "It looks cloudy, maybe it will rain soon.",
+    "sentenceVi": "Trời có vẻ nhiều mây, có thể sẽ mưa sớm thôi.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 1,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "windy",
+    "vi": "gió",
+    "pronunciation": "/ˈwɪndi/",
+    "sentence": "It’s very windy today. Be careful when cycling.",
+    "sentenceVi": "Hôm nay trời rất có gió. Đi xe đạp cẩn thận nhé.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "hot",
+    "vi": "nóng",
+    "pronunciation": "/hɑːt/",
+    "sentence": "It’s very hot today. Let’s have some ice cream!",
+    "sentenceVi": "Hôm nay trời rất nóng. Hãy ăn kem nào!",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 1,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cold",
+    "vi": "lạnh",
+    "pronunciation": "/koʊld/",
+    "sentence": "It’s cold outside. Wear a jacket.",
+    "sentenceVi": "Ngoài trời lạnh lắm. Mặc áo khoác vào.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 1,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "warm",
+    "vi": "ấm",
+    "pronunciation": "/wɔːrm/",
+    "sentence": "The sun makes the room warm and cozy.",
+    "sentenceVi": "Mặt trời làm cho phòng ấm áp và dễ chịu.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cool",
+    "vi": "mát",
+    "pronunciation": "/kuːl/",
+    "sentence": "It’s cool in the shade of the tree.",
+    "sentenceVi": "Dưới bóng cây rất mát.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "snow",
+    "vi": "tuyết",
+    "pronunciation": "/snoʊ/",
+    "sentence": "It started to snow in the mountains last night.",
+    "sentenceVi": "Tối qua, núi bắt đầu có tuyết rơi.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "storm",
+    "vi": "bão",
+    "pronunciation": "/stɔːrm/",
+    "sentence": "A big storm is coming. Stay indoors.",
+    "sentenceVi": "Một cơn bão lớn đang đến. Hãy ở trong nhà.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "rain",
+    "vi": "mưa",
+    "pronunciation": "/reɪn/",
+    "sentence": "I forgot my umbrella in the rain.",
+    "sentenceVi": "Tôi quên ô dưới cơn mưa.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sun",
+    "vi": "mặt trời",
+    "pronunciation": "/sʌn/",
+    "sentence": "The sun is shining brightly.",
+    "sentenceVi": "Mặt trời đang chiếu sáng.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "snowy",
+    "vi": "có tuyết",
+    "pronunciation": "/ˈsnoʊi/",
+    "sentence": "It is snowy in the mountains.",
+    "sentenceVi": "Ở vùng núi trời có tuyết rơi.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "thunder",
+    "vi": "sấm",
+    "pronunciation": "/ˈθʌndər/",
+    "sentence": "We heard thunder during the storm.",
+    "sentenceVi": "Chúng tôi nghe thấy tiếng sấm trong cơn bão.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "lightning",
+    "vi": "sét",
+    "pronunciation": "/ˈlaɪtnɪŋ/",
+    "sentence": "Lightning lit up the dark sky.",
+    "sentenceVi": "Tia sét làm sáng cả bầu trời tối.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "fog",
+    "vi": "sương mù",
+    "pronunciation": "/fɒɡ/",
+    "sentence": "The fog made it hard to see the road.",
+    "sentenceVi": "Sương mù khiến đường khó nhìn thấy.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "foggy",
+    "vi": "có sương mù",
+    "pronunciation": "/ˈfɒɡi/",
+    "sentence": "It is very foggy this morning.",
+    "sentenceVi": "Sáng nay trời rất nhiều sương mù.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "hail",
+    "vi": "mưa đá",
+    "pronunciation": "/heɪl/",
+    "sentence": "Hail fell from the sky during the storm.",
+    "sentenceVi": "Mưa đá rơi xuống từ bầu trời trong cơn bão.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "hurricane",
+    "vi": "cuồng phong",
+    "pronunciation": "/ˈhɜːrɪkən/",
+    "sentence": "A hurricane hit the island last week.",
+    "sentenceVi": "Một cơn cuồng phong đã tấn công hòn đảo tuần trước.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "tornado",
+    "vi": "lốc xoáy",
+    "pronunciation": "/tɔːrˈneɪdoʊ/",
+    "sentence": "A tornado destroyed the village last week.",
+    "sentenceVi": "Một cơn lốc xoáy đã phá hủy ngôi làng tuần trước.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "blizzard",
+    "vi": "bão tuyết",
+    "pronunciation": "/ˈblɪzərd/",
+    "sentence": "We stayed inside during the blizzard.",
+    "sentenceVi": "Chúng tôi ở trong nhà suốt cơn bão tuyết.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "drizzle",
+    "vi": "mưa phùn",
+    "pronunciation": "/ˈdrɪzəl/",
+    "sentence": "It started to drizzle while we were walking home.",
+    "sentenceVi": "Trời bắt đầu mưa phùn khi chúng tôi đang đi về nhà.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pour",
+    "vi": "trút xuống",
+    "pronunciation": "/pɔːr/",
+    "sentence": "It started to pour rain at noon.",
+    "sentenceVi": "Đến trưa thì trời trút mưa xuống.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "shine",
+    "vi": "chiếu sáng",
+    "pronunciation": "/ʃaɪn/",
+    "sentence": "The sun shines every morning.",
+    "sentenceVi": "Mặt trời chiếu sáng mỗi sáng.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "blow",
+    "vi": "thổi",
+    "pronunciation": "/bloʊ/",
+    "sentence": "The wind blows strongly.",
+    "sentenceVi": "Gió thổi rất mạnh.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "freeze",
+    "vi": "đông lạnh",
+    "pronunciation": "/friːz/",
+    "sentence": "Water freezes in cold weather.",
+    "sentenceVi": "Nước đóng băng trong thời tiết lạnh.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "melt",
+    "vi": "tan chảy",
+    "pronunciation": "/mɛlt/",
+    "sentence": "The snow begins to melt.",
+    "sentenceVi": "Tuyết bắt đầu tan chảy.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "temperature",
+    "vi": "nhiệt độ",
+    "pronunciation": "/ˈtempərətʃər/",
+    "sentence": "The temperature is 30 degrees today.",
+    "sentenceVi": "Nhiệt độ hôm nay là 30 độ.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "forecast",
+    "vi": "dự báo",
+    "pronunciation": "/ˈfɔːrkæst/",
+    "sentence": "Check the weather forecast before going out.",
+    "sentenceVi": "Xem dự báo thời tiết trước khi ra ngoài.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sunny",
+    "vi": "nắng",
+    "pronunciation": "/ˈsʌni/",
+    "sentence": "It is sunny today, let’s go to the park.",
+    "sentenceVi": "Hôm nay trời nắng, hãy đi công viên.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 1,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "breeze",
+    "vi": "gió nhẹ",
+    "pronunciation": "/briːz/",
+    "sentence": "A cool breeze made the day pleasant.",
+    "sentenceVi": "Một cơn gió nhẹ làm cho ngày dễ chịu.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "humid",
+    "vi": "ẩm ướt",
+    "pronunciation": "/ˈhjuːmɪd/",
+    "sentence": "It feels humid after the rain.",
+    "sentenceVi": "Sau cơn mưa trời cảm giác ẩm ướt.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "chilly",
+    "vi": "lạnh nhẹ",
+    "pronunciation": "/ˈtʃɪli/",
+    "sentence": "It’s a bit chilly in the morning.",
+    "sentenceVi": "Buổi sáng trời hơi lạnh.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "overcast",
+    "vi": "u ám",
+    "pronunciation": "/ˈoʊvərkæst/",
+    "sentence": "The sky is overcast, but no rain yet.",
+    "sentenceVi": "Bầu trời u ám, nhưng chưa mưa.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "gust",
+    "vi": "cơn gió mạnh",
+    "pronunciation": "/ɡʌst/",
+    "sentence": "A sudden gust of wind blew my hat away.",
+    "sentenceVi": "Một cơn gió mạnh bất ngờ thổi bay mũ của tôi.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sleet",
+    "vi": "mưa tuyết",
+    "pronunciation": "/sliːt/",
+    "sentence": "It started to sleet this morning.",
+    "sentenceVi": "Sáng nay trời bắt đầu mưa tuyết.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "frost",
+    "vi": "sương giá",
+    "pronunciation": "/frɒst/",
+    "sentence": "There was frost on the grass this morning.",
+    "sentenceVi": "Sáng nay có sương giá trên cỏ.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "drought",
+    "vi": "hạn hán",
+    "pronunciation": "/draʊt/",
+    "sentence": "The drought lasted for three months.",
+    "sentenceVi": "Cơn hạn hán kéo dài ba tháng.",
+    "topic": "weather",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "weather",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "car",
+    "vi": "xe hơi",
+    "pronunciation": "/kɑːr/",
+    "sentence": "I drive my car to work every day.",
+    "sentenceVi": "Tôi lái xe hơi đi làm mỗi ngày.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bus",
+    "vi": "xe buýt",
+    "pronunciation": "/bʌs/",
+    "sentence": "We took the bus to the city center.",
+    "sentenceVi": "Chúng tôi đi xe buýt đến trung tâm thành phố.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "train",
+    "vi": "tàu hỏa",
+    "pronunciation": "/treɪn/",
+    "sentence": "The train leaves at 8 o’clock.",
+    "sentenceVi": "Tàu hỏa rời đi lúc 8 giờ.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bicycle",
+    "vi": "xe đạp",
+    "pronunciation": "/ˈbaɪsɪkəl/",
+    "sentence": "She rides her bicycle to school.",
+    "sentenceVi": "Cô ấy đạp xe đạp đến trường.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "airplane",
+    "vi": "máy bay",
+    "pronunciation": "/ˈeərpleɪn/",
+    "sentence": "They flew to New York on an airplane.",
+    "sentenceVi": "Họ bay đến New York bằng máy bay.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "boat",
+    "vi": "thuyền",
+    "pronunciation": "/boʊt/",
+    "sentence": "They went on a boat trip.",
+    "sentenceVi": "Họ đi chuyến thuyền du lịch.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "motorcycle",
+    "vi": "xe máy",
+    "pronunciation": "/ˈmoʊtərsaɪkəl/",
+    "sentence": "He bought a new motorcycle.",
+    "sentenceVi": "Anh ấy mua một chiếc xe máy mới.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "drive",
+    "vi": "lái xe",
+    "pronunciation": "/draɪv/",
+    "sentence": "He drives to work every morning.",
+    "sentenceVi": "Anh ấy lái xe đi làm mỗi sáng.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "ride",
+    "vi": "đi xe",
+    "pronunciation": "/raɪd/",
+    "sentence": "She rides her bike to school.",
+    "sentenceVi": "Cô ấy đi xe đạp đến trường.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "fly",
+    "vi": "bay",
+    "pronunciation": "/flaɪ/",
+    "sentence": "Birds can fly in the sky.",
+    "sentenceVi": "Chim có thể bay trên bầu trời.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "fast",
+    "vi": "nhanh",
+    "pronunciation": "/fæst/",
+    "sentence": "This train is very fast.",
+    "sentenceVi": "Tàu này rất nhanh.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "slow",
+    "vi": "chậm",
+    "pronunciation": "/sloʊ/",
+    "sentence": "The bus moves slowly in traffic.",
+    "sentenceVi": "Xe buýt di chuyển chậm trong giao thông.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "traffic",
+    "vi": "giao thông",
+    "pronunciation": "/ˈtræfɪk/",
+    "sentence": "There is heavy traffic today.",
+    "sentenceVi": "Hôm nay có rất nhiều giao thông.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "taxi",
+    "vi": "xe taxi",
+    "pronunciation": "/ˈtæksi/",
+    "sentence": "Call a taxi to take you home.",
+    "sentenceVi": "Gọi xe taxi để đưa bạn về nhà.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "subway",
+    "vi": "tàu điện ngầm",
+    "pronunciation": "/ˈsʌbweɪ/",
+    "sentence": "The subway is faster than the bus.",
+    "sentenceVi": "Tàu điện ngầm nhanh hơn xe buýt.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "ferry",
+    "vi": "phà",
+    "pronunciation": "/ˈferi/",
+    "sentence": "We took the ferry to the island.",
+    "sentenceVi": "Chúng tôi đi phà đến hòn đảo.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "helicopter",
+    "vi": "trực thăng",
+    "pronunciation": "/ˈhelɪkɒptər/",
+    "sentence": "A helicopter landed on the roof.",
+    "sentenceVi": "Một chiếc trực thăng đáp xuống mái nhà.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "park",
+    "vi": "đậu xe",
+    "pronunciation": "/pɑːrk/",
+    "sentence": "You can park your car here.",
+    "sentenceVi": "Bạn có thể đậu xe ở đây.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "stop",
+    "vi": "dừng lại",
+    "pronunciation": "/stɒp/",
+    "sentence": "The bus will stop here.",
+    "sentenceVi": "Xe buýt sẽ dừng lại ở đây.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "move",
+    "vi": "di chuyển",
+    "pronunciation": "/muːv/",
+    "sentence": "The train began to move.",
+    "sentenceVi": "Tàu hỏa bắt đầu di chuyển.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "run",
+    "vi": "chạy",
+    "pronunciation": "/rʌn/",
+    "sentence": "He runs in the park every morning.",
+    "sentenceVi": "Anh ấy chạy bộ trong công viên mỗi sáng.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "walk",
+    "vi": "đi bộ",
+    "pronunciation": "/wɔːk/",
+    "sentence": "We walk to school every day.",
+    "sentenceVi": "Chúng tôi đi bộ đến trường mỗi ngày.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cross",
+    "vi": "qua đường",
+    "pronunciation": "/krɒs/",
+    "sentence": "Look both ways before you cross the street.",
+    "sentenceVi": "Hãy nhìn cả hai bên trước khi qua đường.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "turn",
+    "vi": "rẽ",
+    "pronunciation": "/tɜːrn/",
+    "sentence": "Turn left at the traffic lights.",
+    "sentenceVi": "Rẽ trái ở đèn giao thông.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "safe",
+    "vi": "an toàn",
+    "pronunciation": "/seɪf/",
+    "sentence": "Always wear a seat belt for safety.",
+    "sentenceVi": "Luôn đeo dây an toàn để đảm bảo an toàn.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "crowded",
+    "vi": "đông đúc",
+    "pronunciation": "/ˈkraʊdɪd/",
+    "sentence": "The subway was very crowded.",
+    "sentenceVi": "Tàu điện ngầm rất đông đúc.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "empty",
+    "vi": "trống",
+    "pronunciation": "/ˈɛmpi/",
+    "sentence": "The parking lot is empty.",
+    "sentenceVi": "B\n\ndWord(\n  en:",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "station",
+    "vi": "ga",
+    "pronunciation": "/ˈsteɪʃn/",
+    "sentence": "The train will arrive at the station soon.",
+    "sentenceVi": "Tàu sẽ đến ga sớm thôi.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "airport",
+    "vi": "sân bay",
+    "pronunciation": "/ˈeərˌpɔːrt/",
+    "sentence": "The airport is very busy.",
+    "sentenceVi": "Sân bay rất đông đúc.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "ship",
+    "vi": "tàu thuyền",
+    "pronunciation": "/ʃɪp/",
+    "sentence": "The ship sailed across the ocean.",
+    "sentenceVi": "Con tàu vượt biển khơi.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "travel",
+    "vi": "du lịch",
+    "pronunciation": "/ˈtrævəl/",
+    "sentence": "I love to travel by train.",
+    "sentenceVi": "Tôi thích du lịch bằng tàu hỏa.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "ticket",
+    "vi": "vé",
+    "pronunciation": "/ˈtɪkɪt/",
+    "sentence": "Do you have a train ticket?",
+    "sentenceVi": "Bạn có vé tàu hỏa không?",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "map",
+    "vi": "bản đồ",
+    "pronunciation": "/mæp/",
+    "sentence": "There is a world map on the wall.",
+    "sentenceVi": "Có một bản đồ thế giới trên tường.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "route",
+    "vi": "tuyến đường",
+    "pronunciation": "/raʊt/",
+    "sentence": "What is the best route?",
+    "sentenceVi": "Tuyến đường tốt nhất là gì?",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "direction",
+    "vi": "hướng",
+    "pronunciation": "/dɪˈrekʃən/",
+    "sentence": "Turn left in this direction.",
+    "sentenceVi": "Rẽ trái theo hướng này.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sail",
+    "vi": "đi thuyền",
+    "pronunciation": "/seɪl/",
+    "sentence": "They sail across the sea.",
+    "sentenceVi": "Họ đi thuyền vượt biển.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "smooth",
+    "vi": "êm",
+    "pronunciation": "/smuːð/",
+    "sentence": "The ride was very smooth.",
+    "sentenceVi": "Chuyến đi rất êm.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "late",
+    "vi": "muộn",
+    "pronunciation": "/leɪt/",
+    "sentence": "The bus was late this morning.",
+    "sentenceVi": "Xe buýt hôm nay đến muộn.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "early",
+    "vi": "sớm",
+    "pronunciation": "/ˈɜːrli/",
+    "sentence": "The airplane arrived early.",
+    "sentenceVi": "Máy bay đến sớm.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "adjective",
+    "difficulty": 1,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "arrive",
+    "vi": "đến",
+    "pronunciation": "/əˈraɪv/",
+    "sentence": "The train will arrive at 9 PM.",
+    "sentenceVi": "Tàu sẽ đến lúc 9 giờ tối.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "depart",
+    "vi": "khởi hành",
+    "pronunciation": "/dɪˈpɑːrt/",
+    "sentence": "The flight will depart in 30 minutes.",
+    "sentenceVi": "Chuyến bay sẽ khởi hành sau 30 phút.",
+    "topic": "transportation",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 3,
+    "tags": [
+      "transportation",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "teacher",
+    "vi": "giáo viên",
+    "pronunciation": "/ˈtiːtʃər/",
+    "sentence": "The teacher writes on the blackboard.",
+    "sentenceVi": "Giáo viên viết lên bảng đen.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "student",
+    "vi": "học sinh",
+    "pronunciation": "/ˈstjuːdənt/",
+    "sentence": "The student raises his hand to answer.",
+    "sentenceVi": "Học sinh giơ tay để trả lời.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "book",
+    "vi": "sách",
+    "pronunciation": "/bʊk/",
+    "sentence": "She is reading a thick book.",
+    "sentenceVi": "Cô ấy đang đọc một cuốn sách dày.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pen",
+    "vi": "bút",
+    "pronunciation": "/pen/",
+    "sentence": "He is writing with a blue pen.",
+    "sentenceVi": "Anh ấy đang viết bằng cây bút xanh.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "paper",
+    "vi": "giấy",
+    "pronunciation": "/ˈpeɪpər/",
+    "sentence": "The teacher gives us a piece of paper.",
+    "sentenceVi": "Giáo viên đưa cho chúng tôi một tờ giấy.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "desk",
+    "vi": "bàn học",
+    "pronunciation": "/desk/",
+    "sentence": "Each student has a desk in the classroom.",
+    "sentenceVi": "Mỗi học sinh có một cái bàn học trong lớp.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "classroom",
+    "vi": "lớp học",
+    "pronunciation": "/ˈklɑːsruːm/",
+    "sentence": "We have English class in this classroom.",
+    "sentenceVi": "Chúng ta có lớp tiếng Anh ở phòng học này.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "school",
+    "vi": "trường học",
+    "pronunciation": "/skuːl/",
+    "sentence": "I go to school every morning.",
+    "sentenceVi": "Tôi đến trường học mỗi buổi sáng.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "chalk",
+    "vi": "phấn",
+    "pronunciation": "/tʃɔːk/",
+    "sentence": "The teacher uses chalk to write on the board.",
+    "sentenceVi": "Giáo viên dùng phấn để viết lên bảng.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "eraser",
+    "vi": "cục tẩy",
+    "pronunciation": "/ɪˈreɪsər/",
+    "sentence": "He used an eraser to clean the board.",
+    "sentenceVi": "Anh ấy đã dùng cục tẩy để lau bảng.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "notebook",
+    "vi": "vở",
+    "pronunciation": "/ˈnoʊtbʊk/",
+    "sentence": "She writes in her notebook during class.",
+    "sentenceVi": "Cô ấy viết vào vở trong giờ học.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "ruler",
+    "vi": "thước kẻ",
+    "pronunciation": "/ˈruːlər/",
+    "sentence": "Use the ruler to draw a straight line.",
+    "sentenceVi": "Hãy dùng thước kẻ để vẽ một đường thẳng.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "backpack",
+    "vi": "ba lô",
+    "pronunciation": "/ˈbækpæk/",
+    "sentence": "She carries her books in a backpack.",
+    "sentenceVi": "Cô ấy mang sách trong một chiếc ba lô.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pencil",
+    "vi": "bút chì",
+    "pronunciation": "/ˈpensəl/",
+    "sentence": "He sharpens his pencil before drawing.",
+    "sentenceVi": "Anh ấy gọt bút chì trước khi vẽ.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "marker",
+    "vi": "bút lông",
+    "pronunciation": "/ˈmɑːrkər/",
+    "sentence": "She uses a marker to write on the whiteboard.",
+    "sentenceVi": "Cô ấy dùng bút lông để viết trên bảng trắng.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "lunchbox",
+    "vi": "hộp cơm",
+    "pronunciation": "/ˈlʌntʃbɒks/",
+    "sentence": "Don’t forget your lunchbox.",
+    "sentenceVi": "Đừng quên hộp cơm của bạn.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bell",
+    "vi": "chuông",
+    "pronunciation": "/bel/",
+    "sentence": "The school bell rings at the end of class.",
+    "sentenceVi": "Chuông trường reo vào cuối giờ học.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "board",
+    "vi": "bảng",
+    "pronunciation": "/bɔːrd/",
+    "sentence": "The teacher writes on the board.",
+    "sentenceVi": "Giáo viên viết lên bảng.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "lesson",
+    "vi": "bài học",
+    "pronunciation": "/ˈlesən/",
+    "sentence": "Today’s lesson is about grammar.",
+    "sentenceVi": "Bài học hôm nay nói về ngữ pháp.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "homework",
+    "vi": "bài tập về nhà",
+    "pronunciation": "/ˈhoʊmwɜːrk/",
+    "sentence": "Finish your homework before dinner.",
+    "sentenceVi": "Hoàn thành bài tập về nhà trước bữa tối.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "study",
+    "vi": "học",
+    "pronunciation": "/ˈstʌdi/",
+    "sentence": "They study English every evening.",
+    "sentenceVi": "Họ học tiếng Anh mỗi tối.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "write",
+    "vi": "viết",
+    "pronunciation": "/raɪt/",
+    "sentence": "He writes neatly in his notebook.",
+    "sentenceVi": "Anh ấy viết cẩn thận trong vở.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "read",
+    "vi": "đọc",
+    "pronunciation": "/riːd/",
+    "sentence": "She reads a book before bedtime.",
+    "sentenceVi": "Cô ấy đọc sách trước khi đi ngủ.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "listen",
+    "vi": "nghe",
+    "pronunciation": "/ˈlɪsən/",
+    "sentence": "Please listen to the teacher carefully.",
+    "sentenceVi": "Hãy nghe giáo viên giảng cẩn thận.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "speak",
+    "vi": "nói",
+    "pronunciation": "/spiːk/",
+    "sentence": "He speaks English very well.",
+    "sentenceVi": "Anh ấy nói tiếng Anh rất tốt.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "learn",
+    "vi": "học tập",
+    "pronunciation": "/lɜːrn/",
+    "sentence": "We learn new words every day.",
+    "sentenceVi": "Chúng ta học từ mới mỗi ngày.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "draw",
+    "vi": "vẽ",
+    "pronunciation": "/drɔː/",
+    "sentence": "She draws a beautiful picture.",
+    "sentenceVi": "Cô ấy vẽ một bức tranh đẹp.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "erase",
+    "vi": "xóa",
+    "pronunciation": "/ɪˈreɪs/",
+    "sentence": "Erase the mistakes carefully.",
+    "sentenceVi": "Xóa những lỗi cẩn thận.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "bag",
+    "vi": "cặp sách",
+    "pronunciation": "/bæɡ/",
+    "sentence": "Put your books in the bag.",
+    "sentenceVi": "Hãy bỏ sách vào cặp.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "lunch",
+    "vi": "bữa trưa",
+    "pronunciation": "/lʌntʃ/",
+    "sentence": "They eat lunch at noon.",
+    "sentenceVi": "Họ ăn trưa vào buổi trưa.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "break",
+    "vi": "giải lao",
+    "pronunciation": "/breɪk/",
+    "sentence": "We have a ten-minute break.",
+    "sentenceVi": "Chúng ta có 10 phút giải lao.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "subject",
+    "vi": "môn học",
+    "pronunciation": "/ˈsʌbdʒekt/",
+    "sentence": "Math is my favorite subject.",
+    "sentenceVi": "Toán là môn học yêu thích của tôi.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "exam",
+    "vi": "bài kiểm tra",
+    "pronunciation": "/ɪɡˈzæm/",
+    "sentence": "We have an exam next week.",
+    "sentenceVi": "Chúng ta có bài kiểm tra vào tuần tới.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "grade",
+    "vi": "điểm số",
+    "pronunciation": "/ɡreɪd/",
+    "sentence": "What grade did you get?",
+    "sentenceVi": "Bạn được điểm gì?",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "class",
+    "vi": "lớp học",
+    "pronunciation": "/klæs/",
+    "sentence": "My class starts at 8 a.m.",
+    "sentenceVi": "Lớp học của tôi bắt đầu lúc 8 giờ sáng.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "blackboard",
+    "vi": "bảng đen",
+    "pronunciation": "/ˈblækbɔːrd/",
+    "sentence": "The teacher writes the lesson on the blackboard.",
+    "sentenceVi": "Giáo viên viết bài học lên bảng đen.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "library",
+    "vi": "thư viện",
+    "pronunciation": "/ˈlaɪbrəri/",
+    "sentence": "We go to the library to read books.",
+    "sentenceVi": "Chúng ta đến thư viện để đọc sách.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "uniform",
+    "vi": "đồng phục",
+    "pronunciation": "/ˈjuːnɪfɔːrm/",
+    "sentence": "Students wear uniforms to school.",
+    "sentenceVi": "Học sinh mặc đồng phục đến trường.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "pencil case",
+    "vi": "hộp bút",
+    "pronunciation": "/ˈpɛnsəl keɪs/",
+    "sentence": "My pencil case is full of stationery.",
+    "sentenceVi": "Hộp bút của tôi đầy dụng cụ học tập.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "whiteboard",
+    "vi": "bảng trắng",
+    "pronunciation": "/ˈwaɪtbɔːrd/",
+    "sentence": "The teacher draws on the whiteboard.",
+    "sentenceVi": "Giáo viên vẽ trên bảng trắng.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 2,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "dictionary",
+    "vi": "từ điển",
+    "pronunciation": "/ˈdɪkʃəneri/",
+    "sentence": "I use a dictionary to look up new words.",
+    "sentenceVi": "Tôi dùng từ điển để tra từ mới.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "principal",
+    "vi": "hiệu trưởng",
+    "pronunciation": "/ˈprɪnsəpəl/",
+    "sentence": "The principal visits our classroom today.",
+    "sentenceVi": "Hiệu trưởng đến thăm lớp học của chúng ta hôm nay.",
+    "topic": "school_basic",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 3,
+    "tags": [
+      "school_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "student ID",
+    "vi": "thẻ học sinh",
+    "pronunciation": "/ˈstjuːdənt aɪ diː/",
+    "sentence": "Don’t forget your student ID.",
+    "sentenceVi": "Đừng quên thẻ học sinh của bạn.",
+    "topic": "dWord(\n  en:",
+    "level": "BASIC",
+    "type": "noun",
+    "difficulty": 1,
+    "tags": [
+      "dWord(\n  en:",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sleep",
+    "vi": "ngủ",
+    "pronunciation": "/sliːp/",
+    "sentence": "I sleep eight hours every night.",
+    "sentenceVi": "Tôi ngủ tám tiếng mỗi đêm.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "play",
+    "vi": "chơi",
+    "pronunciation": "/pleɪ/",
+    "sentence": "The children play outside after school.",
+    "sentenceVi": "Các em chơi ở ngoài sau giờ học.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "work",
+    "vi": "làm việc",
+    "pronunciation": "/wɜːrk/",
+    "sentence": "My father works in a factory.",
+    "sentenceVi": "Bố tôi làm việc trong một nhà máy.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "drink",
+    "vi": "uống",
+    "pronunciation": "/drɪŋk/",
+    "sentence": "He drinks a glass of milk every day.",
+    "sentenceVi": "Anh ấy uống một ly sữa mỗi ngày.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "talk",
+    "vi": "nói chuyện",
+    "pronunciation": "/tɔːk/",
+    "sentence": "We talk about our weekend plans.",
+    "sentenceVi": "Chúng tôi nói chuyện về kế hoạch cuối tuần.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "see",
+    "vi": "nhìn thấy",
+    "pronunciation": "/siː/",
+    "sentence": "I can see a bird on the tree.",
+    "sentenceVi": "Tôi có thể nhìn thấy một con chim trên cây.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "look",
+    "vi": "nhìn",
+    "pronunciation": "/lʊk/",
+    "sentence": "Look at that beautiful sunset.",
+    "sentenceVi": "Nhìn ngắm hoàng hôn tuyệt đẹp kia.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "go",
+    "vi": "đi",
+    "pronunciation": "/ɡoʊ/",
+    "sentence": "They go to the beach every weekend.",
+    "sentenceVi": "Họ đi biển mỗi cuối tuần.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "come",
+    "vi": "đến",
+    "pronunciation": "/kʌm/",
+    "sentence": "Please come to my house tonight.",
+    "sentenceVi": "Hãy đến nhà tôi tối nay.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "have",
+    "vi": "có",
+    "pronunciation": "/hæv/",
+    "sentence": "I have a new phone.",
+    "sentenceVi": "Tôi có một chiếc điện thoại mới.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "make",
+    "vi": "làm",
+    "pronunciation": "/meɪk/",
+    "sentence": "She makes a cake for the party.",
+    "sentenceVi": "Cô ấy làm bánh cho bữa tiệc.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "take",
+    "vi": "lấy",
+    "pronunciation": "/teɪk/",
+    "sentence": "Take your umbrella with you.",
+    "sentenceVi": "Hãy mang theo ô của bạn.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "give",
+    "vi": "cho",
+    "pronunciation": "/ɡɪv/",
+    "sentence": "He gives me a gift every birthday.",
+    "sentenceVi": "Anh ấy cho tôi một món quà mỗi sinh nhật.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "find",
+    "vi": "tìm thấy",
+    "pronunciation": "/faɪnd/",
+    "sentence": "I found my keys under the table.",
+    "sentenceVi": "Tôi tìm thấy chìa khóa dưới bàn.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "know",
+    "vi": "biết",
+    "pronunciation": "/noʊ/",
+    "sentence": "I know the answer to the question.",
+    "sentenceVi": "Tôi biết câu trả lời của câu hỏi.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "want",
+    "vi": "muốn",
+    "pronunciation": "/wɑːnt/",
+    "sentence": "She wants to eat pizza.",
+    "sentenceVi": "Cô ấy muốn ăn pizza.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "need",
+    "vi": "cần",
+    "pronunciation": "/niːd/",
+    "sentence": "I need your help.",
+    "sentenceVi": "Tôi cần sự giúp đỡ của bạn.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "use",
+    "vi": "sử dụng",
+    "pronunciation": "/juːz/",
+    "sentence": "I use my phone to call you.",
+    "sentenceVi": "Tôi dùng điện thoại để gọi bạn.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "ask",
+    "vi": "hỏi",
+    "pronunciation": "/æsk/",
+    "sentence": "Please ask the teacher a question.",
+    "sentenceVi": "Hãy hỏi giáo viên một câu hỏi.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "tell",
+    "vi": "kể",
+    "pronunciation": "/tel/",
+    "sentence": "He tells a story.",
+    "sentenceVi": "Anh ấy kể một câu chuyện.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "show",
+    "vi": "chỉ",
+    "pronunciation": "/ʃoʊ/",
+    "sentence": "Please show me the way.",
+    "sentenceVi": "Làm ơn chỉ đường cho tôi.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "open",
+    "vi": "mở",
+    "pronunciation": "/ˈoʊpən/",
+    "sentence": "Please open the window.",
+    "sentenceVi": "Làm ơn mở cửa sổ ra.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "close",
+    "vi": "đóng",
+    "pronunciation": "/kloʊs/",
+    "sentence": "Close the door, please.",
+    "sentenceVi": "Đóng cửa lại đi.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "do",
+    "vi": "làm",
+    "pronunciation": "/duː/",
+    "sentence": "I do my homework every evening.",
+    "sentenceVi": "Tôi làm bài tập về nhà mỗi tối.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "buy",
+    "vi": "mua",
+    "pronunciation": "/baɪ/",
+    "sentence": "She buys a dress for the party.",
+    "sentenceVi": "Cô ấy mua một chiếc váy dự tiệc.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "sell",
+    "vi": "bán",
+    "pronunciation": "/sel/",
+    "sentence": "He sells fruits at the market.",
+    "sentenceVi": "Anh ấy bán trái cây ở chợ.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "think",
+    "vi": "nghĩ",
+    "pronunciation": "/θɪŋk/",
+    "sentence": "He thinks carefully before speaking.",
+    "sentenceVi": "Anh ấy suy nghĩ kỹ trước khi nói.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 3,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "watch",
+    "vi": "xem",
+    "pronunciation": "/wɒtʃ/",
+    "sentence": "We watch a movie tonight.",
+    "sentenceVi": "Chúng tôi xem phim vào tối nay.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "clean",
+    "vi": "dọn dẹp",
+    "pronunciation": "/kliːn/",
+    "sentence": "She cleans the house every weekend.",
+    "sentenceVi": "Cô ấy dọn dẹp nhà mỗi cuối tuần.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "feel",
+    "vi": "cảm thấy",
+    "pronunciation": "/fiːl/",
+    "sentence": "I feel happy today.",
+    "sentenceVi": "Tôi cảm thấy vui hôm nay.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 2,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "cook",
+    "vi": "nấu ăn",
+    "pronunciation": "/kʊk/",
+    "sentence": "My mother cooks dinner every evening.",
+    "sentenceVi": "Mẹ tôi nấu bữa tối mỗi tối.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  },
+  {
+    "en": "call",
+    "vi": "gọi điện",
+    "pronunciation": "/kɔːl/",
+    "sentence": "I call my friend every evening.",
+    "sentenceVi": "Tôi gọi điện cho bạn mỗi tối.",
+    "topic": "verbs_basic",
+    "level": "BASIC",
+    "type": "verb",
+    "difficulty": 1,
+    "tags": [
+      "verbs_basic",
+      "vocabulary"
+    ],
+    "nextReview": null
+  }
+]

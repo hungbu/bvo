@@ -8,7 +8,7 @@ import 'package:bvo/model/topic.dart';
 import 'package:bvo/repository/word_repository.dart';
 import 'package:bvo/repository/topic_repository.dart';
 import 'package:bvo/repository/topic_configs_repository.dart';
-import 'package:bvo/repository/word_repository.dart';
+import 'package:bvo/repository/dictionary.dart';
 import 'package:bvo/service/notification_service.dart';
 import 'package:bvo/screen/topic_detail_screen.dart';
 
@@ -22,7 +22,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final WordRepository _wordRepository = WordRepository();
   Map<String, List<Word>> reviewedWordsByTopic = {};
   List<Topic> topics = [];
   bool isLoadingTopics = true;
@@ -145,13 +144,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadWordOfTheDay() async {
     try {
-      // Get random word from repository
-      final randomWords = await _wordRepository.getRandomWords(1);
-      if (randomWords.isEmpty) {
-        throw Exception('No words available');
+      // Check if dictionary is not empty
+      if (dictionary.isEmpty) {
+        throw Exception('Dictionary is empty');
       }
       
-      final selectedWord = randomWords.first;
+      // Get a random word from dictionary for word of the day
+      final random = math.Random();
+      final wordIndex = random.nextInt(dictionary.length);
+      final selectedWord = dictionary[wordIndex];
       
       wordOfTheDay = {
         'word': selectedWord.en,
@@ -197,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
       
       // Calculate learned words for each group
       int calculateLearnedWords(List<Topic> topics) {
-        return topics.fold<int>(0, (sum, topic) {
+        return topics.fold(0, (sum, topic) {
           final reviewed = reviewedWords[topic.topic] ?? [];
           return sum + reviewed.length;
         });
@@ -211,13 +212,13 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       
       // Split basic topics into 3 groups (with safety checks)
-      final basicGroup1 = basicTopics.take(math.min<int>(10, basicTopics.length)).toList();
-      final basicGroup2 = basicTopics.skip(math.min<int>(10, basicTopics.length)).take(math.min<int>(10, math.max<int>(0, basicTopics.length - 10))).toList();
-      final basicGroup3 = basicTopics.skip(math.min<int>(20, basicTopics.length)).take(math.min<int>(10, math.max<int>(0, basicTopics.length - 20))).toList();
+      final basicGroup1 = basicTopics.take(math.min(10, basicTopics.length)).toList();
+      final basicGroup2 = basicTopics.skip(math.min(10, basicTopics.length)).take(math.min(10, math.max(0, basicTopics.length - 10))).toList();
+      final basicGroup3 = basicTopics.skip(math.min(20, basicTopics.length)).take(math.min(10, math.max(0, basicTopics.length - 20))).toList();
       
       // Split intermediate topics into 2 groups (with safety checks)
-      final intermediateGroup1 = intermediateTopics.take(math.min<int>(15, intermediateTopics.length)).toList();
-      final intermediateGroup2 = intermediateTopics.skip(math.min<int>(15, intermediateTopics.length)).take(math.min<int>(15, math.max<int>(0, intermediateTopics.length - 15))).toList();
+      final intermediateGroup1 = intermediateTopics.take(math.min(15, intermediateTopics.length)).toList();
+      final intermediateGroup2 = intermediateTopics.skip(math.min(15, intermediateTopics.length)).take(math.min(15, math.max(0, intermediateTopics.length - 15))).toList();
       
       topicGroups = [
         // Basic Groups
@@ -1205,11 +1206,10 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       if (wordOfTheDay.isEmpty) return;
       
-      // Find the word in repository and mark as reviewed
-      final allWords = await _wordRepository.getAllWords();
-      final wordToAdd = allWords.firstWhere(
+      // Find the word in dictionary and mark as reviewed
+      final wordToAdd = dictionary.firstWhere(
         (word) => word.en.toLowerCase() == wordOfTheDay['word'].toString().toLowerCase(),
-        orElse: () => allWords.first, // Fallback
+        orElse: () => dictionary.first, // Fallback
       );
       
       // Mark word as reviewed by updating its review count
