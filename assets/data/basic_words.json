@@ -6628,12 +6628,12 @@
     "pronunciation": "/ˈstjuːdənt aɪ diː/",
     "sentence": "Don’t forget your student ID.",
     "sentenceVi": "Đừng quên thẻ học sinh của bạn.",
-    "topic": "dWord(\n  en:",
+    "topic": "school_basic",
     "level": "BASIC",
     "type": "noun",
     "difficulty": 1,
     "tags": [
-      "dWord(\n  en:",
+      "school_basic",
       "vocabulary"
     ],
     "nextReview": null

@@ -369,6 +369,10 @@ class _HomeScreenState extends State<HomeScreen> {
       print("Starting to load topics...");
       final loadedTopics = await TopicRepository().getTopics();
       print("Loaded ${loadedTopics.length} topics: ${loadedTopics.map((t) => t.topic).toList()}");
+      
+      // Tạo topicGroups từ vocabulary data
+      await _createTopicGroupsFromVocabulary();
+      
       if (mounted) {
         setState(() {
           topics = loadedTopics;
@@ -385,6 +389,157 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(content: Text('Error loading topics: $e')),
         );
       }
+    }
+  }
+
+  Future<void> _createTopicGroupsFromVocabulary() async {
+    try {
+      final allTopics = await TopicRepository().getTopics();
+      final reviewedWords = await WordRepository().getReviewedWordsGroupedByTopic();
+      
+      // Phân loại topics theo level từ vocabulary data
+      final basicTopics = allTopics.where((topic) => topic.level == TopicLevel.BASIC).toList();
+      final intermediateTopics = allTopics.where((topic) => topic.level == TopicLevel.INTERMEDIATE).toList();
+      final advancedTopics = allTopics.where((topic) => topic.level == TopicLevel.ADVANCED).toList();
+
+      // Helper functions
+      int calculateLearnedWords(List<Topic> topics) {
+        return topics.fold<int>(0, (sum, topic) {
+          final reviewed = reviewedWords[topic.topic] ?? [];
+          return sum + reviewed.length;
+        });
+      }
+
+      int calculateTargetWords(List<Topic> topics) {
+        return topics.fold<int>(0, (sum, topic) => sum + topic.totalWords);
+      }
+
+      // Tạo groups với icon mapping tự động
+      List<Map<String, dynamic>> groups = [];
+
+      // Basic Groups (chia thành 3 nhóm)
+      if (basicTopics.isNotEmpty) {
+        final groupSize = (basicTopics.length / 3).ceil();
+        
+        for (int i = 0; i < 3; i++) {
+          final start = i * groupSize;
+          final end = math.min<int>((i + 1) * groupSize, basicTopics.length);
+          
+          if (start < basicTopics.length) {
+            final groupTopics = basicTopics.sublist(start, end);
+            groups.add({
+              'id': 'basic_${i + 1}',
+              'name': 'Basic ${i + 1}',
+              'description': _getGroupDescription('basic', i + 1),
+              'targetWords': calculateTargetWords(groupTopics),
+              'learnedWords': calculateLearnedWords(groupTopics),
+              'color': _getGroupColor('basic', i + 1),
+              'icon': _getGroupIcon('basic', i + 1),
+              'topics': groupTopics.map((t) => t.topic).toList(),
+              'level': 'basic',
+              'topicObjects': groupTopics, // Để dễ access sau này
+            });
+          }
+        }
+      }
+
+      // Intermediate Groups (chia thành 2 nhóm)
+      if (intermediateTopics.isNotEmpty) {
+        final groupSize = (intermediateTopics.length / 2).ceil();
+        
+        for (int i = 0; i < 2; i++) {
+          final start = i * groupSize;
+          final end = math.min<int>((i + 1) * groupSize, intermediateTopics.length);
+          
+          if (start < intermediateTopics.length) {
+            final groupTopics = intermediateTopics.sublist(start, end);
+            groups.add({
+              'id': 'intermediate_${i + 1}',
+              'name': 'Intermediate ${i + 1}',
+              'description': _getGroupDescription('intermediate', i + 1),
+              'targetWords': calculateTargetWords(groupTopics),
+              'learnedWords': calculateLearnedWords(groupTopics),
+              'color': _getGroupColor('intermediate', i + 1),
+              'icon': _getGroupIcon('intermediate', i + 1),
+              'topics': groupTopics.map((t) => t.topic).toList(),
+              'level': 'intermediate',
+              'topicObjects': groupTopics,
+            });
+          }
+        }
+      }
+
+      // Advanced Group (1 nhóm)
+      if (advancedTopics.isNotEmpty) {
+        groups.add({
+          'id': 'advanced_1',
+          'name': 'Advanced',
+          'description': _getGroupDescription('advanced', 1),
+          'targetWords': calculateTargetWords(advancedTopics),
+          'learnedWords': calculateLearnedWords(advancedTopics),
+          'color': _getGroupColor('advanced', 1),
+          'icon': _getGroupIcon('advanced', 1),
+          'topics': advancedTopics.map((t) => t.topic).toList(),
+          'level': 'advanced',
+          'topicObjects': advancedTopics,
+        });
+      }
+
+      topicGroups = groups;
+      print('Created ${groups.length} topic groups from vocabulary data');
+      
+    } catch (e) {
+      print('Error creating topic groups: $e');
+      _initializeBasicTopicGroups(); // Fallback
+    }
+  }
+
+  // Helper methods để map icon và màu sắc tự động
+  Color _getGroupColor(String level, int groupNumber) {
+    switch (level) {
+      case 'basic':
+        return [Colors.green, Colors.lightGreen, Colors.teal][groupNumber - 1];
+      case 'intermediate':
+        return [Colors.orange, Colors.deepOrange][groupNumber - 1];
+      case 'advanced':
+        return Colors.purple;
+      default:
+        return Colors.blue;
+    }
+  }
+
+  IconData _getGroupIcon(String level, int groupNumber) {
+    switch (level) {
+      case 'basic':
+        return [Icons.star, Icons.star_half, Icons.star_border][groupNumber - 1];
+      case 'intermediate':
+        return [Icons.trending_up, Icons.school][groupNumber - 1];
+      case 'advanced':
+        return Icons.emoji_events;
+      default:
+        return Icons.book;
+    }
+  }
+
+  String _getGroupDescription(String level, int groupNumber) {
+    switch (level) {
+      case 'basic':
+        final descriptions = [
+          'Từ vựng cơ bản hàng ngày',
+          'Từ vựng cơ bản nâng cao', 
+          'Từ vựng cơ bản hoàn thiện'
+        ];
+        return descriptions[groupNumber - 1];
+      case 'intermediate':
+        final descriptions = [
+          'Từ vựng trung cấp cơ bản',
+          'Từ vựng trung cấp nâng cao'
+        ];
+        return descriptions[groupNumber - 1];
+      case 'advanced':
+        return 'Từ vựng nâng cao';
+      default:
+        return 'Từ vựng';
     }
   }
 
