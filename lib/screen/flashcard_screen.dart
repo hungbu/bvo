@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:bvo/model/word.dart';
 import 'package:bvo/screen/flashcard/flashcard.dart';
+import 'package:bvo/repository/user_progress_repository.dart';
 
 class FlashCardScreen extends StatefulWidget {
   final List<Word> words;
@@ -46,6 +47,9 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   List<Word> _currentWords = [];
   int _currentBatchIndex = 0;
   static const int _wordsPerBatch = 20;
+  
+  // Progress tracking
+  final UserProgressRepository _progressRepository = UserProgressRepository();
 
   @override
   void initState() {
@@ -222,7 +226,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   }
 
 
-  void _checkAnswer() {
+  Future<void> _checkAnswer() async {
     String userAnswer = _controller.text.trim().toLowerCase();
     String correctAnswer = _currentWords[_currentIndex].en
         .trim()
@@ -232,24 +236,27 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     _totalAttempts++; // Track total attempts
 
     if (userAnswer == correctAnswer) {
-      // Update the word with incremented reviewCount using copyWith
-      int originalIndex = (_currentBatchIndex * _wordsPerBatch) + _currentIndex;
-      widget.words[originalIndex] = widget.words[originalIndex].copyWith(
-        reviewCount: widget.words[originalIndex].reviewCount + 1,
-        correctAnswers: widget.words[originalIndex].correctAnswers + 1,
-        totalAttempts: widget.words[originalIndex].totalAttempts + 1,
-        lastReviewed: DateTime.now(),
+      // Update progress using UserProgressRepository
+      await _progressRepository.updateWordProgress(
+        widget.topic, 
+        _currentWords[_currentIndex], 
+        true
       );
+      
       _correctAnswers++; // Track correct answers
-
-      // Save the updated words
-      saveWords();
 
       setState(() {
         _feedbackMessage = 'Correct!';
       });
       _nextSlide();
     } else {
+      // Update progress for incorrect answer
+      await _progressRepository.updateWordProgress(
+        widget.topic, 
+        _currentWords[_currentIndex], 
+        false
+      );
+      
       setState(() {
         _feedbackMessage = 'Try again.';
       });

@@ -8,7 +8,7 @@ import 'package:bvo/model/topic.dart';
 import 'package:bvo/repository/word_repository.dart';
 import 'package:bvo/repository/topic_repository.dart';
 import 'package:bvo/repository/topic_configs_repository.dart';
-import 'package:bvo/repository/word_repository.dart';
+import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/service/notification_service.dart';
 import 'package:bvo/screen/topic_detail_screen.dart';
 
@@ -54,7 +54,11 @@ class _HomeScreenState extends State<HomeScreen> {
     // Load basic user data
     userName = prefs.getString('user_name') ?? "Bạn";
     dailyGoal = prefs.getInt('daily_goal') ?? 10;
-    lastTopic = prefs.getString('last_topic') ?? "schools";
+    
+    // Load last topic from UserProgressRepository
+    final progressRepo = UserProgressRepository();
+    lastTopic = await progressRepo.getLastTopic() ?? "schools";
+    print('📍 Loaded last_topic from prefs: $lastTopic');
     
     // Calculate real statistics
     await _calculateRealStatistics();
@@ -72,9 +76,10 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       
-      // Calculate total words learned from reviewed words
-      final reviewedWords = await WordRepository().getReviewedWordsGroupedByTopic();
-      totalWordsLearned = reviewedWords.values.fold(0, (sum, words) => sum + words.length);
+      // Calculate total words learned from user progress
+      final progressRepo = UserProgressRepository();
+      final userStats = await progressRepo.getUserStatistics();
+      totalWordsLearned = userStats['totalLearnedWords'] ?? 0;
       
       // Calculate streak days
       streakDays = await _calculateStreakDays();
@@ -545,11 +550,43 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadReviewedWords() async {
     try {
-      final reviewed = await WordRepository().getReviewedWordsGroupedByTopic();
+      print("Loading reviewed words...");
+      final progressRepo = UserProgressRepository();
+      final allTopicsProgress = await progressRepo.getAllTopicsProgress();
+      
+      // Convert progress data to reviewed words format
+      final loadedReviewedWords = <String, List<Word>>{};
+      for (final entry in allTopicsProgress.entries) {
+        final topic = entry.key;
+        final progress = entry.value;
+        final learnedCount = progress['learnedWords'] ?? 0;
+        
+        // Create dummy words list for compatibility (we only need the count)
+        if (learnedCount > 0) {
+          loadedReviewedWords[topic] = List.generate(learnedCount, (index) => 
+            dWord(
+              en: 'word_$index', 
+              vi: 'word_$index', 
+              topic: topic,
+              pronunciation: '',
+              sentence: '',
+              sentenceVi: '',
+              level: WordLevel.BASIC,
+              type: WordType.noun,
+              difficulty: 1,
+              nextReview: DateTime.now(),
+            )
+          );
+        }
+      }
+      
+      print("Loaded reviewed words: ${loadedReviewedWords.keys.length} topics");
+      
       setState(() {
-        reviewedWordsByTopic = reviewed;
+        reviewedWordsByTopic = loadedReviewedWords;
       });
     } catch (e) {
+      print("Error loading reviewed words: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading reviewed words: $e')),

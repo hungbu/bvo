@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:bvo/model/word.dart';
 import 'package:bvo/repository/word_repository.dart';
 import 'package:bvo/repository/quiz_repository.dart';
+import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/screen/flashcard_screen.dart';
+import 'package:bvo/main.dart';
 
 class TopicDetailScreen extends StatefulWidget {
   final String topic;
@@ -14,8 +16,10 @@ class TopicDetailScreen extends StatefulWidget {
   State<TopicDetailScreen> createState() => _TopicDetailScreenState();
 }
 
-class _TopicDetailScreenState extends State<TopicDetailScreen> {
+class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
   List<Word> words = [];
+  Map<String, Map<String, dynamic>> wordsProgress = {};
+  Map<String, dynamic> topicProgress = {};
   bool isLoading = true;
 
   @override
@@ -24,15 +28,74 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
     init();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Called when returning to this screen from FlashCard
+    print('🔄 TopicDetailScreen: didPopNext - refreshing progress data');
+    _refreshProgressData();
+  }
+
+
   Future<void> init() async {
     setState(() => isLoading = true);
-    words = await WordRepository().loadWords(widget.topic);
-    if (words.isEmpty) {
-      // If no words are loaded, fetch from initial source and save
-      words = await WordRepository().getWordsOfTopic(widget.topic);
-      await WordRepository().saveWords(widget.topic, words);
+    
+    // Load words and progress data
+    words = await WordRepository().getWordsOfTopic(widget.topic);
+    
+    final progressRepo = UserProgressRepository();
+    topicProgress = await progressRepo.getTopicProgress(widget.topic);
+    
+    // Load individual word progress
+    final wordProgressList = await progressRepo.getTopicWordsWithProgress(widget.topic);
+    wordsProgress = {};
+    for (final wordProg in wordProgressList) {
+      final wordEn = wordProg['word'] as String;
+      wordsProgress[wordEn] = wordProg;
     }
+    
     setState(() => isLoading = false);
+  }
+
+  /// Refresh progress data after returning from FlashCard
+  Future<void> _refreshProgressData() async {
+    print('🔄 Refreshing progress data for topic: ${widget.topic}');
+    
+    final progressRepo = UserProgressRepository();
+    
+    // Reload topic progress
+    final updatedTopicProgress = await progressRepo.getTopicProgress(widget.topic);
+    
+    // Reload individual word progress
+    final wordProgressList = await progressRepo.getTopicWordsWithProgress(widget.topic);
+    final updatedWordsProgress = <String, Map<String, dynamic>>{};
+    for (final wordProg in wordProgressList) {
+      final wordEn = wordProg['word'] as String;
+      updatedWordsProgress[wordEn] = wordProg;
+    }
+    
+    if (mounted) {
+      setState(() {
+        topicProgress = updatedTopicProgress;
+        wordsProgress = updatedWordsProgress;
+      });
+      
+      print('✅ Progress data refreshed - Topic: ${updatedTopicProgress['learnedWords']} learned words');
+    }
   }
 
   @override
@@ -62,9 +125,28 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Widget _buildTopicHeader() {
-    int newWords = words.where((w) => w.reviewCount == 0).length;
-    int learningWords = words.where((w) => w.reviewCount > 0 && w.reviewCount < 7).length;
-    int masteredWords = words.where((w) => w.reviewCount >= 7).length;
+    // Calculate stats from progress data
+    int newWords = 0;
+    int learningWords = 0;
+    int masteredWords = 0;
+    
+    for (final word in words) {
+      final progress = wordsProgress[word.en];
+      if (progress != null) {
+        final reviewCount = progress['reviewCount'] ?? 0;
+        final isLearned = progress['isLearned'] ?? false;
+        
+        if (reviewCount == 0) {
+          newWords++;
+        } else if (isLearned) {
+          masteredWords++;
+        } else {
+          learningWords++;
+        }
+      } else {
+        newWords++; // No progress = new word
+      }
+    }
     
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -147,8 +229,12 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
         children: [
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                // Update last topic before starting flashcard
+                final progressRepo = UserProgressRepository();
+                await progressRepo.setLastTopic(widget.topic);
+                
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => FlashCardScreen(
@@ -158,6 +244,11 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                     ),
                   ),
                 );
+                
+                // Refresh data when returning from FlashCard
+                if (result != null || mounted) {
+                  await _refreshProgressData();
+                }
               },
               icon: const Icon(Icons.quiz, size: 18),
               label: const Text('FlashCard'),
@@ -209,15 +300,24 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
 
 
   Widget _buildWordCard(Word word, int wordNumber) {
-    // Calculate progress based on review count (simple logic)
-    double progress = word.reviewCount > 0 ? (word.reviewCount / 10.0).clamp(0.0, 1.0) : 0.0;
-    String difficultyLevel = word.reviewCount == 0 ? 'Mới' : 
-                           word.reviewCount < 3 ? 'Đang Học' :
-                           word.reviewCount < 7 ? 'Quen Thuộc' : 'Thành Thạo';
+    // Get progress from UserProgressRepository
+    final progress = wordsProgress[word.en];
+    final reviewCount = progress?['reviewCount'] ?? 0;
+    final isLearned = progress?['isLearned'] ?? false;
+    final correctAnswers = progress?['correctAnswers'] ?? 0;
+    final totalAttempts = progress?['totalAttempts'] ?? 0;
     
-    Color difficultyColor = word.reviewCount == 0 ? Colors.blue :
-                          word.reviewCount < 3 ? Colors.orange :
-                          word.reviewCount < 7 ? Colors.green : Colors.purple;
+    // Calculate accuracy and progress
+    final accuracy = totalAttempts > 0 ? (correctAnswers / totalAttempts) : 0.0;
+    final progressValue = reviewCount > 0 ? (reviewCount / 10.0).clamp(0.0, 1.0) : 0.0;
+    
+    String difficultyLevel = reviewCount == 0 ? 'Mới' : 
+                           !isLearned ? 'Đang Học' :
+                           accuracy >= 0.8 ? 'Thành Thạo' : 'Quen Thuộc';
+    
+    Color difficultyColor = reviewCount == 0 ? Colors.blue :
+                          !isLearned ? Colors.orange :
+                          accuracy >= 0.8 ? Colors.purple : Colors.green;
 
     return Card(
       elevation: 1,
@@ -327,7 +427,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                       children: [
                         Expanded(
                           child: LinearProgressIndicator(
-                            value: progress,
+                            value: progressValue,
                             backgroundColor: Colors.grey[300],
                             valueColor: AlwaysStoppedAnimation<Color>(difficultyColor),
                             minHeight: 3,
@@ -335,7 +435,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '${(progress * 100).toInt()}%',
+                          '${(progressValue * 100).toInt()}%',
                           style: TextStyle(
                             fontSize: 10,
                             color: difficultyColor,

@@ -11,6 +11,9 @@ import 'service/auth_service.dart';
 import 'service/notification_service.dart';
 import 'firebase_options.dart';
 
+// Global route observer for tracking navigation
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 // Background message handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -94,6 +97,7 @@ class _MyAppState extends State<MyApp> {
       title: 'Bun Vocabulary',
       debugShowCheckedModeBanner: false,
       theme: PurpleTheme.getTheme(),
+      navigatorObservers: [routeObserver], // Add route observer
       home: _isInitializing 
         ? const SplashScreen()
         : _currentUser != null 

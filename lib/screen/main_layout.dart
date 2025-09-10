@@ -15,6 +15,8 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   int _currentIndex = 0;
   VoidCallback? _profileRefreshCallback;
+  VoidCallback? _homeRefreshCallback;
+  VoidCallback? _topicRefreshCallback;
 
   // Danh sách các màn hình được build dynamically để pass callback
   List<Widget> get _screens => [

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:bvo/model/topic.dart';
 import 'package:bvo/repository/topic_repository.dart';
-import 'package:bvo/repository/word_repository.dart';
 import 'package:bvo/repository/topic_configs_repository.dart';
+import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/screen/topic_detail_screen.dart';
+import 'package:bvo/main.dart';
 
 class TopicScreen extends StatefulWidget {
   const TopicScreen({Key? key}) : super(key: key);
@@ -12,9 +13,10 @@ class TopicScreen extends StatefulWidget {
   State<TopicScreen> createState() => _TopicScreenState();
 }
 
-class _TopicScreenState extends State<TopicScreen> {
+class _TopicScreenState extends State<TopicScreen> with RouteAware {
   List<Topic> topics = [];
   Map<String, int> reviewedWordsByTopic = {};
+  Map<String, Map<String, dynamic>> topicsProgress = {};
   bool isLoading = true;
 
   @override
@@ -23,14 +25,50 @@ class _TopicScreenState extends State<TopicScreen> {
     _loadTopics();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Called when returning to this screen from another screen
+    print('🔄 TopicScreen: didPopNext - refreshing data');
+    _refreshTopicsData();
+  }
+
+
   Future<void> _loadTopics() async {
     try {
       final loadedTopics = await TopicRepository().getTopics();
-      final reviewedWords = await WordRepository().getReviewedWordsGroupedByTopic();
+      final progressRepo = UserProgressRepository();
+      final allProgress = await progressRepo.getAllTopicsProgress();
+      
+      // Calculate reviewed words from progress data
+      final reviewedWords = <String, int>{};
+      for (final topic in loadedTopics) {
+        final progress = allProgress[topic.topic];
+        if (progress != null) {
+          reviewedWords[topic.topic] = progress['learnedWords'] ?? 0;
+        } else {
+          reviewedWords[topic.topic] = 0;
+        }
+      }
       
       setState(() {
         topics = loadedTopics;
-        reviewedWordsByTopic = reviewedWords.map((key, value) => MapEntry(key, value.length));
+        reviewedWordsByTopic = reviewedWords;
+        topicsProgress = allProgress;
         isLoading = false;
       });
     } catch (e) {
@@ -42,6 +80,38 @@ class _TopicScreenState extends State<TopicScreen> {
           SnackBar(content: Text('Error loading topics: $e')),
         );
       }
+    }
+  }
+
+  /// Refresh topics data after returning from TopicDetailScreen
+  Future<void> _refreshTopicsData() async {
+    print('🔄 Refreshing topics data...');
+    
+    try {
+      final progressRepo = UserProgressRepository();
+      final allProgress = await progressRepo.getAllTopicsProgress();
+      
+      // Calculate reviewed words from progress data
+      final reviewedWords = <String, int>{};
+      for (final topic in topics) {
+        final progress = allProgress[topic.topic];
+        if (progress != null) {
+          reviewedWords[topic.topic] = progress['learnedWords'] ?? 0;
+        } else {
+          reviewedWords[topic.topic] = 0;
+        }
+      }
+      
+      if (mounted) {
+        setState(() {
+          reviewedWordsByTopic = reviewedWords;
+          topicsProgress = allProgress;
+        });
+        
+        print('✅ Topics data refreshed - ${reviewedWords.length} topics updated');
+      }
+    } catch (e) {
+      print('❌ Error refreshing topics data: $e');
     }
   }
 
@@ -332,13 +402,18 @@ class _TopicScreenState extends State<TopicScreen> {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => TopicDetailScreen(topic: topic.topic),
                             ),
                           );
+                          
+                          // Refresh data when returning from TopicDetailScreen
+                          if (result != null || mounted) {
+                            await _refreshTopicsData();
+                          }
                         },
         child: Container(
           decoration: BoxDecoration(
