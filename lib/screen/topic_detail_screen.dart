@@ -159,7 +159,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                 );
               },
               icon: const Icon(Icons.quiz, size: 18),
-              label: const Text('Bắt Đầu FlashCard'),
+              label: const Text('FlashCard'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
@@ -175,7 +175,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
             child: ElevatedButton.icon(
               onPressed: () => _addAllWordsToQuiz(),
               icon: const Icon(Icons.add_task, size: 18),
-              label: const Text('Thêm Vào Quiz'),
+              label: const Text('Thêm Tất Cả Vào Quiz'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,

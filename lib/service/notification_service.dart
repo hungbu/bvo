@@ -12,17 +12,18 @@ class NotificationService {
 
   // Notification IDs
   static const int morningReminderId = 1;
-  static const int eveningReminderId = 2;
-  static const int streakWarningId = 3;
-  static const int dueWordsId = 4;
-  static const int dailyGoalProgressId = 5;
+  static const int noonReminderId = 2;
+  static const int eveningReminderId = 3;
+  static const int streakWarningId = 4;
+  static const int dueWordsId = 5;
+  static const int dailyGoalProgressId = 6;
   
   // Phase 2 IDs
-  static const int achievementId = 6;
-  static const int weeklySummaryId = 7;
-  static const int streakMilestoneId = 8;
-  static const int quizReminderId = 9;
-  static const int comebackEncouragementId = 10;
+  static const int achievementId = 7;
+  static const int weeklySummaryId = 8;
+  static const int streakMilestoneId = 9;
+  static const int quizReminderId = 10;
+  static const int comebackEncouragementId = 11;
 
   Future<void> initialize() async {
     // Android initialization
@@ -77,30 +78,44 @@ class NotificationService {
     
     // Check if notifications are enabled
     final morningEnabled = prefs.getBool('morning_reminder_enabled') ?? true;
+    final noonEnabled = prefs.getBool('noon_reminder_enabled') ?? true;
     final eveningEnabled = prefs.getBool('evening_reminder_enabled') ?? true;
     
     // Get custom times or use defaults
     final morningHour = prefs.getInt('morning_reminder_hour') ?? 8;
     final morningMinute = prefs.getInt('morning_reminder_minute') ?? 0;
+    final noonHour = prefs.getInt('noon_reminder_hour') ?? 11;
+    final noonMinute = prefs.getInt('noon_reminder_minute') ?? 45;
     final eveningHour = prefs.getInt('evening_reminder_hour') ?? 19;
     final eveningMinute = prefs.getInt('evening_reminder_minute') ?? 0;
 
     if (morningEnabled) {
       await _scheduleDailyNotification(
         id: morningReminderId,
-        title: 'Good Morning! ☀️',
-        body: 'Ready to learn 10 new words today?',
+        title: 'Chào Buổi Sáng! ☀️',
+        body: 'Sẵn sàng học 10 từ mới hôm nay chưa?',
         hour: morningHour,
         minute: morningMinute,
         payload: 'morning_reminder',
       );
     }
 
+    if (noonEnabled) {
+      await _scheduleDailyNotification(
+        id: noonReminderId,
+        title: 'Nghỉ Trưa Học Từ! ☀️',
+        body: 'Thời gian hoàn hảo để học vài từ mới trong giờ nghỉ!',
+        hour: noonHour,
+        minute: noonMinute,
+        payload: 'noon_reminder',
+      );
+    }
+
     if (eveningEnabled) {
       await _scheduleDailyNotification(
         id: eveningReminderId,
-        title: 'Evening Review 🌙',
-        body: 'Time to practice today\'s words!',
+        title: 'Ôn Tập Buổi Tối 🌙',
+        body: 'Đã đến lúc ôn lại những từ hôm nay!',
         hour: eveningHour,
         minute: eveningMinute,
         payload: 'evening_reminder',
@@ -124,8 +139,8 @@ class NotificationService {
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'daily_reminders',
-          'Daily Learning Reminders',
-          channelDescription: 'Daily reminders to study vocabulary',
+          'Nhắc Nhở Học Hàng Ngày',
+          channelDescription: 'Nhắc nhở hàng ngày để học từ vựng',
           importance: Importance.high,
           priority: Priority.high,
           icon: '@mipmap/ic_launcher',
@@ -163,14 +178,14 @@ class NotificationService {
         if (today.isBefore(warningTime)) {
           await notifications.zonedSchedule(
             streakWarningId,
-            'Don\'t break your streak! 🔥',
-            'You have a $currentStreak-day streak. Just 5 minutes of study!',
+            'Đừng phá vỡ chuỗi học! 🔥',
+            'Bạn có chuỗi $currentStreak ngày. Chỉ cần 5 phút học thôi!',
             tz.TZDateTime.from(warningTime, tz.local),
             const NotificationDetails(
               android: AndroidNotificationDetails(
                 'streak_warnings',
-                'Streak Warnings',
-                channelDescription: 'Warnings to maintain learning streak',
+                'Cảnh Báo Chuỗi Học',
+                channelDescription: 'Cảnh báo duy trì chuỗi học tập',
                 importance: Importance.max,
                 priority: Priority.max,
                 icon: '@mipmap/ic_launcher',
@@ -202,13 +217,13 @@ class NotificationService {
       if (dueWords.isNotEmpty) {
         await notifications.show(
           dueWordsId,
-          'Review Time! 📝',
-          '${dueWords.length} words are due for review. Perfect your memory!',
+          'Giờ Ôn Tập! 📝',
+          '${dueWords.length} từ cần được ôn tập. Hoàn thiện trí nhớ của bạn!',
           const NotificationDetails(
             android: AndroidNotificationDetails(
               'due_words',
-              'Due Words Alerts',
-              channelDescription: 'Alerts for words that need review',
+              'Thông Báo Từ Cần Ôn',
+              channelDescription: 'Thông báo cho các từ cần ôn tập',
               importance: Importance.high,
               priority: Priority.high,
               icon: '@mipmap/ic_launcher',
@@ -247,16 +262,16 @@ class NotificationService {
 
       if (todayWordsLearned == 0 && today.hour >= 12) {
         // Afternoon reminder if no progress
-        title = 'Let\'s get started! 🎯';
-        body = 'Your daily goal: $dailyGoal words. Perfect time to begin!';
+        title = 'Hãy bắt đầu nào! 🎯';
+        body = 'Mục tiêu hôm nay: $dailyGoal từ. Đây là thời điểm hoàn hảo!';
       } else if (todayWordsLearned >= dailyGoal) {
         // Goal achieved
-        title = 'Daily Goal Completed! ✅';
-        body = 'Amazing! You\'ve learned $todayWordsLearned words today. You\'re on fire! 🔥';
+        title = 'Hoàn Thành Mục Tiêu! ✅';
+        body = 'Tuyệt vời! Bạn đã học $todayWordsLearned từ hôm nay. Bạn thật xuất sắc! 🔥';
       } else if (todayWordsLearned >= dailyGoal * 0.5) {
         // 50% progress
-        title = 'Halfway There! 🎯';
-        body = '$todayWordsLearned/$dailyGoal words learned. Keep going!';
+        title = 'Đã Được Một Nửa! 🎯';
+        body = 'Đã học $todayWordsLearned/$dailyGoal từ. Tiếp tục nhé!';
       }
 
       if (title != null && body != null) {
@@ -267,8 +282,8 @@ class NotificationService {
           const NotificationDetails(
             android: AndroidNotificationDetails(
               'goal_progress',
-              'Daily Goal Progress',
-              channelDescription: 'Updates on daily learning goal progress',
+              'Tiến Độ Mục Tiêu Hàng Ngày',
+              channelDescription: 'Cập nhật tiến độ mục tiêu học tập hàng ngày',
               importance: Importance.defaultImportance,
               priority: Priority.defaultPriority,
               icon: '@mipmap/ic_launcher',
@@ -375,13 +390,13 @@ class NotificationService {
 
     await notifications.show(
       achievementId,
-      'Achievement Unlocked! $emoji',
+      'Mở Khóa Thành Tích! $emoji',
       '$achievementTitle - $achievementDescription',
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'achievements',
-          'Achievement Notifications',
-          channelDescription: 'Notifications for unlocked achievements',
+          'Thông Báo Thành Tích',
+          channelDescription: 'Thông báo cho các thành tích mở khóa',
           importance: Importance.high,
           priority: Priority.high,
           icon: '@mipmap/ic_launcher',
@@ -414,14 +429,14 @@ class NotificationService {
     
     await notifications.zonedSchedule(
       weeklySummaryId,
-      'Weekly Progress Report 📊',
-      'This week: ${weeklyStats['wordsLearned']} words, ${weeklyStats['streakDays']} day streak, ${weeklyStats['accuracy']}% accuracy!',
+      'Báo Cáo Tiến Độ Tuần 📊',
+      'Tuần này: ${weeklyStats['wordsLearned']} từ, chuỗi ${weeklyStats['streakDays']} ngày, độ chính xác ${weeklyStats['accuracy']}%!',
       tz.TZDateTime.from(summaryTime, tz.local),
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'weekly_summary',
-          'Weekly Summary',
-          channelDescription: 'Weekly learning progress reports',
+          'Tổng Kết Tuần',
+          channelDescription: 'Báo cáo tiến độ học tập hàng tuần',
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
           icon: '@mipmap/ic_launcher',
@@ -448,17 +463,17 @@ class NotificationService {
     String body = '';
     
     if (streakDays == 7) {
-      title = 'Amazing! 🎉';
-      body = '7-day learning streak achieved! You\'re building great habits!';
+      title = 'Tuyệt vời! 🎉';
+      body = 'Đạt được chuỗi học 7 ngày! Bạn đang xây dựng thói quen tuyệt vời!';
     } else if (streakDays == 30) {
-      title = 'Incredible! 🏆';
-      body = '30-day streak! You\'re a dedicated learner!';
+      title = 'Không thể tin nổi! 🏆';
+      body = 'Chuỗi 30 ngày! Bạn là một học viên tận tâm!';
     } else if (streakDays == 100) {
-      title = 'Legendary! 👑';
-      body = '100-day streak master! You\'re unstoppable!';
+      title = 'Huyền thoại! 👑';
+      body = 'Bậc thầy chuỗi 100 ngày! Bạn không thể cản được!';
     } else if (streakDays % 50 == 0 && streakDays > 100) {
-      title = 'Phenomenal! ⭐';
-      body = '$streakDays days of consistent learning! You\'re an inspiration!';
+      title = 'Phi thường! ⭐';
+      body = '$streakDays ngày học tập kiên trì! Bạn là nguồn cảm hứng!';
     } else {
       return; // Only celebrate specific milestones
     }
@@ -470,8 +485,8 @@ class NotificationService {
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'streak_milestones',
-          'Streak Milestones',
-          channelDescription: 'Celebrations for streak achievements',
+          'Cốt Mốc Chuỗi Học',
+          channelDescription: 'Chúc mừng các thành tích chuỗi học',
           importance: Importance.max,
           priority: Priority.max,
           icon: '@mipmap/ic_launcher',
@@ -506,13 +521,13 @@ class NotificationService {
       if (lastQuiz == null || today.difference(lastQuiz).inDays >= 2) {
         await notifications.show(
           quizReminderId,
-          'Quiz Time! ❓',
-          'Test your vocabulary knowledge with a quick quiz!',
+          'Giờ Kiểm Tra! ❓',
+          'Hãy kiểm tra kiến thức từ vựng với một bài quiz nhanh!',
           const NotificationDetails(
             android: AndroidNotificationDetails(
               'quiz_reminders',
-              'Quiz Reminders',
-              channelDescription: 'Reminders to take vocabulary quizzes',
+              'Nhắc Nhở Kiểm Tra',
+              channelDescription: 'Nhắc nhở làm kiểm tra từ vựng',
               importance: Importance.defaultImportance,
               priority: Priority.defaultPriority,
               icon: '@mipmap/ic_launcher',
@@ -541,24 +556,24 @@ class NotificationService {
 
       if (daysSinceActive >= 3) {
         final messages = [
-          'We miss you! 😊 Your vocabulary is waiting to grow',
-          'Come back and continue your learning journey! 🌟',
-          'Don\'t let your progress slip away! 💪 Let\'s learn together',
-          'Your words are lonely without you! 📚 Time to reunite?',
-          'Ready to get back on track? 🚀 Your goals are waiting!',
+          'Chúng tôi nhớ bạn! 😊 Từ vựng của bạn đang chờ được mở rộng',
+          'Hãy quay lại và tiếp tục hành trình học tập! 🌟',
+          'Đừng để tiến độ của bạn tuột mất! 💪 Cùng học nào',
+          'Những từ vựng đang cô đơn thiếu bạn! 📚 Đã đến lúc đoàn tụ?',
+          'Sẵn sàng quay lại đúng hướng? 🚀 Mục tiêu của bạn đang chờ!',
         ];
         
         final randomMessage = messages[DateTime.now().millisecond % messages.length];
 
         await notifications.show(
           comebackEncouragementId,
-          'Come Back! 🎯',
+          'Hãy Quay Lại! 🎯',
           randomMessage,
           const NotificationDetails(
             android: AndroidNotificationDetails(
               'comeback_encouragement',
-              'Comeback Encouragement',
-              channelDescription: 'Encouraging messages for inactive users',
+              'Khích Lệ Trở Lại',
+              channelDescription: 'Tin nhắn khích lệ cho người dùng không hoạt động',
               importance: Importance.defaultImportance,
               priority: Priority.defaultPriority,
               icon: '@mipmap/ic_launcher',

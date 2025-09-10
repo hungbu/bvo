@@ -90,8 +90,8 @@ class LocalNotificationService {
     final AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       channelId ?? 'default_channel',
-      channelName ?? 'Default Channel',
-      channelDescription: channelDescription ?? 'Default notification channel',
+      channelName ?? 'Kênh Mặc Định',
+      channelDescription: channelDescription ?? 'Kênh thông báo mặc định',
       importance: importance,
       priority: priority,
       icon: 'ic_notification',
@@ -132,8 +132,8 @@ class LocalNotificationService {
     final AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       channelId ?? 'scheduled_channel',
-      channelName ?? 'Scheduled Notifications',
-      channelDescription: channelDescription ?? 'Scheduled notification channel',
+      channelName ?? 'Thông Báo Đã Lên Lịch',
+      channelDescription: channelDescription ?? 'Kênh thông báo đã lên lịch',
       importance: Importance.max,
       priority: Priority.high,
       icon: 'ic_notification',
@@ -177,8 +177,8 @@ class LocalNotificationService {
     final AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       channelId ?? 'repeating_channel',
-      channelName ?? 'Repeating Notifications',
-      channelDescription: 'Repeating notification channel',
+      channelName ?? 'Thông Báo Lặp Lại',
+      channelDescription: 'Kênh thông báo lặp lại',
       importance: Importance.max,
       priority: Priority.high,
       icon: 'ic_notification',
@@ -234,8 +234,8 @@ class LocalNotificationService {
           : 'Don\'t forget to practice your vocabulary today!',
       payload: 'vocabulary_reminder',
       channelId: 'vocabulary_channel',
-      channelName: 'Vocabulary Reminders',
-      channelDescription: 'Notifications for vocabulary practice reminders',
+      channelName: 'Nhắc Nhở Từ Vựng',
+      channelDescription: 'Thông báo nhắc nhở luyện tập từ vựng',
       importance: Importance.high,
       priority: Priority.high,
     );

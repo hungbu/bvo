@@ -45,6 +45,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   GoogleSignInAccount? _currentUser;
+  bool _isInitializing = true;
 
   @override
   void initState() {
@@ -65,6 +66,7 @@ class _MyAppState extends State<MyApp> {
     final user = await AuthService().signInSilently();
     setState(() {
       _currentUser = user;
+      _isInitializing = false;
     });
     
     // Schedule notifications if user is signed in
@@ -92,11 +94,83 @@ class _MyAppState extends State<MyApp> {
       title: 'Bun Vocabulary',
       debugShowCheckedModeBanner: false,
       theme: PurpleTheme.getTheme(),
-      initialRoute: _currentUser != null ? '/main' : '/login',
+      home: _isInitializing 
+        ? const SplashScreen()
+        : _currentUser != null 
+          ? const MainLayout()
+          : const LoginScreen(),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/main': (context) => const MainLayout(),
       },
+    );
+  }
+}
+
+// Simple splash screen while checking auth state
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).primaryColor,
+              Theme.of(context).primaryColor.withOpacity(0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // App Logo
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.2),
+                  border: Border.all(color: Colors.white, width: 3),
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback to icon if image not found
+                      return const Icon(
+                        Icons.school,
+                        size: 50,
+                        color: Colors.white,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              // Loading indicator
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Đang khởi động...',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
