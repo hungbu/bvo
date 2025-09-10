@@ -140,15 +140,6 @@ class _FlashcardState extends State<Flashcard> {
                     icon: const Icon(Icons.hearing, size: 32),
                     tooltip: 'Phát âm chậm',
                   ),
-                  const SizedBox(width: 16),
-                  IconButton(
-                    onPressed: _toggleEnglishText,
-                    icon: Icon(
-                      _showEnglishText ? Icons.visibility : Icons.visibility_off,
-                      size: 32,
-                    ),
-                    tooltip: _showEnglishText ? 'Ẩn từ tiếng Anh' : 'Hiện từ tiếng Anh',
-                  ),
                 ],
               ),
               const SizedBox(height: 16),

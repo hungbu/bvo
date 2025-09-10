@@ -11,8 +11,14 @@ import 'package:bvo/screen/flashcard/flashcard.dart';
 class FlashCardScreen extends StatefulWidget {
   final List<Word> words;
   final String topic;
+  final int startIndex;
 
-  const FlashCardScreen({super.key, required this.words, required this.topic});
+  const FlashCardScreen({
+    super.key, 
+    required this.words, 
+    required this.topic,
+    this.startIndex = 0,
+  });
 
   @override
   State<FlashCardScreen> createState() => _FlashCardScreenState();
@@ -35,6 +41,11 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   
   // Flashcard settings
   bool _sessionHideEnglishText = false;
+  
+  // Pagination for 20 words limit
+  List<Word> _currentWords = [];
+  int _currentBatchIndex = 0;
+  static const int _wordsPerBatch = 20;
 
   @override
   void initState() {
@@ -45,14 +56,38 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
     await loadWords();
+    _initializeBatchIndex(); // Initialize batch index first
+    _loadCurrentBatch();
     _sessionStartTime = DateTime.now(); // Start tracking session time
-    if (widget.words.isNotEmpty) {
-      _speakEnglish(widget.words[0].en);
+    if (_currentWords.isNotEmpty) {
+      _speakEnglish(_currentWords[0].en);
     }
 
     setState(() {
       _inputFocusNode.requestFocus();
     });
+  }
+  
+  void _loadCurrentBatch() {
+    int startIndex = _currentBatchIndex * _wordsPerBatch;
+    int endIndex = (startIndex + _wordsPerBatch).clamp(0, widget.words.length);
+    
+    _currentWords = widget.words.sublist(startIndex, endIndex);
+    _currentIndex = 0;
+    _correctAnswers = 0;
+    _totalAttempts = 0;
+    _sessionStartTime = DateTime.now();
+    
+    print('📚 Loading batch ${_currentBatchIndex + 1}: words $startIndex to ${endIndex - 1} (${_currentWords.length} words)');
+    if (_currentWords.isNotEmpty) {
+      print('📖 First word in batch: ${_currentWords[0].en}');
+      print('📖 Last word in batch: ${_currentWords.last.en}');
+    }
+  }
+  
+  void _initializeBatchIndex() {
+    _currentBatchIndex = widget.startIndex ~/ _wordsPerBatch;
+    print('🎯 Initialized batch index: $_currentBatchIndex (startIndex: ${widget.startIndex})');
   }
 
   Future<void> loadWords() async {
@@ -189,7 +224,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
 
   void _checkAnswer() {
     String userAnswer = _controller.text.trim().toLowerCase();
-    String correctAnswer = widget.words[_currentIndex].en
+    String correctAnswer = _currentWords[_currentIndex].en
         .trim()
         .toLowerCase()
         .replaceAll("-", " ");
@@ -198,10 +233,11 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
 
     if (userAnswer == correctAnswer) {
       // Update the word with incremented reviewCount using copyWith
-      widget.words[_currentIndex] = widget.words[_currentIndex].copyWith(
-        reviewCount: widget.words[_currentIndex].reviewCount + 1,
-        correctAnswers: widget.words[_currentIndex].correctAnswers + 1,
-        totalAttempts: widget.words[_currentIndex].totalAttempts + 1,
+      int originalIndex = (_currentBatchIndex * _wordsPerBatch) + _currentIndex;
+      widget.words[originalIndex] = widget.words[originalIndex].copyWith(
+        reviewCount: widget.words[originalIndex].reviewCount + 1,
+        correctAnswers: widget.words[originalIndex].correctAnswers + 1,
+        totalAttempts: widget.words[originalIndex].totalAttempts + 1,
         lastReviewed: DateTime.now(),
       );
       _correctAnswers++; // Track correct answers
@@ -222,14 +258,14 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
 
   void _nextSlide({int delay = 500}) {
     Future.delayed(Duration(milliseconds: delay), () {
-      if (_currentIndex < widget.words.length - 1) {
+      if (_currentIndex < _currentWords.length - 1) {
         _carouselController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.linear,
         );
         _controller.clear();
       } else {
-        // Show completion dialog instead of just text message
+        // Show completion dialog for current batch
         _showCompletionDialog();
       }
     });
@@ -287,7 +323,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
               Text(
-                'Bạn đã hoàn thành chủ đề "${widget.topic}"',
+                'Bạn đã hoàn thành ${_currentWords.length} từ trong chủ đề "${widget.topic}"',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -326,7 +362,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                           ],
                         ),
                         Text(
-                          '${widget.words.length}',
+                          '${_currentWords.length}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.blue,
@@ -425,25 +461,43 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.pop(context); // Close dialog
-                _restartSession();
+                _restartCurrentBatch();
               },
               icon: const Icon(Icons.refresh),
-              label: const Text('Học lại'),
+              label: const Text('Làm lại'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
+            
+            // Continue with next batch button (if available)
+            if (_hasMoreWords())
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  _loadNextBatch();
+                },
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Làm tiếp'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
           ],
         );
       },
     );
   }
 
-  void _restartSession() {
+  void _restartCurrentBatch() {
     setState(() {
       _currentIndex = 0;
       _correctAnswers = 0;
@@ -457,19 +511,64 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     _carouselController.animateToPage(0);
     
     // Speak first word
-    if (widget.words.isNotEmpty) {
-      _speakEnglish(widget.words[0].en);
+    if (_currentWords.isNotEmpty) {
+      _speakEnglish(_currentWords[0].en);
     }
     
     // Focus input
     _inputFocusNode.requestFocus();
+  }
+  
+  bool _hasMoreWords() {
+    int nextBatchStartIndex = (_currentBatchIndex + 1) * _wordsPerBatch;
+    return nextBatchStartIndex < widget.words.length;
+  }
+  
+  void _loadNextBatch() {
+    print('🔄 _loadNextBatch called. Current batch: $_currentBatchIndex');
+    print('📊 Total words: ${widget.words.length}, Has more: ${_hasMoreWords()}');
+    
+    if (_hasMoreWords()) {
+      int oldBatchIndex = _currentBatchIndex;
+      _currentBatchIndex++;
+      print('⬆️ Incrementing batch from $oldBatchIndex to $_currentBatchIndex');
+      
+      _loadCurrentBatch();
+      
+      setState(() {
+        _feedbackMessage = '';
+        _controller.clear();
+      });
+      
+      // Reset carousel to first card of new batch
+      _carouselController.animateToPage(0);
+      
+      // Speak first word of new batch
+      if (_currentWords.isNotEmpty) {
+        _speakEnglish(_currentWords[0].en);
+        print('🔊 Speaking first word of new batch: ${_currentWords[0].en}');
+      }
+      
+      // Focus input
+      _inputFocusNode.requestFocus();
+      
+      // Show info about new batch
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Bắt đầu batch ${_currentBatchIndex + 1}: ${_currentWords.length} từ mới'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      print('❌ No more words available');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('FlashCard - ${widget.topic}'),
+        title: Text('FlashCard - ${widget.topic} (${_currentWords.length} từ)'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -492,7 +591,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
           ),
         ],
       ),
-      body: widget.words.isEmpty 
+      body: _currentWords.isEmpty 
           ? const Center(child: CircularProgressIndicator())
           : bodyWidget(),
     );
@@ -522,7 +621,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   Widget flashCardWidget() {
     return CarouselSlider.builder(
       carouselController: _carouselController,
-      itemCount: widget.words.length,
+      itemCount: _currentWords.length,
       options: CarouselOptions(
         height: double.infinity,
         enlargeCenterPage: true,
@@ -532,14 +631,14 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
             _currentIndex = index;
             _controller.clear();
             _feedbackMessage = '';
-            _speakEnglish(widget.words[_currentIndex].en);
+            _speakEnglish(_currentWords[_currentIndex].en);
             _inputFocusNode.requestFocus();
           });
         },
       ),
       itemBuilder: (context, index, realIndex) {
         return Flashcard(
-          word: widget.words[index],
+          word: _currentWords[index],
           sessionHideEnglishText: _sessionHideEnglishText,
           onAnswerSubmitted: (answer) {
             _checkAnswer();

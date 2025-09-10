@@ -154,6 +154,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                     builder: (context) => FlashCardScreen(
                       topic: widget.topic,
                       words: words,
+                      startIndex: 0, // Start from beginning
                     ),
                   ),
                 );
