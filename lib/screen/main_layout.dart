@@ -26,10 +26,10 @@ class _MainLayoutState extends State<MainLayout> {
 
   // Danh sách title cho từng màn hình
   List<String> get _screenTitles => [
-    'Home', // Home screen không hiển thị AppBar
-    'All Topics',
-    'Quiz & Review',
-    'Profile',
+    'Home',
+    'Tất Cả Chủ Đề',
+    'Kiểm Tra & Ôn Tập',
+    'Tài khoản',
   ];
 
   @override
@@ -63,9 +63,9 @@ class _MainLayoutState extends State<MainLayout> {
           height: 60,
           items: const [
             TabItem(icon: Icons.home, title: 'Home'),
-            TabItem(icon: Icons.topic, title: 'Topics'),
-            TabItem(icon: Icons.quiz, title: 'Quiz'),
-            TabItem(icon: Icons.person, title: 'Profile'),
+            TabItem(icon: Icons.topic, title: 'Chủ Đề'),
+            TabItem(icon: Icons.quiz, title: 'Kiểm Tra'),
+            TabItem(icon: Icons.person, title: 'Tài khoản'),
           ],
           initialActiveIndex: 0,
           onTap: (int index) {

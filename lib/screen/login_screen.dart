@@ -82,66 +82,38 @@ class _LoginScreenState extends State<LoginScreen> {
                     
                     // App Logo/Icon
                     Container(
-                      width: 100,
-                      height: 100,
+                      width: 200,
+                      height: 200,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.2),
                         border: Border.all(color: Colors.white, width: 3),
                       ),
-                      child: const Icon(
-                        Icons.school,
-                        size: 50,
-                        color: Colors.white,
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            // Fallback to icon if image not found
+                            return const Icon(
+                              Icons.school,
+                              size: 50,
+                              color: Colors.white,
+                            );
+                          },
+                        ),
                       ),
                     ),
 
                     const SizedBox(height: 30),
 
-                    // App Title
-                    const Text(
-                      'ĐÔNG SƠN Vocabulary',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // Subtitle
-                    Text(
-                      'Learn vocabulary the smart way',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    // Welcome Message
-                    const Text(
-                      'Welcome Back!',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 8),
-
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
-                        'Sign in to continue your learning journey',
+                        'ĐĂNG NHẬP',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                           color: Colors.white.withOpacity(0.9),
                         ),
                         textAlign: TextAlign.center,
@@ -174,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   color: Colors.red,
                                 ),
                           label: Text(
-                            _isLoading ? 'Signing in...' : 'Sign in with Google',
+                            _isLoading ? 'Đang đăng nhập...' : 'Đăng nhập với Google',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -194,21 +166,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 40),
 
-                    // Features
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        children: [
-                          _buildFeatureItem(Icons.school, 'Interactive Learning'),
-                          const SizedBox(height: 12),
-                          _buildFeatureItem(Icons.trending_up, 'Track Progress'),
-                          const SizedBox(height: 12),
-                          _buildFeatureItem(Icons.emoji_events, 'Earn Achievements'),
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -216,32 +173,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildFeatureItem(IconData icon, String text) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: Colors.white.withOpacity(0.8),
-          size: 18,
-        ),
-        const SizedBox(width: 10),
-        Flexible(
-          child: Text(
-            text,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
-              fontSize: 13,
-            ),
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
     );
   }
 }

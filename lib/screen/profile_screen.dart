@@ -162,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   // Statistics Cards
                   const Text(
-                    'Your Progress',
+                    'Tiến Độ Của Bạn',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -174,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          'Words Learned',
+                          'Từ Đã Học',
                           totalWordsLearned.toString(),
                           Icons.school,
                           Colors.blue,
@@ -183,7 +183,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _buildStatCard(
-                          'Today\'s Words',
+                          'Từ Hôm Nay',
                           todayWordsLearned.toString(),
                           Icons.today,
                           Colors.cyan,
@@ -198,7 +198,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          'Current Streak',
+                          'Chuỗi Hiện Tại',
                           '$currentStreak days',
                           Icons.local_fire_department,
                           Colors.orange,
@@ -207,7 +207,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _buildStatCard(
-                          'Longest Streak',
+                          'Chuỗi Dài Nhất',
                           '$longestStreak days',
                           Icons.emoji_events,
                           Colors.green,
@@ -220,7 +220,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          'Accuracy',
+                          'Độ Chính Xác',
                           '${accuracy.toStringAsFixed(1)}%',
                           Icons.trending_up,
                           Colors.purple,
@@ -229,7 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _buildStatCard(
-                          'Quiz Words',
+                          'Từ Quiz',
                           totalWordsInQuiz.toString(),
                           Icons.quiz,
                           Colors.indigo,
@@ -244,7 +244,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          'Due Words',
+                          'Từ Cần Ôn',
                           dueWordsCount.toString(),
                           Icons.schedule,
                           Colors.red,
@@ -253,7 +253,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _buildStatCard(
-                          'Total Topics',
+                          'Tổng Chủ Đề',
                           totalTopics.toString(),
                           Icons.topic,
                           Colors.teal,
@@ -266,7 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   // Achievements Section
                   const Text(
-                    'Achievements',
+                    'Thành Tích',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -286,7 +286,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   // Settings Section
                   const Text(
-                    'Settings',
+                    'Cài Đặt',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -296,26 +296,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   _buildSettingsItem(
                     icon: Icons.notifications,
-                    title: 'Notifications',
-                    subtitle: 'Daily reminders and updates',
+                    title: 'Thông Báo',
+                    subtitle: 'Nhắc nhở hàng ngày và cập nhật',
                     onTap: () {
                       _showNotificationSettings();
                     },
                   ),
 
                   _buildSettingsItem(
-                    icon: Icons.language,
-                    title: 'Language',
-                    subtitle: 'English',
-                    onTap: () {
-                      // Handle language settings
-                    },
-                  ),
-
-                  _buildSettingsItem(
                     icon: Icons.volume_up,
-                    title: 'Sound',
-                    subtitle: 'Voice and sound effects',
+                    title: 'Âm Thanh',
+                    subtitle: 'Giọng nói và hiệu ứng âm thanh',
                     onTap: () {
                       // Handle sound settings
                     },
@@ -324,7 +315,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildSettingsItem(
                     icon: Icons.help,
                     title: 'Help & Support',
-                    subtitle: 'FAQ and contact us',
+                    subtitle: 'Câu hỏi thường gặp và liên hệ',
                     onTap: () {
                       // Handle help
                     },
@@ -332,8 +323,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   _buildSettingsItem(
                     icon: Icons.privacy_tip,
-                    title: 'Privacy Policy',
-                    subtitle: 'Terms and conditions',
+                    title: 'Chính Sách Bảo Mật',
+                    subtitle: 'Điều khoản và điều kiện',
                     onTap: () {
                       // Handle privacy policy
                     },
@@ -342,30 +333,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 20),
 
                   // Clear Local Data Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        _showClearDataDialog();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange.shade50,
-                        foregroundColor: Colors.orange,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: Colors.orange.shade200),
-                        ),
-                      ),
-                      child: const Text(
-                        'Clear Local Data',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //   child: ElevatedButton(
+                  //     onPressed: () {
+                  //       _showClearDataDialog();
+                  //     },
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: Colors.orange.shade50,
+                  //       foregroundColor: Colors.orange,
+                  //       padding: const EdgeInsets.symmetric(vertical: 16),
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //         side: BorderSide(color: Colors.orange.shade200),
+                  //       ),
+                  //     ),
+                  //     child: const Text(
+                  //       'Xóa Dữ Liệu Cục Bộ',
+                  //       style: TextStyle(
+                  //         fontSize: 16,
+                  //         fontWeight: FontWeight.bold,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
 
                   const SizedBox(height: 16),
 
@@ -386,7 +377,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       child: const Text(
-                        'Sign Out',
+                        'Đăng Xuất',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -445,7 +436,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // First Word Achievement
     if (totalWordsLearned > 0) {
-      achievements.add(_buildAchievementBadge('First Word', Icons.star, Colors.amber));
+      achievements.add(_buildAchievementBadge('Từ Đầu Tiên', Icons.star, Colors.amber));
     }
 
     // Streak Achievements
@@ -472,28 +463,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // Quiz Achievements
     if (totalWordsInQuiz >= 20) {
-      achievements.add(_buildAchievementBadge('Quiz Master', Icons.quiz, Colors.green));
+      achievements.add(_buildAchievementBadge('Bậc Thầy Quiz', Icons.quiz, Colors.green));
     }
     if (accuracy >= 80.0) {
-      achievements.add(_buildAchievementBadge('High Accuracy', Icons.trending_up, Colors.teal));
+      achievements.add(_buildAchievementBadge('Độ Chính Xác Cao', Icons.trending_up, Colors.teal));
     }
 
     // Topic Achievements
     if (reviewedWordsByTopic.length >= 3) {
-      achievements.add(_buildAchievementBadge('Explorer', Icons.explore, Colors.cyan));
+      achievements.add(_buildAchievementBadge('Nhà Khám Phá', Icons.explore, Colors.cyan));
     }
 
     // Daily Achievements
     if (todayWordsLearned >= 5) {
-      achievements.add(_buildAchievementBadge('Daily Goal', Icons.today, Colors.lightBlue));
+      achievements.add(_buildAchievementBadge('Mục Tiêu Hàng Ngày', Icons.today, Colors.lightBlue));
     }
     if (todayWordsLearned >= 10) {
-      achievements.add(_buildAchievementBadge('Super Learner', Icons.star_rate, Colors.amber));
+      achievements.add(_buildAchievementBadge('Siêu Học Viên', Icons.star_rate, Colors.amber));
     }
 
     // If no achievements, show placeholder
     if (achievements.isEmpty) {
-      achievements.add(_buildAchievementBadge('Start Learning', Icons.play_arrow, Colors.grey));
+      achievements.add(_buildAchievementBadge('Bắt Đầu Học', Icons.play_arrow, Colors.grey));
     }
 
     return achievements;
@@ -570,14 +561,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Sign Out'),
-          content: const Text('Are you sure you want to sign out? This will clear all your local data.'),
+          title: const Text('Đăng Xuất'),
+          content: const Text('Bạn có chắc chắn muốn đăng xuất? Điều này sẽ xóa tất cả dữ liệu cục bộ của bạn.'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: const Text('Hủy'),
             ),
             TextButton(
               onPressed: () async {
@@ -587,7 +578,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: TextButton.styleFrom(
                 foregroundColor: Colors.red,
               ),
-              child: const Text('Sign Out'),
+              child: const Text('Đăng Xuất'),
             ),
           ],
         );
@@ -600,14 +591,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Clear Local Data'),
-          content: const Text('Are you sure you want to clear all local data? This will remove all cached topics and words. You can refresh the data by navigating through the app again.'),
+          title: const Text('Xóa Dữ Liệu Cục Bộ'),
+          content: const Text('Bạn có chắc chắn muốn xóa tất cả dữ liệu cục bộ? Điều này sẽ xóa tất cả chủ đề và từ vựng đã lưu. Bạn có thể làm mới dữ liệu bằng cách điều hướng qua ứng dụng lại.'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: const Text('Hủy'),
             ),
             TextButton(
               onPressed: () async {
@@ -617,7 +608,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: TextButton.styleFrom(
                 foregroundColor: Colors.orange,
               ),
-              child: const Text('Clear Data'),
+              child: const Text('Xóa Dữ Liệu'),
             ),
           ],
         );
@@ -755,6 +746,7 @@ class NotificationSettingsSheet extends StatefulWidget {
 class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
   bool _notificationsEnabled = true;
   bool _morningReminderEnabled = true;
+  bool _noonReminderEnabled = true;
   bool _eveningReminderEnabled = true;
   bool _streakWarningEnabled = true;
   bool _dueWordsEnabled = true;
@@ -768,6 +760,7 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
   bool _comebackEnabled = true;
   
   TimeOfDay _morningTime = const TimeOfDay(hour: 8, minute: 0);
+  TimeOfDay _noonTime = const TimeOfDay(hour: 11, minute: 45);
   TimeOfDay _eveningTime = const TimeOfDay(hour: 19, minute: 0);
 
   @override
@@ -781,6 +774,7 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
     setState(() {
       _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
       _morningReminderEnabled = prefs.getBool('morning_reminder_enabled') ?? true;
+      _noonReminderEnabled = prefs.getBool('noon_reminder_enabled') ?? true;
       _eveningReminderEnabled = prefs.getBool('evening_reminder_enabled') ?? true;
       _streakWarningEnabled = prefs.getBool('streak_warning_enabled') ?? true;
       _dueWordsEnabled = prefs.getBool('due_words_enabled') ?? true;
@@ -795,10 +789,13 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
       
       final morningHour = prefs.getInt('morning_reminder_hour') ?? 8;
       final morningMinute = prefs.getInt('morning_reminder_minute') ?? 0;
+      final noonHour = prefs.getInt('noon_reminder_hour') ?? 11;
+      final noonMinute = prefs.getInt('noon_reminder_minute') ?? 45;
       final eveningHour = prefs.getInt('evening_reminder_hour') ?? 19;
       final eveningMinute = prefs.getInt('evening_reminder_minute') ?? 0;
       
       _morningTime = TimeOfDay(hour: morningHour, minute: morningMinute);
+      _noonTime = TimeOfDay(hour: noonHour, minute: noonMinute);
       _eveningTime = TimeOfDay(hour: eveningHour, minute: eveningMinute);
     });
   }
@@ -807,6 +804,7 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('notifications_enabled', _notificationsEnabled);
     await prefs.setBool('morning_reminder_enabled', _morningReminderEnabled);
+    await prefs.setBool('noon_reminder_enabled', _noonReminderEnabled);
     await prefs.setBool('evening_reminder_enabled', _eveningReminderEnabled);
     await prefs.setBool('streak_warning_enabled', _streakWarningEnabled);
     await prefs.setBool('due_words_enabled', _dueWordsEnabled);
@@ -821,6 +819,8 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
     
     await prefs.setInt('morning_reminder_hour', _morningTime.hour);
     await prefs.setInt('morning_reminder_minute', _morningTime.minute);
+    await prefs.setInt('noon_reminder_hour', _noonTime.hour);
+    await prefs.setInt('noon_reminder_minute', _noonTime.minute);
     await prefs.setInt('evening_reminder_hour', _eveningTime.hour);
     await prefs.setInt('evening_reminder_minute', _eveningTime.minute);
 
@@ -869,7 +869,7 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Notification Settings',
+                'Cài Đặt Thông Báo',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -893,8 +893,8 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
                 children: [
           // Master toggle
           _buildSwitchTile(
-            title: 'Enable Notifications',
-            subtitle: 'Turn on/off all notifications',
+            title: 'Bật Thông Báo',
+            subtitle: 'Bật/tắt tất cả thông báo',
             value: _notificationsEnabled,
             onChanged: (value) {
               setState(() {
@@ -910,7 +910,7 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             
             // Daily Reminders Section
             const Text(
-              'Daily Reminders',
+              'Nhắc Nhở Hàng Ngày',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -920,8 +920,8 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             const SizedBox(height: 10),
             
             _buildSwitchTile(
-              title: 'Morning Reminder',
-              subtitle: 'Daily study reminder at ${_morningTime.format(context)}',
+              title: 'Nhắc Nhở Buổi Sáng',
+              subtitle: 'Nhắc nhở học tập hàng ngày lúc ${_morningTime.format(context)}',
               value: _morningReminderEnabled,
               onChanged: (value) {
                 setState(() {
@@ -933,14 +933,33 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
               trailing: _morningReminderEnabled 
                 ? IconButton(
                     icon: const Icon(Icons.access_time),
-                    onPressed: () => _selectTime(true),
+                    onPressed: () => _selectTime('morning'),
                   )
                 : null,
             ),
             
             _buildSwitchTile(
-              title: 'Evening Review',
-              subtitle: 'Review reminder at ${_eveningTime.format(context)}',
+              title: 'Nhắc Nhở Buổi Trưa',
+              subtitle: 'Nhắc nhở học tập lúc ${_noonTime.format(context)}',
+              value: _noonReminderEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _noonReminderEnabled = value;
+                });
+                _saveSettings();
+              },
+              icon: Icons.wb_sunny,
+              trailing: _noonReminderEnabled
+                ? IconButton(
+                    icon: const Icon(Icons.access_time),
+                    onPressed: () => _selectTime('noon'),
+                  )
+                : null,
+            ),
+            
+            _buildSwitchTile(
+              title: 'Ôn Tập Buổi Tối',
+              subtitle: 'Nhắc nhở ôn tập lúc ${_eveningTime.format(context)}',
               value: _eveningReminderEnabled,
               onChanged: (value) {
                 setState(() {
@@ -952,7 +971,7 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
               trailing: _eveningReminderEnabled 
                 ? IconButton(
                     icon: const Icon(Icons.access_time),
-                    onPressed: () => _selectTime(false),
+                    onPressed: () => _selectTime('evening'),
                   )
                 : null,
             ),
@@ -961,7 +980,7 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             
             // Other Notifications Section
             const Text(
-              'Learning Alerts',
+              'Cảnh Báo Học Tập',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -971,8 +990,8 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             const SizedBox(height: 10),
             
             _buildSwitchTile(
-              title: 'Streak Warnings',
-              subtitle: 'Remind me to maintain my learning streak',
+              title: 'Cảnh Báo Chuỗi Học',
+              subtitle: 'Nhắc nhở duy trì chuỗi học tập',
               value: _streakWarningEnabled,
               onChanged: (value) {
                 setState(() {
@@ -984,8 +1003,8 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             ),
             
             _buildSwitchTile(
-              title: 'Review Reminders',
-              subtitle: 'Alert when words need review',
+              title: 'Nhắc Nhở Ôn Tập',
+              subtitle: 'Thông báo khi có từ cần ôn tập',
               value: _dueWordsEnabled,
               onChanged: (value) {
                 setState(() {
@@ -997,8 +1016,8 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             ),
             
             _buildSwitchTile(
-              title: 'Goal Progress',
-              subtitle: 'Updates on daily learning progress',
+              title: 'Tiến Độ Mục Tiêu',
+              subtitle: 'Cập nhật tiến độ học tập hàng ngày',
               value: _goalProgressEnabled,
               onChanged: (value) {
                 setState(() {
@@ -1013,7 +1032,7 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             
             // Phase 2 Notifications Section
             const Text(
-              'Achievements & Milestones',
+              'Thành Tích & Cốt Mốc',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -1023,8 +1042,8 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             const SizedBox(height: 10),
             
             _buildSwitchTile(
-              title: 'Achievement Alerts',
-              subtitle: 'Celebrate your learning milestones',
+              title: 'Thông Báo Thành Tích',
+              subtitle: 'Chúc mừng các cốt mốc học tập',
               value: _achievementEnabled,
               onChanged: (value) {
                 setState(() {
@@ -1036,7 +1055,7 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             ),
             
             _buildSwitchTile(
-              title: 'Streak Milestones',
+              title: 'Cốt Mốc Chuỗi Học',
               subtitle: 'Celebrate 7, 30, 100+ day streaks',
               value: _streakMilestoneEnabled,
               onChanged: (value) {
@@ -1049,8 +1068,8 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             ),
             
             _buildSwitchTile(
-              title: 'Weekly Summary',
-              subtitle: 'Sunday evening progress reports',
+              title: 'Tổng Kết Tuần',
+              subtitle: 'Báo cáo tiến độ tối Chủ nhật',
               value: _weeklySummaryEnabled,
               onChanged: (value) {
                 setState(() {
@@ -1065,7 +1084,7 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             
             // Engagement Notifications Section
             const Text(
-              'Engagement & Motivation',
+              'Tương Tác & Động Lực',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -1075,7 +1094,7 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             const SizedBox(height: 10),
             
             _buildSwitchTile(
-              title: 'Quiz Reminders',
+              title: 'Nhắc Nhở Kiểm Tra',
               subtitle: 'Remind to take quizzes every 2 days',
               value: _quizReminderEnabled,
               onChanged: (value) {
@@ -1088,8 +1107,8 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
             ),
             
             _buildSwitchTile(
-              title: 'Comeback Messages',
-              subtitle: 'Encouraging messages when inactive',
+              title: 'Tin Nhắn Trở Lại',
+              subtitle: 'Tin nhắn khích lệ khi không hoạt động',
               value: _comebackEnabled,
               onChanged: (value) {
                 setState(() {
@@ -1149,18 +1168,39 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
     );
   }
 
-  Future<void> _selectTime(bool isMorning) async {
+  Future<void> _selectTime(String timeType) async {
+    TimeOfDay initialTime;
+    switch (timeType) {
+      case 'morning':
+        initialTime = _morningTime;
+        break;
+      case 'noon':
+        initialTime = _noonTime;
+        break;
+      case 'evening':
+        initialTime = _eveningTime;
+        break;
+      default:
+        initialTime = _morningTime;
+    }
+    
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: isMorning ? _morningTime : _eveningTime,
+      initialTime: initialTime,
     );
     
     if (picked != null) {
       setState(() {
-        if (isMorning) {
-          _morningTime = picked;
-        } else {
-          _eveningTime = picked;
+        switch (timeType) {
+          case 'morning':
+            _morningTime = picked;
+            break;
+          case 'noon':
+            _noonTime = picked;
+            break;
+          case 'evening':
+            _eveningTime = picked;
+            break;
         }
       });
       await _saveSettings();

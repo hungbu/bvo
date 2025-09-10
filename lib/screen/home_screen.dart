@@ -823,17 +823,17 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 12),
         
         // Basic groups
-        _buildLevelSection('Basic', 'basic'),
+        _buildLevelSection('Cơ Bản', 'basic'),
         
         const SizedBox(height: 12),
         
         // Intermediate groups
-        _buildLevelSection('Intermediate', 'intermediate'),
+        _buildLevelSection('Trung Cấp', 'intermediate'),
         
         const SizedBox(height: 12),
         
         // Advanced groups
-        _buildLevelSection('Advanced', 'advanced'),
+        _buildLevelSection('Nâng Cao', 'advanced'),
       ],
     );
   }
@@ -1465,7 +1465,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // First word achievement
     if (totalWords == 1) {
       await notificationService.showAchievementNotification(
-        achievementTitle: 'First Word',
+        achievementTitle: 'Từ Đầu Tiên',
         achievementDescription: 'Your vocabulary journey begins!',
         achievementType: 'first_word',
       );
@@ -1486,7 +1486,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } else if (totalWords == 100) {
       await notificationService.showAchievementNotification(
-        achievementTitle: 'Century Club',
+        achievementTitle: 'Câu Lạc Bộ Trăm Từ',
         achievementDescription: '100 words learned! You\'re unstoppable!',
         achievementType: 'words_milestone',
       );
@@ -1502,7 +1502,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final dailyGoal = await SharedPreferences.getInstance().then((prefs) => prefs.getInt('daily_goal') ?? 10);
     if (todayWords >= dailyGoal) {
       await notificationService.showAchievementNotification(
-        achievementTitle: 'Daily Goal Achieved',
+        achievementTitle: 'Đạt Mục Tiêu Hàng Ngày',
         achievementDescription: 'You completed today\'s learning goal!',
         achievementType: 'daily_goal',
       );

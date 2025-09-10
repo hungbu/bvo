@@ -101,7 +101,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                 ),
               ),
               const Text(
-                'Words',
+                'Từ Vựng',
                 style: TextStyle(
                   color: Colors.white70,
                   fontSize: 12,
@@ -109,9 +109,9 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
               ),
             ],
           ),
-          _buildStatItem('New', newWords, Colors.blue),
-          _buildStatItem('Learning', learningWords, Colors.orange),
-          _buildStatItem('Mastered', masteredWords, Colors.green),
+          _buildStatItem('Mới', newWords, Colors.blue),
+          _buildStatItem('Đang Học', learningWords, Colors.orange),
+          _buildStatItem('Đã Thành Thạo', masteredWords, Colors.green),
         ],
       ),
     );
@@ -159,7 +159,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                 );
               },
               icon: const Icon(Icons.quiz, size: 18),
-              label: const Text('Start FlashCard'),
+              label: const Text('Bắt Đầu FlashCard'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
@@ -175,7 +175,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
             child: ElevatedButton.icon(
               onPressed: () => _addAllWordsToQuiz(),
               icon: const Icon(Icons.add_task, size: 18),
-              label: const Text('Add to Quiz'),
+              label: const Text('Thêm Vào Quiz'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
@@ -210,9 +210,9 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   Widget _buildWordCard(Word word, int wordNumber) {
     // Calculate progress based on review count (simple logic)
     double progress = word.reviewCount > 0 ? (word.reviewCount / 10.0).clamp(0.0, 1.0) : 0.0;
-    String difficultyLevel = word.reviewCount == 0 ? 'New' : 
-                           word.reviewCount < 3 ? 'Learning' :
-                           word.reviewCount < 7 ? 'Familiar' : 'Mastered';
+    String difficultyLevel = word.reviewCount == 0 ? 'Mới' : 
+                           word.reviewCount < 3 ? 'Đang Học' :
+                           word.reviewCount < 7 ? 'Quen Thuộc' : 'Thành Thạo';
     
     Color difficultyColor = word.reviewCount == 0 ? Colors.blue :
                           word.reviewCount < 3 ? Colors.orange :

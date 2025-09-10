@@ -181,7 +181,7 @@ class _TopicScreenState extends State<TopicScreen> {
             : topics.isEmpty
                 ? const Center(
                     child: Text(
-                      'No topics available yet.',
+                      'Chưa có chủ đề nào.',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
@@ -206,7 +206,7 @@ class _TopicScreenState extends State<TopicScreen> {
         children: [
           // Basic Level Section
           if (basicTopics.isNotEmpty) ...[
-            _buildLevelHeader('Basic', Colors.green, basicTopics.length),
+            _buildLevelHeader('Cơ Bản', Colors.green, basicTopics.length),
             const SizedBox(height: 12),
             _buildTopicGrid(basicTopics),
             const SizedBox(height: 24),
@@ -214,7 +214,7 @@ class _TopicScreenState extends State<TopicScreen> {
           
           // Intermediate Level Section
           if (intermediateTopics.isNotEmpty) ...[
-            _buildLevelHeader('Intermediate', Colors.orange, intermediateTopics.length),
+            _buildLevelHeader('Trung Cấp', Colors.orange, intermediateTopics.length),
             const SizedBox(height: 12),
             _buildTopicGrid(intermediateTopics),
             const SizedBox(height: 24),
@@ -222,7 +222,7 @@ class _TopicScreenState extends State<TopicScreen> {
           
           // Advanced Level Section
           if (advancedTopics.isNotEmpty) ...[
-            _buildLevelHeader('Advanced', Colors.purple, advancedTopics.length),
+            _buildLevelHeader('Nâng Cao', Colors.purple, advancedTopics.length),
             const SizedBox(height: 12),
             _buildTopicGrid(advancedTopics),
           ],
