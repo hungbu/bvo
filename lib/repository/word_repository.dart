@@ -61,6 +61,43 @@ class WordRepository {
     }).toList();
   }
 
+  /// Get words sorted by difficulty (ascending)
+  Future<List<dWord>> getWordsSortedByDifficulty({WordLevel? level}) async {
+    List<dWord> words;
+    if (level != null) {
+      words = await getWordsByLevel(level);
+    } else {
+      words = await getAllWords();
+    }
+    
+    // Words are already sorted by difficulty in VocabularyDataLoader
+    // But we'll sort again to ensure consistency
+    words.sort((a, b) {
+      int difficultyComparison = a.difficulty.compareTo(b.difficulty);
+      if (difficultyComparison != 0) {
+        return difficultyComparison;
+      }
+      return a.en.toLowerCase().compareTo(b.en.toLowerCase());
+    });
+    
+    return words;
+  }
+
+  /// Get words by topic sorted by difficulty
+  Future<List<dWord>> getWordsByTopicSortedByDifficulty(String topic) async {
+    final words = await getWordsByTopic(topic);
+    
+    words.sort((a, b) {
+      int difficultyComparison = a.difficulty.compareTo(b.difficulty);
+      if (difficultyComparison != 0) {
+        return difficultyComparison;
+      }
+      return a.en.toLowerCase().compareTo(b.en.toLowerCase());
+    });
+    
+    return words;
+  }
+
   /// Get random words for practice
   Future<List<dWord>> getRandomWords(int count, {WordLevel? level}) async {
     List<dWord> words;
@@ -95,14 +132,14 @@ class WordRepository {
     return grouped;
   }
 
-  /// Get words of a specific topic (alias for getWordsByTopic)
+  /// Get words of a specific topic (alias for getWordsByTopicSortedByDifficulty)
   Future<List<dWord>> getWordsOfTopic(String topic) async {
-    return await getWordsByTopic(topic);
+    return await getWordsByTopicSortedByDifficulty(topic);
   }
 
-  /// Load words for a topic (alias for getWordsByTopic)
+  /// Load words for a topic (alias for getWordsByTopicSortedByDifficulty)
   Future<List<dWord>> loadWords(String topic) async {
-    return await getWordsByTopic(topic);
+    return await getWordsByTopicSortedByDifficulty(topic);
   }
 
   /// Save words (placeholder - in JSON system, this would need special handling)

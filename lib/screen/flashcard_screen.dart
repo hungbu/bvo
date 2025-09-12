@@ -226,6 +226,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   }
 
 
+
   Future<void> _checkAnswer() async {
     String userAnswer = _controller.text.trim().toLowerCase();
     String correctAnswer = _currentWords[_currentIndex].en
@@ -251,11 +252,11 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       _nextSlide();
     } else {
       // Update progress for incorrect answer
-      await _progressRepository.updateWordProgress(
-        widget.topic, 
-        _currentWords[_currentIndex], 
-        false
-      );
+      // await _progressRepository.updateWordProgress(
+      //   widget.topic, 
+      //   _currentWords[_currentIndex], 
+      //   false
+      // );
       
       setState(() {
         _feedbackMessage = 'Try again.';

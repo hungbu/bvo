@@ -202,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
       
       // Calculate learned words for each group
       int calculateLearnedWords(List<Topic> topics) {
-        return topics.fold<int>(0, (sum, topic) {
+        return topics.fold<int>(0, (int sum, topic) {
           final reviewed = reviewedWords[topic.topic] ?? [];
           return sum + reviewed.length;
         });
@@ -409,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Helper functions
       int calculateLearnedWords(List<Topic> topics) {
-        return topics.fold<int>(0, (sum, topic) {
+        return topics.fold<int>(0, (int sum, topic) {
           final reviewed = reviewedWords[topic.topic] ?? [];
           return sum + reviewed.length;
         });

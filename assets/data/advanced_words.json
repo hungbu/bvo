@@ -85,12 +85,12 @@
     "pronunciation": "/ˈpærədaɪm/",
     "sentence": "Einstein’s theory of relativity changed the scientific paradigm.",
     "sentenceVi": "Thuyết tương đối của Einstein đã thay đổi khuôn mẫu khoa học.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "noun",
     "difficulty": 3,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -261,12 +261,12 @@
     "pronunciation": "/ˈsɪnθəsaɪz/",
     "sentence": "The researcher synthesized data from multiple sources.",
     "sentenceVi": "Nhà nghiên cứu đã tổng hợp dữ liệu từ nhiều nguồn.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "verb",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -821,12 +821,12 @@
     "pronunciation": "/ˈælɡərɪðəm/",
     "sentence": "The algorithm efficiently solves complex mathematical problems.",
     "sentenceVi": "Thuật toán này giải quyết hiệu quả các bài toán toán học phức tạp.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "noun",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -3493,12 +3493,12 @@
     "pronunciation": "/ˈɪnəveɪtɪv/",
     "sentence": "Her innovative approach revolutionized the tech industry.",
     "sentenceVi": "Phương pháp sáng tạo của cô đã cách mạng hóa ngành công nghệ.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "adjective",
     "difficulty": 3,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -6581,12 +6581,12 @@
     "pronunciation": "/ˈpærədɒks/",
     "sentence": "This statement is a paradox because it contradicts itself.",
     "sentenceVi": "Câu này là nghịch lý vì nó tự mâu thuẫn.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "noun",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -6597,12 +6597,12 @@
     "pronunciation": "/ˈsɪlədʒɪzəm/",
     "sentence": "Aristotle’s syllogism is a classic form of deductive reasoning.",
     "sentenceVi": "Tam đoạn luận của Aristotle là dạng cổ điển của suy luận diễn dịch.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "noun",
     "difficulty": 5,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7013,12 +7013,12 @@
     "pronunciation": "/æbˈstrækʃən/",
     "sentence": "Abstraction is a concept that represents ideas rather than physical objects.",
     "sentenceVi": "Sự trừu tượng hóa là khái niệm đại diện cho ý tưởng thay vì vật thể thực tế.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "noun",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7029,12 +7029,12 @@
     "pronunciation": "/hjuˈrɪstɪk/",
     "sentence": "The algorithm used a heuristic approach to solve complex problems.",
     "sentenceVi": "Thuật toán sử dụng phương pháp thử sai để giải quyết vấn đề phức tạp.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "adjective",
     "difficulty": 5,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7045,12 +7045,12 @@
     "pronunciation": "/ˌreləˈtɪvəti/",
     "sentence": "Einstein’s theory of relativity changed our understanding of time and space.",
     "sentenceVi": "Thuyết tương đối của Einstein đã thay đổi cách chúng ta hiểu về thời gian và không gian.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "noun",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7061,12 +7061,12 @@
     "pronunciation": "/ˈæksiəm/",
     "sentence": "An axiom is a statement accepted as true without proof.",
     "sentenceVi": "Một tiên đề là một phát biểu được chấp nhận là đúng mà không cần chứng minh.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "noun",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7077,12 +7077,12 @@
     "pronunciation": "/ˌdiːkənˈstrʌkʃən/",
     "sentence": "Deconstruction reveals hidden meanings in texts.",
     "sentenceVi": "Phân tích giải cấu trúc tiết lộ các ý nghĩa ẩn trong văn bản.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "noun",
     "difficulty": 5,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7093,12 +7093,12 @@
     "pronunciation": "/əˈnɒməli/",
     "sentence": "The data revealed an anomaly that scientists couldn’t explain.",
     "sentenceVi": "Dữ liệu cho thấy một bất thường mà các nhà khoa học không thể giải thích.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "noun",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7109,12 +7109,12 @@
     "pronunciation": "/ˌpærədaɪˈmætɪk/",
     "sentence": "This approach is paradigmatic in modern economic theory.",
     "sentenceVi": "Cách tiếp cận này mang tính mô hình chuẩn trong lý thuyết kinh tế hiện đại.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "adjective",
     "difficulty": 5,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7125,12 +7125,12 @@
     "pronunciation": "/əˈnæləɡəs/",
     "sentence": "The human brain is analogous to a computer in some ways.",
     "sentenceVi": "Bộ não con người tương tự như máy tính theo một số cách.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "adjective",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7141,12 +7141,12 @@
     "pronunciation": "/ˈɪnəveɪt/",
     "sentence": "To stay competitive, companies must constantly innovate.",
     "sentenceVi": "Để duy trì cạnh tranh, các công ty phải liên tục đổi mới.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "verb",
     "difficulty": 3,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7157,12 +7157,12 @@
     "pronunciation": "/səˌsteɪnəˈbɪləti/",
     "sentence": "Sustainability is a critical goal for modern development.",
     "sentenceVi": "Tính bền vững là mục tiêu quan trọng cho phát triển hiện đại.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "noun",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7173,12 +7173,12 @@
     "pronunciation": "/ˌmetəˈfɪzɪkəl/",
     "sentence": "Metaphysical questions deal with the nature of reality and existence.",
     "sentenceVi": "Các câu hỏi siêu hình học liên quan đến bản chất của thực tại và tồn tại.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "adjective",
     "difficulty": 5,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7189,12 +7189,12 @@
     "pronunciation": "/haɪˈpɒθəsaɪz/",
     "sentence": "Scientists hypothesize that dark matter makes up most of the universe.",
     "sentenceVi": "Các nhà khoa học đưa ra giả thuyết rằng vật chất tối chiếm phần lớn vũ trụ.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "verb",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7205,12 +7205,12 @@
     "pronunciation": "/fəˈnɒmɪnən/",
     "sentence": "Climate change is a global phenomenon affecting all life.",
     "sentenceVi": "Biến đổi khí hậu là một hiện tượng toàn cầu ảnh hưởng đến mọi sinh vật.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "noun",
     "difficulty": 3,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7221,12 +7221,12 @@
     "pronunciation": "/præɡˈmætɪk/",
     "sentence": "His pragmatic approach helped solve the problem efficiently.",
     "sentenceVi": "Phương pháp thực tiễn của anh ấy giúp giải quyết vấn đề hiệu quả.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "adjective",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7237,12 +7237,12 @@
     "pronunciation": "/kənˈvɜːdʒəns/",
     "sentence": "The convergence of technology and biology is creating new possibilities.",
     "sentenceVi": "Sự hội tụ giữa công nghệ và sinh học đang tạo ra những khả năng mới.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "noun",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7253,12 +7253,12 @@
     "pronunciation": "/ˈæbstrækt/",
     "sentence": "The concept of time is abstract and difficult to define.",
     "sentenceVi": "Khái niệm về thời gian là trừu tượng và khó định nghĩa.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "adjective",
     "difficulty": 3,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7269,12 +7269,12 @@
     "pronunciation": "/ˌkɒmprɪˈhensɪv/",
     "sentence": "The report provides a comprehensive overview of global warming.",
     "sentenceVi": "Báo cáo cung cấp cái nhìn toàn diện về biến đổi khí hậu.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "adjective",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7285,12 +7285,12 @@
     "pronunciation": "/səˈsteɪnəbl/",
     "sentence": "Sustainable development is crucial for future generations.",
     "sentenceVi": "Phát triển bền vững rất quan trọng cho các thế hệ tương lai.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "adjective",
     "difficulty": 3,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7301,12 +7301,12 @@
     "pronunciation": "/ˌɪɡzɪˈstenʃəl/",
     "sentence": "Existential philosophy explores the meaning of life.",
     "sentenceVi": "Triết học tồn tại khám phá ý nghĩa của cuộc sống.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "adjective",
     "difficulty": 5,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null
@@ -7317,12 +7317,12 @@
     "pronunciation": "/ˌhaɪpəˈθetɪkəl/",
     "sentence": "The scientist presented a hypothetical scenario for climate change.",
     "sentenceVi": "Nhà khoa học trình bày một kịch bản giả định cho biến đổi khí hậu.",
-    "topic": "advanced_concepts",
+    "topic": "concepts",
     "level": "ADVANCED",
     "type": "adjective",
     "difficulty": 4,
     "tags": [
-      "advanced_concepts",
+      "concepts",
       "vocabulary"
     ],
     "nextReview": null

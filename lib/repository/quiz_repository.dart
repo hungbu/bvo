@@ -5,16 +5,27 @@ import '../model/word.dart';
 class QuizRepository {
   static const String _quizWordsKey = 'quiz_words';
   
-  /// Lấy tất cả từ vựng trong danh sách ôn tập
+  /// Lấy tất cả từ vựng trong danh sách ôn tập - sorted by difficulty
   Future<List<Word>> getQuizWords() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final List<String>? savedWordsJson = prefs.getStringList(_quizWordsKey);
       
       if (savedWordsJson != null) {
-        return savedWordsJson
+        final words = savedWordsJson
             .map((wordJson) => Word.fromJson(jsonDecode(wordJson)))
             .toList();
+        
+        // Sort by difficulty (ascending), then by English word (alphabetical)
+        words.sort((a, b) {
+          int difficultyComparison = a.difficulty.compareTo(b.difficulty);
+          if (difficultyComparison != 0) {
+            return difficultyComparison;
+          }
+          return a.en.toLowerCase().compareTo(b.en.toLowerCase());
+        });
+        
+        return words;
       }
       return [];
     } catch (e) {
@@ -113,15 +124,26 @@ class QuizRepository {
     }
   }
   
-  /// Lấy từ cần ôn tập (đến hạn review)
+  /// Lấy từ cần ôn tập (đến hạn review) - sorted by difficulty
   Future<List<Word>> getDueWords() async {
     final allWords = await getQuizWords();
     final now = DateTime.now();
     
-    return allWords.where((word) => 
+    final dueWords = allWords.where((word) => 
       word.nextReview.isBefore(now) || 
       word.nextReview.isAtSameMomentAs(now)
     ).toList();
+    
+    // Sort by difficulty (ascending), then by English word (alphabetical)
+    dueWords.sort((a, b) {
+      int difficultyComparison = a.difficulty.compareTo(b.difficulty);
+      if (difficultyComparison != 0) {
+        return difficultyComparison;
+      }
+      return a.en.toLowerCase().compareTo(b.en.toLowerCase());
+    });
+    
+    return dueWords;
   }
   
   /// Lấy từ theo mức độ thành thạo

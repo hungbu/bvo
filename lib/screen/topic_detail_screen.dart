@@ -54,8 +54,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
   Future<void> init() async {
     setState(() => isLoading = true);
     
-    // Load words and progress data
-    words = await WordRepository().getWordsOfTopic(widget.topic);
+    // Load words and progress data (sorted by difficulty)
+    words = await WordRepository().getWordsByTopicSortedByDifficulty(widget.topic);
     
     final progressRepo = UserProgressRepository();
     topicProgress = await progressRepo.getTopicProgress(widget.topic);
@@ -382,7 +382,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
                         ),
                         const SizedBox(width: 2),
                         Text(
-                          "${word.reviewCount}",
+                          "$reviewCount",
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -476,6 +476,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
   }
 
   void _showWordDetails(Word word) {
+    // Get progress data for this word
+    final progress = wordsProgress[word.en];
+    final reviewCount = progress?['reviewCount'] ?? 0;
+    final correctAnswers = progress?['correctAnswers'] ?? 0;
+    final totalAttempts = progress?['totalAttempts'] ?? 0;
+    final accuracy = totalAttempts > 0 ? (correctAnswers / totalAttempts * 100).toStringAsFixed(1) : '0.0';
+    
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -516,7 +523,22 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
               ),
               const SizedBox(height: 8),
               Text(
-                'Review Count: ${word.reviewCount}',
+                'Difficulty: ${word.difficulty}',
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Review Count: $reviewCount',
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Accuracy: $accuracy%',
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Attempts: $correctAnswers/$totalAttempts',
                 style: const TextStyle(fontSize: 14),
               ),
             ],

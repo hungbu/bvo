@@ -100,13 +100,24 @@ class VocabularyDataLoader {
     _advancedWords = null;
   }
 
-  /// Load words from JSON asset file
+  /// Load words from JSON asset file and sort by difficulty
   Future<List<dWord>> _loadWordsFromAsset(String assetPath) async {
     try {
       final String jsonString = await rootBundle.loadString(assetPath);
       final List<dynamic> jsonList = json.decode(jsonString);
       
-      return jsonList.map((json) => dWord.fromJson(json as Map<String, dynamic>)).toList();
+      final words = jsonList.map((json) => dWord.fromJson(json as Map<String, dynamic>)).toList();
+      
+      // Sort by difficulty (ascending), then by English word (alphabetical)
+      words.sort((a, b) {
+        int difficultyComparison = a.difficulty.compareTo(b.difficulty);
+        if (difficultyComparison != 0) {
+          return difficultyComparison;
+        }
+        return a.en.toLowerCase().compareTo(b.en.toLowerCase());
+      });
+      
+      return words;
     } catch (e) {
       print('Error loading words from $assetPath: $e');
       return [];
