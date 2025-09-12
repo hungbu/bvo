@@ -102,9 +102,25 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       for (var wordJson in savedWordsJson) {
         widget.words.add(Word.fromJson(jsonDecode(wordJson)));
       }
+      
+      // Sort words by difficulty to ensure consistent order
+      _sortWordsByDifficulty();
     } else {
+      // Ensure words are sorted even when not loading from saved data
+      _sortWordsByDifficulty();
       await saveWords();
     }
+  }
+  
+  /// Sort words by difficulty (ascending), then by English word (alphabetical)
+  void _sortWordsByDifficulty() {
+    widget.words.sort((a, b) {
+      int difficultyComparison = a.difficulty.compareTo(b.difficulty);
+      if (difficultyComparison != 0) {
+        return difficultyComparison;
+      }
+      return a.en.toLowerCase().compareTo(b.en.toLowerCase());
+    });
   }
 
   Future<void> saveWords() async {
