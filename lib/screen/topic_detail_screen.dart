@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:bvo/model/word.dart';
-import 'package:bvo/repository/word_repository.dart';
-import 'package:bvo/repository/quiz_repository.dart';
-import 'package:bvo/repository/user_progress_repository.dart';
-import 'package:bvo/screen/flashcard_screen.dart';
-import 'package:bvo/main.dart';
+import 'package:dongsonword/model/word.dart';
+import 'package:dongsonword/repository/word_repository.dart';
+import 'package:dongsonword/repository/quiz_repository.dart';
+import 'package:dongsonword/repository/user_progress_repository.dart';
+import 'package:dongsonword/screen/flashcard_screen.dart';
+import 'package:dongsonword/main.dart';
 
 class TopicDetailScreen extends StatefulWidget {
   final String topic;

@@ -5,9 +5,9 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:carousel_slider/carousel_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:bvo/model/word.dart';
-import 'package:bvo/screen/flashcard/flashcard.dart';
-import 'package:bvo/repository/user_progress_repository.dart';
+import 'package:dongsonword/model/word.dart';
+import 'package:dongsonword/screen/flashcard/flashcard.dart';
+import 'package:dongsonword/repository/user_progress_repository.dart';
 
 class FlashCardScreen extends StatefulWidget {
   final List<Word> words;

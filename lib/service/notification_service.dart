@@ -30,13 +30,16 @@ class NotificationService {
 
   Future<void> initialize() async {
     // Android initialization
-    const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('ic_notification');
     
     // iOS initialization
     const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
+      defaultPresentAlert: true,
+      defaultPresentBadge: true,
+      defaultPresentSound: true,
     );
 
     const InitializationSettings settings = InitializationSettings(
@@ -58,13 +61,18 @@ class NotificationService {
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
     
-    await notifications
-        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    final iosImplementation = notifications
+        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+    
+    if (iosImplementation != null) {
+      final bool? result = await iosImplementation.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+        critical: false,
+      );
+      print('iOS notification permissions granted: $result');
+    }
   }
 
   void _onNotificationTapped(NotificationResponse response) {
@@ -173,10 +181,13 @@ class NotificationService {
           channelDescription: 'Nhắc nhở hàng ngày để học từ vựng',
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: 'ic_notification',
         ),
         iOS: DarwinNotificationDetails(
           categoryIdentifier: 'daily_reminders',
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -218,10 +229,13 @@ class NotificationService {
                 channelDescription: 'Cảnh báo duy trì chuỗi học tập',
                 importance: Importance.max,
                 priority: Priority.max,
-                icon: '@mipmap/ic_launcher',
+                icon: 'ic_notification',
               ),
               iOS: DarwinNotificationDetails(
                 categoryIdentifier: 'streak_warnings',
+                presentAlert: true,
+                presentBadge: true,
+                presentSound: true,
               ),
             ),
             androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -256,10 +270,13 @@ class NotificationService {
               channelDescription: 'Thông báo cho các từ cần ôn tập',
               importance: Importance.high,
               priority: Priority.high,
-              icon: '@mipmap/ic_launcher',
+              icon: 'ic_notification',
             ),
             iOS: DarwinNotificationDetails(
               categoryIdentifier: 'due_words',
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
             ),
           ),
           payload: 'due_words',
@@ -316,10 +333,13 @@ class NotificationService {
               channelDescription: 'Cập nhật tiến độ mục tiêu học tập hàng ngày',
               importance: Importance.defaultImportance,
               priority: Priority.defaultPriority,
-              icon: '@mipmap/ic_launcher',
+              icon: 'ic_notification',
             ),
             iOS: DarwinNotificationDetails(
               categoryIdentifier: 'goal_progress',
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
             ),
           ),
           payload: 'goal_progress',
@@ -357,6 +377,32 @@ class NotificationService {
   Future<bool> areNotificationsEnabled() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('notifications_enabled') ?? true;
+  }
+
+  /// Test notification immediately
+  Future<void> sendTestNotification() async {
+    await notifications.show(
+      999,
+      'Test Notification',
+      'Đây là notification test để kiểm tra icon hiển thị',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'test_channel',
+          'Test Channel',
+          channelDescription: 'Channel for testing notifications',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: 'ic_notification',
+        ),
+        iOS: DarwinNotificationDetails(
+          categoryIdentifier: 'test_notification',
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
+      payload: 'test_notification',
+    );
   }
 
   /// Enable/disable all notifications
@@ -429,10 +475,13 @@ class NotificationService {
           channelDescription: 'Thông báo cho các thành tích mở khóa',
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: 'ic_notification',
         ),
         iOS: DarwinNotificationDetails(
           categoryIdentifier: 'achievements',
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
         ),
       ),
       payload: 'achievement:$achievementType',
@@ -469,10 +518,13 @@ class NotificationService {
           channelDescription: 'Báo cáo tiến độ học tập hàng tuần',
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
-          icon: '@mipmap/ic_launcher',
+          icon: 'ic_notification',
         ),
         iOS: DarwinNotificationDetails(
           categoryIdentifier: 'weekly_summary',
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -519,10 +571,13 @@ class NotificationService {
           channelDescription: 'Chúc mừng các thành tích chuỗi học',
           importance: Importance.max,
           priority: Priority.max,
-          icon: '@mipmap/ic_launcher',
+          icon: 'ic_notification',
         ),
         iOS: DarwinNotificationDetails(
           categoryIdentifier: 'streak_milestones',
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
         ),
       ),
       payload: 'streak_milestone:$streakDays',
@@ -560,10 +615,13 @@ class NotificationService {
               channelDescription: 'Nhắc nhở làm kiểm tra từ vựng',
               importance: Importance.defaultImportance,
               priority: Priority.defaultPriority,
-              icon: '@mipmap/ic_launcher',
+              icon: 'ic_notification',
             ),
             iOS: DarwinNotificationDetails(
               categoryIdentifier: 'quiz_reminders',
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
             ),
           ),
           payload: 'quiz_reminder',
@@ -606,10 +664,13 @@ class NotificationService {
               channelDescription: 'Tin nhắn khích lệ cho người dùng không hoạt động',
               importance: Importance.defaultImportance,
               priority: Priority.defaultPriority,
-              icon: '@mipmap/ic_launcher',
+              icon: 'ic_notification',
             ),
             iOS: DarwinNotificationDetails(
               categoryIdentifier: 'comeback_encouragement',
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
             ),
           ),
           payload: 'comeback_encouragement',
@@ -707,10 +768,13 @@ class NotificationService {
               channelDescription: 'Kênh test thông báo từ vựng',
               importance: Importance.high,
               priority: Priority.high,
-              icon: '@mipmap/ic_launcher',
+              icon: 'ic_notification',
             ),
             iOS: DarwinNotificationDetails(
               categoryIdentifier: 'test_vocabulary',
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
             ),
           ),
           payload: 'test_vocabulary',
@@ -772,10 +836,13 @@ class NotificationService {
               channelDescription: 'Thông báo từ vựng hiển thị ngay',
               importance: Importance.high,
               priority: Priority.high,
-              icon: '@mipmap/ic_launcher',
+              icon: 'ic_notification',
             ),
             iOS: DarwinNotificationDetails(
               categoryIdentifier: 'immediate_vocabulary',
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
             ),
           ),
           payload: 'immediate_vocabulary:${word.en}:${word.topic}',

@@ -1,4 +1,6 @@
-# bvo
+# Đông Sơn Word
+
+Ứng dụng học từ vựng tiếng Anh
 
 A project for learning vocabulary english
 

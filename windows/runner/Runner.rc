@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "bvo" "\0"
+            VALUE "FileDescription", "Đông Sơn Word" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "bvo" "\0"
+            VALUE "InternalName", "DongSonWord" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "bvo.exe" "\0"
-            VALUE "ProductName", "bvo" "\0"
+            VALUE "OriginalFilename", "DongSonWord.exe" "\0"
+            VALUE "ProductName", "Đông Sơn Word" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

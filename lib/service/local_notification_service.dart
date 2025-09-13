@@ -102,6 +102,7 @@ class LocalNotificationService {
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      categoryIdentifier: 'default_category',
     );
 
     final NotificationDetails platformChannelSpecifics = NotificationDetails(
@@ -144,6 +145,7 @@ class LocalNotificationService {
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      categoryIdentifier: 'default_category',
     );
 
     final NotificationDetails platformChannelSpecifics = NotificationDetails(
@@ -189,6 +191,7 @@ class LocalNotificationService {
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      categoryIdentifier: 'default_category',
     );
 
     final NotificationDetails platformChannelSpecifics = NotificationDetails(
