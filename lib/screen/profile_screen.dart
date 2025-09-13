@@ -5,6 +5,7 @@ import '../service/notification_service.dart';
 import '../repository/word_repository.dart';
 import '../repository/topic_repository.dart';
 import '../repository/quiz_repository.dart';
+import '../repository/user_progress_repository.dart';
 
 class ProfileScreen extends StatefulWidget {
   final Function(VoidCallback)? onRefreshCallback;
@@ -45,46 +46,107 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final wordRepo = WordRepository();
       final topicRepo = TopicRepository();
       final quizRepo = QuizRepository();
+      final progressRepo = UserProgressRepository();
 
-      // Use same logic as HomePage - get reviewed words from repository
-      final reviewedWords = await wordRepo.getReviewedWordsGroupedByTopic();
-      final totalLearned = reviewedWords.values.fold(0, (sum, words) => sum + words.length);
-
-      // Get all topics for total count
-      final topics = await topicRepo.getTopics();
-
+      // Get comprehensive user statistics from UserProgressRepository
+      final userStats = await progressRepo.getUserStatistics();
+      
       // Get quiz statistics
       final quizStats = await quizRepo.getQuizStats();
       final quizWords = await quizRepo.getQuizWords();
       final dueWords = await quizRepo.getDueWords();
 
-      // Calculate accuracy from quiz stats
-      double calculatedAccuracy = 0.0;
-      if (quizStats['totalAttempts'] > 0) {
-        calculatedAccuracy = (quizStats['correctAnswers'] / quizStats['totalAttempts']) * 100;
+      // Get all topics for total count
+      final topics = await topicRepo.getTopics();
+
+      // Combine accuracy from both Quiz and Flashcard (UserProgress)
+      double combinedAccuracy = 0.0;
+      int totalCorrectAnswers = 0;
+      int totalAttempts = 0;
+      
+      // Add Quiz stats
+      totalCorrectAnswers += (quizStats['correctAnswers'] ?? 0) as int;
+      totalAttempts += (quizStats['totalAttempts'] ?? 0) as int;
+      
+      // Add UserProgress stats (from flashcards)
+      totalCorrectAnswers += (userStats['totalCorrectAnswers'] ?? 0) as int;
+      totalAttempts += (userStats['totalAttempts'] ?? 0) as int;
+      
+      if (totalAttempts > 0) {
+        combinedAccuracy = (totalCorrectAnswers / totalAttempts) * 100;
       }
 
-      // Use same streak keys as HomePage
-      final currentStreakValue = prefs.getInt('streak_days') ?? 0;
-      final longestStreakValue = prefs.getInt('longest_streak') ?? 0;
+      // Get comprehensive words learned count from UserProgressRepository
+      final totalLearnedFromProgress = userStats['totalLearnedWords'] ?? 0;
+      
+      // Also get reviewed words for topic breakdown (for compatibility)
+      final reviewedWords = await wordRepo.getReviewedWordsGroupedByTopic();
 
-      // Get today's words learned
+      // Use streak data from UserProgressRepository (more comprehensive)
+      final currentStreakValue = userStats['streakDays'] ?? 0;
+      final longestStreakValue = userStats['longestStreak'] ?? 0;
+
+      // Get today's words learned from comprehensive calculation
       final today = DateTime.now();
       final todayKey = '${today.year}-${today.month}-${today.day}';
-      final todayWords = prefs.getInt('words_learned_$todayKey') ?? 0;
+      
+      // Try to get from UserProgressRepository first, then fallback to SharedPreferences
+      int todayWords = prefs.getInt('words_learned_$todayKey') ?? 0;
+      
+      // Also check if there are any words learned today from progress tracking
+      try {
+        final allTopicsProgress = await progressRepo.getAllTopicsProgress();
+        int todayWordsFromProgress = 0;
+        
+        for (final topicProgress in allTopicsProgress.values) {
+          final lastStudied = topicProgress['lastStudied'];
+          if (lastStudied != null) {
+            final lastStudiedDate = DateTime.parse(lastStudied);
+            if (lastStudiedDate.year == today.year && 
+                lastStudiedDate.month == today.month && 
+                lastStudiedDate.day == today.day) {
+              // This topic was studied today, count its contribution
+              final sessions = topicProgress['sessions'] ?? 0;
+              if (sessions > 0) {
+                todayWordsFromProgress += (topicProgress['learnedWords'] ?? 0) as int;
+              }
+            }
+          }
+        }
+        
+        // Use the higher value between SharedPreferences and calculated from progress
+        todayWords = todayWords > todayWordsFromProgress ? todayWords : todayWordsFromProgress;
+      } catch (e) {
+        print('Error calculating today words from progress: $e');
+        // Keep the SharedPreferences value
+      }
 
       setState(() {
-        totalWordsLearned = totalLearned;
+        // Use comprehensive learned words count from UserProgressRepository
+        totalWordsLearned = totalLearnedFromProgress;
         reviewedWordsByTopic = reviewedWords;
         totalWordsInQuiz = quizWords.length;
         dueWordsCount = dueWords.length;
-        accuracy = calculatedAccuracy;
+        // Use combined accuracy from both Quiz and Flashcard
+        accuracy = combinedAccuracy;
         currentStreak = currentStreakValue;
         longestStreak = longestStreakValue;
         totalTopics = topics.length;
         todayWordsLearned = todayWords;
         isLoading = false;
       });
+
+      // Debug information
+      print('📊 Profile Stats Summary:');
+      print('  - Total Words Learned (UserProgress): $totalLearnedFromProgress');
+      print('  - Today Words Learned: $todayWords');
+      print('  - Quiz Stats: ${quizStats['correctAnswers']}/${quizStats['totalAttempts']} (${quizStats['totalAttempts'] > 0 ? ((quizStats['correctAnswers'] / quizStats['totalAttempts']) * 100).toStringAsFixed(1) : 0}%)');
+      print('  - Flashcard Stats: ${userStats['totalCorrectAnswers']}/${userStats['totalAttempts']} (${userStats['totalAttempts'] > 0 ? ((userStats['totalCorrectAnswers'] / userStats['totalAttempts']) * 100).toStringAsFixed(1) : 0}%)');
+      print('  - Combined Accuracy: ${combinedAccuracy.toStringAsFixed(1)}%');
+      print('  - Current Streak: $currentStreakValue days');
+      print('  - Longest Streak: $longestStreakValue days');
+      print('  - Total Attempts (Quiz + Flashcard): $totalAttempts');
+      print('  - Total Correct (Quiz + Flashcard): $totalCorrectAnswers');
 
     } catch (error) {
       print('Error loading user stats: $error');
@@ -94,7 +156,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  /// Method để test và hiển thị thông tin chi tiết về tích hợp dữ liệu
+  Future<void> testProgressIntegration() async {
+    print('🧪 Testing Progress Integration...');
+    
+    try {
+      final progressRepo = UserProgressRepository();
+      final quizRepo = QuizRepository();
+      
+      // Test UserProgressRepository
+      final userStats = await progressRepo.getUserStatistics();
+      print('📊 UserProgressRepository Stats:');
+      print('  - Total Learned Words: ${userStats['totalLearnedWords']}');
+      print('  - Total Correct Answers: ${userStats['totalCorrectAnswers']}');
+      print('  - Total Attempts: ${userStats['totalAttempts']}');
+      print('  - Average Accuracy: ${userStats['avgAccuracy']}%');
+      print('  - Active Topics: ${userStats['activeTopics']}');
+      print('  - Streak Days: ${userStats['streakDays']}');
+      
+      // Test QuizRepository
+      final quizStats = await quizRepo.getQuizStats();
+      print('📝 QuizRepository Stats:');
+      print('  - Correct Answers: ${quizStats['correctAnswers']}');
+      print('  - Total Attempts: ${quizStats['totalAttempts']}');
+      print('  - Accuracy: ${quizStats['totalAttempts'] > 0 ? ((quizStats['correctAnswers'] / quizStats['totalAttempts']) * 100).toStringAsFixed(1) : 0}%');
+      
+      // Test combined calculation
+      final totalCorrect = (userStats['totalCorrectAnswers'] ?? 0) + (quizStats['correctAnswers'] ?? 0);
+      final totalAttempts = (userStats['totalAttempts'] ?? 0) + (quizStats['totalAttempts'] ?? 0);
+      final combinedAccuracy = totalAttempts > 0 ? (totalCorrect / totalAttempts) * 100 : 0.0;
+      
+      print('🔄 Combined Stats:');
+      print('  - Total Correct: $totalCorrect');
+      print('  - Total Attempts: $totalAttempts');
+      print('  - Combined Accuracy: ${combinedAccuracy.toStringAsFixed(1)}%');
+      
+      print('✅ Progress integration test completed!');
+    } catch (e) {
+      print('❌ Error in progress integration test: $e');
+    }
+  }
+
   // Helper method to update streak data (can be called from other screens like QuizGameScreen)
+  // ignore: unused_element
   static Future<void> updateStreakData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -174,7 +278,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          'Từ Đã Học',
+                          'Tổng Từ Đã Học\n(Quiz + Flashcard)',
                           totalWordsLearned.toString(),
                           Icons.school,
                           Colors.blue,
@@ -220,7 +324,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          'Độ Chính Xác',
+                          'Độ Chính Xác\n(Quiz + Flashcard)',
                           '${accuracy.toStringAsFixed(1)}%',
                           Icons.trending_up,
                           Colors.purple,

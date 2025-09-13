@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:math' as math;
 
 import 'package:bvo/model/word.dart';
 import 'package:bvo/model/topic.dart';
@@ -30,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // New dashboard data
   String userName = "Bạn";
   int streakDays = 0;
+  int longestStreak = 0;
   int totalWordsLearned = 0;
   int dailyGoal = 10;
   int todayWordsLearned = 0;
@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   
   // Topic groups structure
   List<Map<String, dynamic>> topicGroups = [];
-  String currentActiveGroup = "Basic 1";
+  String currentActiveGroup = "Basic";
 
   @override
   void initState() {
@@ -63,8 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Calculate real statistics
     await _calculateRealStatistics();
     
-    // Initialize topic groups with real data
-    await _initializeTopicGroupsWithRealData();
+    // Topic groups will be initialized in _loadTopics
     
     // Load word of the day
     await _loadWordOfTheDay();
@@ -81,8 +80,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final userStats = await progressRepo.getUserStatistics();
       totalWordsLearned = userStats['totalLearnedWords'] ?? 0;
       
-      // Calculate streak days
-      streakDays = await _calculateStreakDays();
+      // Use streak data from UserProgressRepository (consistent with ProfileScreen)
+      streakDays = userStats['streakDays'] ?? 0;
+      longestStreak = userStats['longestStreak'] ?? 0;
       
       // Calculate today's words learned
       todayWordsLearned = await _calculateTodayWordsLearned();
@@ -90,7 +90,15 @@ class _HomeScreenState extends State<HomeScreen> {
       // Save calculated values
       await prefs.setInt('total_words_learned', totalWordsLearned);
       await prefs.setInt('streak_days', streakDays);
+      await prefs.setInt('longest_streak', longestStreak);
       await prefs.setInt('today_words_learned', todayWordsLearned);
+      
+      // Debug info
+      print('📊 HomePage Stats:');
+      print('  - Current Streak: $streakDays days');
+      print('  - Longest Streak: $longestStreak days');
+      print('  - Total Words Learned: $totalWordsLearned');
+      print('  - Today Words Learned: $todayWordsLearned');
       
     } catch (e) {
       print('Error calculating statistics: $e');
@@ -98,47 +106,13 @@ class _HomeScreenState extends State<HomeScreen> {
       final prefs = await SharedPreferences.getInstance();
       totalWordsLearned = prefs.getInt('total_words_learned') ?? 0;
       streakDays = prefs.getInt('streak_days') ?? 0;
+      longestStreak = prefs.getInt('longest_streak') ?? 0;
       todayWordsLearned = prefs.getInt('today_words_learned') ?? 0;
     }
   }
 
-  Future<int> _calculateStreakDays() async {
-    final prefs = await SharedPreferences.getInstance();
-    final today = DateTime.now();
-    final todayKey = '${today.year}-${today.month}-${today.day}';
-    
-    // Check if user learned today
-    final learnedToday = prefs.getBool('learned_$todayKey') ?? false;
-    
-    if (!learnedToday) {
-      // If not learned today, check yesterday to maintain streak
-      final yesterday = today.subtract(const Duration(days: 1));
-      final yesterdayKey = '${yesterday.year}-${yesterday.month}-${yesterday.day}';
-      final learnedYesterday = prefs.getBool('learned_$yesterdayKey') ?? false;
-      
-      if (!learnedYesterday) {
-        return 0; // Streak broken
-      }
-    }
-    
-    // Count consecutive days
-    int streak = 0;
-    DateTime checkDate = today;
-    
-    for (int i = 0; i < 365; i++) { // Check up to a year
-      final dateKey = '${checkDate.year}-${checkDate.month}-${checkDate.day}';
-      final learned = prefs.getBool('learned_$dateKey') ?? false;
-      
-      if (learned) {
-        streak++;
-        checkDate = checkDate.subtract(const Duration(days: 1));
-      } else {
-        break;
-      }
-    }
-    
-    return streak;
-  }
+  // Old streak calculation method - now using UserProgressRepository for consistency
+  // Removed to avoid confusion and ensure single source of truth
 
   Future<int> _calculateTodayWordsLearned() async {
     final prefs = await SharedPreferences.getInstance();
@@ -178,148 +152,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _initializeTopicGroupsWithRealData() async {
-    try {
-      // Get all available topics
-      final allTopics = await TopicRepository().getTopics();
-      final reviewedWords = await WordRepository().getReviewedWordsGroupedByTopic();
-      
-      // Define topic groups with real topics
-      final basicTopics = allTopics.where((topic) {
-        final config = TopicConfigsRepository.getTopicConfig(topic.topic);
-        return config.difficulty == 'Beginner';
-      }).take(30).toList(); // First 30 beginner topics
-      
-      final intermediateTopics = allTopics.where((topic) {
-        final config = TopicConfigsRepository.getTopicConfig(topic.topic);
-        return config.difficulty == 'Intermediate';
-      }).take(30).toList(); // First 30 intermediate topics
-      
-      final advancedTopics = allTopics.where((topic) {
-        final config = TopicConfigsRepository.getTopicConfig(topic.topic);
-        return config.difficulty == 'Advanced';
-      }).take(30).toList(); // First 30 advanced topics
-      
-      // Calculate learned words for each group
-      int calculateLearnedWords(List<Topic> topics) {
-        return topics.fold<int>(0, (int sum, topic) {
-          final reviewed = reviewedWords[topic.topic] ?? [];
-          return sum + reviewed.length;
-        });
-      }
-      
-      int calculateTargetWords(List<Topic> topics) {
-        return topics.fold(0, (sum, topic) {
-          final config = TopicConfigsRepository.getTopicConfig(topic.topic);
-          return sum + config.totalWords;
-        });
-      }
-      
-      // Split basic topics into 3 groups (with safety checks)
-      final basicGroup1 = basicTopics.take(math.min<int>(10, basicTopics.length)).toList();
-      final basicGroup2 = basicTopics.skip(math.min<int>(10, basicTopics.length)).take(math.min<int>(10, math.max<int>(0, basicTopics.length - 10))).toList();
-      final basicGroup3 = basicTopics.skip(math.min<int>(20, basicTopics.length)).take(math.min<int>(10, math.max<int>(0, basicTopics.length - 20))).toList();
-      
-      // Split intermediate topics into 2 groups (with safety checks)
-      final intermediateGroup1 = intermediateTopics.take(math.min<int>(15, intermediateTopics.length)).toList();
-      final intermediateGroup2 = intermediateTopics.skip(math.min<int>(15, intermediateTopics.length)).take(math.min<int>(15, math.max<int>(0, intermediateTopics.length - 15))).toList();
-      
-      topicGroups = [
-        // Basic Groups
-        {
-          'id': 'basic_1',
-          'name': 'Basic 1',
-          'description': 'Từ vựng cơ bản hàng ngày',
-          'targetWords': calculateTargetWords(basicGroup1),
-          'learnedWords': calculateLearnedWords(basicGroup1),
-          'color': Colors.green,
-          'icon': Icons.star,
-          'topics': basicGroup1.map((t) => t.topic).toList(),
-          'level': 'basic',
-          'order': 1,
-        },
-        {
-          'id': 'basic_2',
-          'name': 'Basic 2',
-          'description': 'Từ vựng sinh hoạt và học tập',
-          'targetWords': calculateTargetWords(basicGroup2),
-          'learnedWords': calculateLearnedWords(basicGroup2),
-          'color': Colors.blue,
-          'icon': Icons.school,
-          'topics': basicGroup2.map((t) => t.topic).toList(),
-          'level': 'basic',
-          'order': 2,
-        },
-        {
-          'id': 'basic_3',
-          'name': 'Basic 3',
-          'description': 'Từ vựng giao tiếp cơ bản',
-          'targetWords': calculateTargetWords(basicGroup3),
-          'learnedWords': calculateLearnedWords(basicGroup3),
-          'color': Colors.orange,
-          'icon': Icons.chat,
-          'topics': basicGroup3.map((t) => t.topic).toList(),
-          'level': 'basic',
-          'order': 3,
-        },
-        
-        // Intermediate Groups
-        {
-          'id': 'intermediate_1',
-          'name': 'Intermediate 1',
-          'description': 'Từ vựng trung cấp - Giao tiếp',
-          'targetWords': calculateTargetWords(intermediateGroup1),
-          'learnedWords': calculateLearnedWords(intermediateGroup1),
-          'color': Colors.purple,
-          'icon': Icons.psychology,
-          'topics': intermediateGroup1.map((t) => t.topic).toList(),
-          'level': 'intermediate',
-          'order': 1,
-        },
-        {
-          'id': 'intermediate_2',
-          'name': 'Intermediate 2',
-          'description': 'Từ vựng trung cấp - Xã hội',
-          'targetWords': calculateTargetWords(intermediateGroup2),
-          'learnedWords': calculateLearnedWords(intermediateGroup2),
-          'color': Colors.indigo,
-          'icon': Icons.people,
-          'topics': intermediateGroup2.map((t) => t.topic).toList(),
-          'level': 'intermediate',
-          'order': 2,
-        },
-        
-        // Advanced Group
-        {
-          'id': 'advanced_1',
-          'name': 'Advanced',
-          'description': 'Từ vựng nâng cao - Chuyên ngành',
-          'targetWords': calculateTargetWords(advancedTopics),
-          'learnedWords': calculateLearnedWords(advancedTopics),
-          'color': Colors.teal,
-          'icon': Icons.work,
-          'topics': advancedTopics.map((t) => t.topic).toList(),
-          'level': 'advanced',
-          'order': 1,
-        },
-      ];
-      
-      // Determine current active group based on progress
-      _determineActiveGroup();
-      
-    } catch (e) {
-      print('Error initializing topic groups: $e');
-      // Fallback to basic structure
-      _initializeBasicTopicGroups();
-    }
-  }
+  // Removed _initializeTopicGroupsWithRealData - replaced with simplified _createTopicGroupsFromVocabulary
 
   void _initializeBasicTopicGroups() {
     // Fallback basic structure if real data loading fails
     topicGroups = [
       {
-        'id': 'basic_1',
-        'name': 'Basic 1',
+        'id': 'basic',
+        'name': 'Basic',
         'description': 'Từ vựng cơ bản hàng ngày',
         'targetWords': 500,
         'learnedWords': totalWordsLearned.clamp(0, 500),
@@ -327,19 +167,28 @@ class _HomeScreenState extends State<HomeScreen> {
         'icon': Icons.star,
         'topics': ['schools', 'family', 'colors', 'numbers'],
         'level': 'basic',
-        'order': 1,
       },
       {
-        'id': 'basic_2',
-        'name': 'Basic 2',
-        'description': 'Từ vựng sinh hoạt và học tập',
-        'targetWords': 500,
-        'learnedWords': (totalWordsLearned - 500).clamp(0, 500),
-        'color': Colors.blue,
-        'icon': Icons.school,
-        'topics': ['food', 'animals', 'weather', 'transportation'],
-        'level': 'basic',
-        'order': 2,
+        'id': 'intermediate',
+        'name': 'Intermediate',
+        'description': 'Từ vựng trung cấp',
+        'targetWords': 300,
+        'learnedWords': (totalWordsLearned - 500).clamp(0, 300),
+        'color': Colors.purple,
+        'icon': Icons.psychology,
+        'topics': ['business', 'technology', 'travel'],
+        'level': 'intermediate',
+      },
+      {
+        'id': 'advanced',
+        'name': 'Advanced',
+        'description': 'Từ vựng nâng cao',
+        'targetWords': 200,
+        'learnedWords': (totalWordsLearned - 800).clamp(0, 200),
+        'color': Colors.teal,
+        'icon': Icons.work,
+        'topics': ['science', 'literature', 'philosophy'],
+        'level': 'advanced',
       },
     ];
     
@@ -348,24 +197,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _determineActiveGroup() {
     if (topicGroups.isEmpty) {
-      currentActiveGroup = "Basic 1";
+      currentActiveGroup = "Basic";
       return;
     }
     
+    // Find the first group that is not 100% complete
     for (var group in topicGroups) {
       final learnedWords = group['learnedWords'] as int;
       final targetWords = group['targetWords'] as int;
       
-      // Avoid division by zero
-      if (targetWords == 0) {
-        continue;
-      }
+      if (targetWords == 0) continue;
       
       final progress = learnedWords / targetWords;
       if (progress < 1.0) {
         currentActiveGroup = group['name'];
-        break;
+        return;
       }
+    }
+    
+    // If all groups are complete, default to the last group
+    if (topicGroups.isNotEmpty) {
+      currentActiveGroup = topicGroups.last['name'];
     }
   }
 
@@ -400,90 +252,75 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _createTopicGroupsFromVocabulary() async {
     try {
       final allTopics = await TopicRepository().getTopics();
-      final reviewedWords = await WordRepository().getReviewedWordsGroupedByTopic();
+      final progressRepo = UserProgressRepository();
       
-      // Phân loại topics theo level từ vocabulary data
+      // Phân loại topics theo level từ vocabulary data (chỉ 3 level)
       final basicTopics = allTopics.where((topic) => topic.level == TopicLevel.BASIC).toList();
       final intermediateTopics = allTopics.where((topic) => topic.level == TopicLevel.INTERMEDIATE).toList();
       final advancedTopics = allTopics.where((topic) => topic.level == TopicLevel.ADVANCED).toList();
 
-      // Helper functions
-      int calculateLearnedWords(List<Topic> topics) {
-        return topics.fold<int>(0, (int sum, topic) {
-          final reviewed = reviewedWords[topic.topic] ?? [];
-          return sum + reviewed.length;
-        });
+      // Helper function để tính từ đã học thực tế từ UserProgressRepository
+      Future<int> calculateLearnedWordsFromProgress(List<Topic> topics) async {
+        int totalLearned = 0;
+        for (final topic in topics) {
+          final topicProgress = await progressRepo.getTopicProgress(topic.topic);
+          totalLearned += (topicProgress['learnedWords'] ?? 0) as int;
+        }
+        return totalLearned;
       }
 
       int calculateTargetWords(List<Topic> topics) {
         return topics.fold<int>(0, (sum, topic) => sum + topic.totalWords);
       }
 
-      // Tạo groups với icon mapping tự động
+      // Tạo chỉ 3 groups theo level thực tế
       List<Map<String, dynamic>> groups = [];
 
-      // Basic Groups (chia thành 3 nhóm)
+      // Basic Group
       if (basicTopics.isNotEmpty) {
-        final groupSize = (basicTopics.length / 3).ceil();
-        
-        for (int i = 0; i < 3; i++) {
-          final start = i * groupSize;
-          final end = math.min<int>((i + 1) * groupSize, basicTopics.length);
-          
-          if (start < basicTopics.length) {
-            final groupTopics = basicTopics.sublist(start, end);
-            groups.add({
-              'id': 'basic_${i + 1}',
-              'name': 'Basic ${i + 1}',
-              'description': _getGroupDescription('basic', i + 1),
-              'targetWords': calculateTargetWords(groupTopics),
-              'learnedWords': calculateLearnedWords(groupTopics),
-              'color': _getGroupColor('basic', i + 1),
-              'icon': _getGroupIcon('basic', i + 1),
-              'topics': groupTopics.map((t) => t.topic).toList(),
-              'level': 'basic',
-              'topicObjects': groupTopics, // Để dễ access sau này
-            });
-          }
-        }
-      }
-
-      // Intermediate Groups (chia thành 2 nhóm)
-      if (intermediateTopics.isNotEmpty) {
-        final groupSize = (intermediateTopics.length / 2).ceil();
-        
-        for (int i = 0; i < 2; i++) {
-          final start = i * groupSize;
-          final end = math.min<int>((i + 1) * groupSize, intermediateTopics.length);
-          
-          if (start < intermediateTopics.length) {
-            final groupTopics = intermediateTopics.sublist(start, end);
-            groups.add({
-              'id': 'intermediate_${i + 1}',
-              'name': 'Intermediate ${i + 1}',
-              'description': _getGroupDescription('intermediate', i + 1),
-              'targetWords': calculateTargetWords(groupTopics),
-              'learnedWords': calculateLearnedWords(groupTopics),
-              'color': _getGroupColor('intermediate', i + 1),
-              'icon': _getGroupIcon('intermediate', i + 1),
-              'topics': groupTopics.map((t) => t.topic).toList(),
-              'level': 'intermediate',
-              'topicObjects': groupTopics,
-            });
-          }
-        }
-      }
-
-      // Advanced Group (1 nhóm)
-      if (advancedTopics.isNotEmpty) {
+        final learnedWords = await calculateLearnedWordsFromProgress(basicTopics);
         groups.add({
-          'id': 'advanced_1',
+          'id': 'basic',
+          'name': 'Basic',
+          'description': 'Từ vựng cơ bản hàng ngày',
+          'targetWords': calculateTargetWords(basicTopics),
+          'learnedWords': learnedWords,
+          'color': Colors.green,
+          'icon': Icons.star,
+          'topics': basicTopics.map((t) => t.topic).toList(),
+          'level': 'basic',
+          'topicObjects': basicTopics,
+        });
+      }
+
+      // Intermediate Group
+      if (intermediateTopics.isNotEmpty) {
+        final learnedWords = await calculateLearnedWordsFromProgress(intermediateTopics);
+        groups.add({
+          'id': 'intermediate',
+          'name': 'Intermediate',
+          'description': 'Từ vựng trung cấp',
+          'targetWords': calculateTargetWords(intermediateTopics),
+          'learnedWords': learnedWords,
+          'color': Colors.purple,
+          'icon': Icons.psychology,
+          'topics': intermediateTopics.map((t) => t.topic).toList(),
+          'level': 'intermediate',
+          'topicObjects': intermediateTopics,
+        });
+      }
+
+      // Advanced Group
+      if (advancedTopics.isNotEmpty) {
+        final learnedWords = await calculateLearnedWordsFromProgress(advancedTopics);
+        groups.add({
+          'id': 'advanced',
           'name': 'Advanced',
-          'description': _getGroupDescription('advanced', 1),
+          'description': 'Từ vựng nâng cao',
           'targetWords': calculateTargetWords(advancedTopics),
-          'learnedWords': calculateLearnedWords(advancedTopics),
-          'color': _getGroupColor('advanced', 1),
-          'icon': _getGroupIcon('advanced', 1),
+          'learnedWords': learnedWords,
+          'color': Colors.teal,
+          'icon': Icons.work,
           'topics': advancedTopics.map((t) => t.topic).toList(),
           'level': 'advanced',
           'topicObjects': advancedTopics,
@@ -491,7 +328,14 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       topicGroups = groups;
-      print('Created ${groups.length} topic groups from vocabulary data');
+      
+      // Determine current active group based on progress
+      _determineActiveGroup();
+      
+      print('📊 Created ${groups.length} topic groups:');
+      for (final group in groups) {
+        print('  - ${group['name']}: ${group['learnedWords']}/${group['targetWords']} từ');
+      }
       
     } catch (e) {
       print('Error creating topic groups: $e');
@@ -499,54 +343,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Helper methods để map icon và màu sắc tự động
-  Color _getGroupColor(String level, int groupNumber) {
-    switch (level) {
-      case 'basic':
-        return [Colors.green, Colors.lightGreen, Colors.teal][groupNumber - 1];
-      case 'intermediate':
-        return [Colors.orange, Colors.deepOrange][groupNumber - 1];
-      case 'advanced':
-        return Colors.purple;
-      default:
-        return Colors.blue;
-    }
-  }
-
-  IconData _getGroupIcon(String level, int groupNumber) {
-    switch (level) {
-      case 'basic':
-        return [Icons.star, Icons.star_half, Icons.star_border][groupNumber - 1];
-      case 'intermediate':
-        return [Icons.trending_up, Icons.school][groupNumber - 1];
-      case 'advanced':
-        return Icons.emoji_events;
-      default:
-        return Icons.book;
-    }
-  }
-
-  String _getGroupDescription(String level, int groupNumber) {
-    switch (level) {
-      case 'basic':
-        final descriptions = [
-          'Từ vựng cơ bản hàng ngày',
-          'Từ vựng cơ bản nâng cao', 
-          'Từ vựng cơ bản hoàn thiện'
-        ];
-        return descriptions[groupNumber - 1];
-      case 'intermediate':
-        final descriptions = [
-          'Từ vựng trung cấp cơ bản',
-          'Từ vựng trung cấp nâng cao'
-        ];
-        return descriptions[groupNumber - 1];
-      case 'advanced':
-        return 'Từ vựng nâng cao';
-      default:
-        return 'Từ vựng';
-    }
-  }
+  // Removed helper methods - no longer needed with simplified 3-level structure
 
   Future<void> _loadReviewedWords() async {
     try {
@@ -672,27 +469,58 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 12),
           
           // Streak Counter
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.orange,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('🔥', style: TextStyle(fontSize: 16)),
-                const SizedBox(width: 6),
-                Text(
-                  '$streakDays ngày liên tiếp',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+          Row(
+            children: [
+              // Current Streak
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(20),
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🔥', style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 6),
+                    Text(
+                      '$streakDays ngày liên tiếp',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(width: 12),
+              
+              // Longest Streak
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🏆', style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Kỷ lục: $longestStreak',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           
           const SizedBox(height: 8),
@@ -721,229 +549,168 @@ class _HomeScreenState extends State<HomeScreen> {
     final learnedWords = activeGroup['learnedWords'] as int;
     final targetWords = activeGroup['targetWords'] as int;
     final progress = targetWords > 0 ? learnedWords / targetWords : 0.0;
-    final remainingWords = targetWords - learnedWords;
     final groupColor = activeGroup['color'] as Color;
-    final groupIcon = activeGroup['icon'] as IconData;
     
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         children: [
-          // Current group header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: groupColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(groupIcon, color: groupColor, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      activeGroup['name'],
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    Text(
-                      activeGroup['description'],
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 20),
-          
-          // Progress circle for current group
+          // Compact progress circle
           SizedBox(
-            width: 120,
-            height: 120,
+            width: 60,
+            height: 60,
             child: Stack(
               alignment: Alignment.center,
               children: [
-                SizedBox(
-                  width: 120,
-                  height: 120,
-                  child: CircularProgressIndicator(
-                    value: progress,
-                    strokeWidth: 10,
-                    backgroundColor: Colors.grey[200],
-                    valueColor: AlwaysStoppedAnimation<Color>(groupColor),
-                  ),
+                CircularProgressIndicator(
+                  value: progress,
+                  strokeWidth: 6,
+                  backgroundColor: Colors.grey[200],
+                  valueColor: AlwaysStoppedAnimation<Color>(groupColor),
                 ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${(progress * 100).round()}%',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    Text(
-                      '$learnedWords/$targetWords từ',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
+                Text(
+                  '${(progress * 100).round()}%',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
               ],
             ),
           ),
           
-          const SizedBox(height: 16),
+          const SizedBox(width: 16),
           
-          Text(
-            remainingWords > 0 
-                ? 'Còn $remainingWords từ để hoàn thành ${activeGroup['name']}!'
-                : 'Hoàn thành ${activeGroup['name']}! 🎉',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[700],
+          // Progress info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  activeGroup['name'],
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$learnedWords/$targetWords từ đã học',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // All groups overview in compact form
+                _buildCompactGroupsOverview(),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
-          
-          const SizedBox(height: 16),
-          
-          // All groups overview
-          _buildGroupsOverview(),
         ],
       ),
     );
   }
 
-  Widget _buildGroupsOverview() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Tất cả nhóm từ vựng',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
+  Widget _buildCompactGroupsOverview() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: topicGroups.asMap().entries.map((entry) {
+        final index = entry.key;
+        final group = entry.value;
+        final progress = (group['targetWords'] as int) > 0 
+            ? (group['learnedWords'] as int) / (group['targetWords'] as int)
+            : 0.0;
+        final isActive = group['name'] == currentActiveGroup;
         
-        const SizedBox(height: 12),
-        
-        // Basic groups
-        _buildLevelSection('Cơ Bản', 'basic'),
-        
-        const SizedBox(height: 12),
-        
-        // Intermediate groups
-        _buildLevelSection('Trung Cấp', 'intermediate'),
-        
-        const SizedBox(height: 12),
-        
-        // Advanced groups
-        _buildLevelSection('Nâng Cao', 'advanced'),
-      ],
-    );
-  }
-
-  Widget _buildLevelSection(String levelName, String levelType) {
-    final levelGroups = topicGroups.where((group) => group['level'] == levelType).toList();
-    
-    // If no groups found, return empty container
-    if (levelGroups.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          levelName,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[700],
-          ),
-        ),
-        
-        const SizedBox(height: 6),
-        
-        Row(
-          children: levelGroups.map((group) {
-            final learnedWords = group['learnedWords'] as int;
-            final targetWords = group['targetWords'] as int;
-            final progress = targetWords > 0 ? learnedWords / targetWords : 0.0;
-            final isActive = group['name'] == currentActiveGroup;
-            final groupColor = group['color'] as Color;
-            
-            return Expanded(
-              child: Container(
-                margin: const EdgeInsets.only(right: 6),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: isActive ? groupColor : Colors.grey[300],
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        backgroundColor: Colors.transparent,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          isActive ? groupColor : Colors.grey[400]!,
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 4),
-                    
-                    Text(
-                      _getGroupDisplayName(group['name']?.toString() ?? ''),
+        return Flexible(
+          flex: 1,
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                currentActiveGroup = group['name'];
+              });
+            },
+            child: Container(
+              width: double.infinity,
+              margin: EdgeInsets.only(
+                left: index == 0 ? 0 : 4,
+                right: index == topicGroups.length - 1 ? 0 : 4,
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+              decoration: BoxDecoration(
+                color: isActive ? (group['color'] as Color).withOpacity(0.1) : Colors.grey[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isActive ? (group['color'] as Color) : Colors.grey[300]!,
+                  width: isActive ? 2 : 1,
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    height: 16,
+                    child: Text(
+                      group['name'],
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                        color: isActive ? groupColor : Colors.grey[600],
+                        color: isActive ? (group['color'] as Color) : Colors.grey[600],
                       ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: 3,
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: Colors.grey[200],
+                      valueColor: AlwaysStoppedAnimation<Color>(group['color'] as Color),
+                      minHeight: 3,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: 12,
+                    child: Text(
+                      '${(progress * 100).round()}%',
+                      style: TextStyle(
+                        fontSize: 8,
+                        color: Colors.grey[600],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
               ),
-            );
-          }).toList(),
-        ),
-      ],
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
+
+  // Removed _buildGroupsOverview - replaced with _buildCompactGroupsOverview
+
+  // Removed _buildLevelSection - no longer needed with simplified structure
 
   Widget _buildDailyGoal() {
     final progress = todayWordsLearned / dailyGoal;
@@ -1381,16 +1148,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return TopicConfigsRepository.getTopicData(topicName);
   }
 
-  String _getGroupDisplayName(String groupName) {
-    if (groupName.isEmpty) return '';
-    
-    // Extract the number part from group names like "Basic 1", "Intermediate 2", etc.
-    final parts = groupName.split(' ');
-    if (parts.length > 1) {
-      return parts.last; // Return the last part (usually the number)
-    }
-    return groupName; // Return the whole name if no space found
-  }
+  // Removed _getGroupDisplayName - no longer needed with simplified group names
 
   // Utility methods for progress tracking
   Future<void> _addWordOfTheDayToReview() async {

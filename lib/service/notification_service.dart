@@ -2,6 +2,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../repository/quiz_repository.dart';
+import '../model/word.dart';
+import 'notification_vocabulary_service.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -9,6 +11,7 @@ class NotificationService {
   NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin notifications = FlutterLocalNotificationsPlugin();
+  final NotificationVocabularyService _vocabularyService = NotificationVocabularyService();
 
   // Notification IDs
   static const int morningReminderId = 1;
@@ -90,10 +93,19 @@ class NotificationService {
     final eveningMinute = prefs.getInt('evening_reminder_minute') ?? 0;
 
     if (morningEnabled) {
+      // Lấy từ vựng cho buổi sáng
+      final morningWord = await _vocabularyService.getMorningWord();
+      String morningBody = 'Sẵn sàng học 10 từ mới hôm nay chưa?';
+      
+      if (morningWord != null) {
+        final wordText = _vocabularyService.formatWordForNotification(morningWord);
+        morningBody = 'Từ vựng hôm nay: $wordText\nSẵn sàng học thêm không? 📚';
+      }
+      
       await _scheduleDailyNotification(
         id: morningReminderId,
         title: 'Chào Buổi Sáng! ☀️',
-        body: 'Sẵn sàng học 10 từ mới hôm nay chưa?',
+        body: morningBody,
         hour: morningHour,
         minute: morningMinute,
         payload: 'morning_reminder',
@@ -101,10 +113,19 @@ class NotificationService {
     }
 
     if (noonEnabled) {
+      // Lấy từ vựng cho buổi trưa
+      final noonWord = await _vocabularyService.getNoonWord();
+      String noonBody = 'Thời gian hoàn hảo để học vài từ mới trong giờ nghỉ!';
+      
+      if (noonWord != null) {
+        final wordText = _vocabularyService.formatWordForNotification(noonWord);
+        noonBody = 'Từ vựng: $wordText\nGiờ nghỉ trưa học từ nào! ☕';
+      }
+      
       await _scheduleDailyNotification(
         id: noonReminderId,
         title: 'Nghỉ Trưa Học Từ! ☀️',
-        body: 'Thời gian hoàn hảo để học vài từ mới trong giờ nghỉ!',
+        body: noonBody,
         hour: noonHour,
         minute: noonMinute,
         payload: 'noon_reminder',
@@ -112,10 +133,19 @@ class NotificationService {
     }
 
     if (eveningEnabled) {
+      // Lấy từ vựng cho buổi tối (ôn tập)
+      final eveningWord = await _vocabularyService.getEveningWord();
+      String eveningBody = 'Đã đến lúc ôn lại những từ hôm nay!';
+      
+      if (eveningWord != null) {
+        final wordText = _vocabularyService.formatWordForNotification(eveningWord);
+        eveningBody = 'Ôn tập: $wordText\nKết thúc ngày với việc ôn từ vựng! 🌙';
+      }
+      
       await _scheduleDailyNotification(
         id: eveningReminderId,
         title: 'Ôn Tập Buổi Tối 🌙',
-        body: 'Đã đến lúc ôn lại những từ hôm nay!',
+        body: eveningBody,
         hour: eveningHour,
         minute: eveningMinute,
         payload: 'evening_reminder',
@@ -647,5 +677,116 @@ class NotificationService {
   Future<void> runExtendedNotificationChecks() async {
     await runNotificationChecks(); // Phase 1 checks
     await scheduleWeeklySummary(); // Schedule weekly summary
+  }
+
+  /// Test method để kiểm tra thông báo với từ vựng
+  Future<void> testVocabularyNotifications() async {
+    print('🧪 Testing vocabulary notifications...');
+    
+    try {
+      // Test lấy từ vựng cho các thời điểm khác nhau
+      final morningWord = await _vocabularyService.getMorningWord();
+      final noonWord = await _vocabularyService.getNoonWord();
+      final eveningWord = await _vocabularyService.getEveningWord();
+      
+      print('📅 Morning word: ${morningWord?.en} - ${morningWord?.vi}');
+      print('🌅 Noon word: ${noonWord?.en} - ${noonWord?.vi}');
+      print('🌙 Evening word: ${eveningWord?.en} - ${eveningWord?.vi}');
+      
+      // Test hiển thị thông báo ngay lập tức
+      if (morningWord != null) {
+        final wordText = _vocabularyService.formatWordForNotification(morningWord);
+        await notifications.show(
+          999, // Test ID
+          'Test Thông Báo Từ Vựng 📚',
+          'Từ vựng test: $wordText\nĐây là thông báo thử nghiệm!',
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'test_vocabulary',
+              'Test Từ Vựng',
+              channelDescription: 'Kênh test thông báo từ vựng',
+              importance: Importance.high,
+              priority: Priority.high,
+              icon: '@mipmap/ic_launcher',
+            ),
+            iOS: DarwinNotificationDetails(
+              categoryIdentifier: 'test_vocabulary',
+            ),
+          ),
+          payload: 'test_vocabulary',
+        );
+        
+        print('✅ Test notification sent with word: ${morningWord.en}');
+      } else {
+        print('❌ No morning word found for test');
+      }
+      
+    } catch (e) {
+      print('❌ Error testing vocabulary notifications: $e');
+    }
+  }
+
+  /// Hiển thị thông báo từ vựng ngay lập tức (để test)
+  Future<void> showImmediateVocabularyNotification({
+    required String timeOfDay, // 'morning', 'noon', 'evening'
+  }) async {
+    try {
+      dWord? word;
+      String title;
+      String emoji;
+      
+      switch (timeOfDay.toLowerCase()) {
+        case 'morning':
+          word = await _vocabularyService.getMorningWord();
+          title = 'Chào Buổi Sáng! ☀️';
+          emoji = '🌅';
+          break;
+        case 'noon':
+          word = await _vocabularyService.getNoonWord();
+          title = 'Nghỉ Trưa Học Từ! ☀️';
+          emoji = '☕';
+          break;
+        case 'evening':
+          word = await _vocabularyService.getEveningWord();
+          title = 'Ôn Tập Buổi Tối 🌙';
+          emoji = '🌙';
+          break;
+        default:
+          word = await _vocabularyService.getRandomWordForNotification();
+          title = 'Học Từ Vựng! 📚';
+          emoji = '📚';
+      }
+      
+      if (word != null) {
+        final wordText = _vocabularyService.formatWordForNotification(word);
+        final body = 'Từ vựng: $wordText\nTap để học thêm! $emoji';
+        
+        await notifications.show(
+          1000 + timeOfDay.hashCode, // Unique ID based on time of day
+          title,
+          body,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'immediate_vocabulary',
+              'Từ Vựng Ngay Lập Tức',
+              channelDescription: 'Thông báo từ vựng hiển thị ngay',
+              importance: Importance.high,
+              priority: Priority.high,
+              icon: '@mipmap/ic_launcher',
+            ),
+            iOS: DarwinNotificationDetails(
+              categoryIdentifier: 'immediate_vocabulary',
+            ),
+          ),
+          payload: 'immediate_vocabulary:${word.en}:${word.topic}',
+        );
+        
+        print('✅ Immediate vocabulary notification sent: ${word.en} - ${word.vi}');
+      } else {
+        print('❌ No word found for $timeOfDay notification');
+      }
+    } catch (e) {
+      print('❌ Error showing immediate vocabulary notification: $e');
+    }
   }
 }
