@@ -1,14 +1,15 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import '../model/word.dart';
 import '../repository/quiz_repository.dart';
+import '../repository/user_progress_repository.dart';
 import '../service/notification_service.dart';
 
 enum QuizType {
-  multipleChoice,    // Trắc nghiệm 4 đáp án
-  fillInBlank,      // Điền từ vào chỗ trống
-  translation,      // Dịch từ tiếng Anh sang tiếng Việt
-  reverseTranslation, // Dịch từ tiếng Việt sang tiếng Anh
+  multipleChoice,    // Trắc nghiệm 4 đáp án (từ EN → nghĩa VI)
+  fillInBlank,      // Điền từ vào chỗ trống (nghĩa VI → từ EN)
+  reverseTranslation, // Dịch sang tiếng Anh (nghĩa VI → từ EN)
 }
 
 class QuizGameScreen extends StatefulWidget {
@@ -45,6 +46,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
   
   final TextEditingController _fillInController = TextEditingController();
   final Random _random = Random();
+  final FlutterTts _flutterTts = FlutterTts();
 
   @override
   void initState() {
@@ -76,6 +78,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
     _progressController.dispose();
     _resultController.dispose();
     _fillInController.dispose();
+    _flutterTts.stop();
     super.dispose();
   }
 
@@ -84,6 +87,13 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
     totalQuestions = shuffledWords.length;
     _generateQuestion();
     _progressController.forward();
+  }
+
+  Future<void> _speakEnglish(String text) async {
+    await _flutterTts.setLanguage("en-US");
+    await _flutterTts.setPitch(1.0);
+    await _flutterTts.setSpeechRate(0.5);
+    await _flutterTts.speak(text);
   }
 
   void _generateQuestion() {
@@ -110,9 +120,6 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
         break;
       case QuizType.fillInBlank:
         _generateFillInBlankQuestion(currentWord);
-        break;
-      case QuizType.translation:
-        _generateTranslationQuestion(currentWord);
         break;
       case QuizType.reverseTranslation:
         _generateReverseTranslationQuestion(currentWord);
@@ -145,24 +152,6 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
     currentOptions = [];
   }
 
-  void _generateTranslationQuestion(Word word) {
-    correctAnswer = word.vi;
-    
-    // Generate options from other words
-    final otherWords = shuffledWords.where((w) => w.en != word.en).toList();
-    otherWords.shuffle(_random);
-    
-    currentOptions = [correctAnswer];
-    for (int i = 0; i < 3 && i < otherWords.length; i++) {
-      currentOptions.add(otherWords[i].vi);
-    }
-    
-    while (currentOptions.length < 4) {
-      currentOptions.add('Đáp án ${currentOptions.length}');
-    }
-    
-    currentOptions.shuffle(_random);
-  }
 
   void _generateReverseTranslationQuestion(Word word) {
     correctAnswer = word.en;
@@ -199,13 +188,22 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
                      (currentQuizType == QuizType.fillInBlank && 
                       userAnswer == correctAnswer.toLowerCase());
 
+    final currentWord = shuffledWords[currentQuestionIndex];
+    
     if (isAnswerCorrect) {
       correctAnswers++;
+      // Phát âm từ đúng khi trả lời đúng
+      await _speakEnglish(currentWord.en);
+    } else {
+      // Phát âm từ đúng khi trả lời sai để người dùng học
+      await _speakEnglish(currentWord.en);
     }
 
     // Update word progress in repository
-    final currentWord = shuffledWords[currentQuestionIndex];
     await QuizRepository().updateWordProgress(currentWord, isAnswerCorrect);
+    
+    // Also update UserProgressRepository for comprehensive tracking
+    await UserProgressRepository().updateWordProgress(currentWord.topic, currentWord, isAnswerCorrect);
 
     setState(() {
       showResult = true;
@@ -214,8 +212,9 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
     _resultController.reset();
     _resultController.forward();
 
-    // Auto advance after 2 seconds
-    Future.delayed(const Duration(seconds: 2), () {
+    // Auto advance - thời gian khác nhau cho đúng và sai
+    int delaySeconds = isAnswerCorrect ? 2 : 3; // Đúng: 2s, Sai: 3s để ghi nhớ
+    Future.delayed(Duration(seconds: delaySeconds), () {
       if (mounted) {
         _nextQuestion();
       }
@@ -353,6 +352,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
     final progress = (currentQuestionIndex + 1) / totalQuestions;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true, // Cho phép resize khi keyboard mở
       appBar: AppBar(
         title: Text(widget.title),
         backgroundColor: Theme.of(context).primaryColor,
@@ -393,62 +393,70 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
           ),
           
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
+            child: SafeArea(
               child: Column(
                 children: [
-                  // Quiz Type Indicator
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      _getQuizTypeTitle(),
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
+                  // Scrollable content area
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          // Quiz Type Indicator
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _getQuizTypeTitle(),
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 20),
+                          
+                          // Question
+                          _buildQuestion(currentWord),
+                          
+                          const SizedBox(height: 20),
+                          
+                          // Answer Options
+                          _buildAnswerSection(currentWord),
+                          
+                          const SizedBox(height: 20),
+                        ],
                       ),
                     ),
                   ),
                   
-                  const SizedBox(height: 20),
-                  
-                  // Question
-                  Expanded(
-                    flex: 2,
-                    child: Center(
-                      child: _buildQuestion(currentWord),
-                    ),
-                  ),
-                  
-                  // Answer Options
-                  Expanded(
-                    flex: 3,
-                    child: _buildAnswerSection(currentWord),
-                  ),
-                  
-                  // Submit Button
+                  // Fixed Submit Button at bottom
                   if (!showResult)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _canSubmit() ? _submitAnswer : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _canSubmit() ? _submitAnswer : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                        ),
-                        child: const Text(
-                          'Trả lời',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                          child: const Text(
+                            'Trả lời',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -468,8 +476,6 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
         return 'Trắc nghiệm';
       case QuizType.fillInBlank:
         return 'Điền từ';
-      case QuizType.translation:
-        return 'Dịch sang tiếng Việt';
       case QuizType.reverseTranslation:
         return 'Dịch sang tiếng Anh';
     }
@@ -484,9 +490,6 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
         break;
       case QuizType.fillInBlank:
         questionText = 'Điền từ tiếng Anh có nghĩa là:\n"${word.vi}"';
-        break;
-      case QuizType.translation:
-        questionText = 'Từ "${word.en}" có nghĩa là gì?';
         break;
       case QuizType.reverseTranslation:
         questionText = 'Từ tiếng Anh của "${word.vi}" là gì?';
@@ -522,6 +525,31 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
               ),
               textAlign: TextAlign.center,
             ),
+            // Nút phát âm cho từ tiếng Anh (chỉ khi có từ tiếng Anh trong câu hỏi)
+            if (currentQuizType == QuizType.multipleChoice) ...[
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () => _speakEnglish(word.en),
+                    icon: const Icon(Icons.volume_up),
+                    iconSize: 28,
+                    color: Theme.of(context).primaryColor,
+                    tooltip: 'Phát âm từ tiếng Anh',
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    word.en,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             if (word.sentence.isNotEmpty && currentQuizType != QuizType.fillInBlank) ...[
               const SizedBox(height: 16),
               Container(

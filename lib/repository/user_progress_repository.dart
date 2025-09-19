@@ -106,6 +106,9 @@ class UserProgressRepository {
     
     // Update last_topic in SharedPreferences
     await _updateLastTopic(topic);
+    
+    // Update daily streak and today's words count
+    await _updateDailyProgress();
   }
 
   /// Update topic progress statistics
@@ -123,14 +126,15 @@ class UserProgressRepository {
     int learnedWords = 0;
     int totalCorrect = 0;
     int totalAttempts = 0;
-    int totalStudyTime = 0;
     
     for (final key in topicWordKeys) {
       final progressJson = prefs.getString(key);
       if (progressJson != null) {
         final wordProgress = Map<String, dynamic>.from(jsonDecode(progressJson));
         
-        if (wordProgress['isLearned'] == true) {
+        // Count words that have been reviewed (more inclusive than just "learned")
+        final reviewCount = (wordProgress['reviewCount'] ?? 0) as int;
+        if (reviewCount > 0) {
           learnedWords++;
         }
         
@@ -311,5 +315,67 @@ class UserProgressRepository {
   /// Set last studied topic (public method)
   Future<void> setLastTopic(String topic) async {
     await _updateLastTopic(topic);
+  }
+
+  /// Update daily progress including streak and today's words count
+  Future<void> _updateDailyProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now();
+    final todayKey = '${today.year}-${today.month}-${today.day}';
+    
+    // Update today's words learned count
+    final currentTodayWords = prefs.getInt('words_learned_$todayKey') ?? 0;
+    await prefs.setInt('words_learned_$todayKey', currentTodayWords + 1);
+    
+    // Update streak
+    await _updateStreak();
+  }
+
+  /// Update streak based on learning activity
+  Future<void> _updateStreak() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now();
+    final todayKey = '${today.year}-${today.month}-${today.day}';
+    final yesterdayKey = '${today.subtract(const Duration(days: 1)).year}-${today.subtract(const Duration(days: 1)).month}-${today.subtract(const Duration(days: 1)).day}';
+    
+    // Get current streak data
+    int currentStreak = prefs.getInt('streak_days') ?? 0;
+    int longestStreak = prefs.getInt('longest_streak') ?? 0;
+    String? lastStreakDate = prefs.getString('last_streak_date');
+    
+    // Check if user studied today
+    final todayWords = prefs.getInt('words_learned_$todayKey') ?? 0;
+    
+    if (todayWords > 0) {
+      // User studied today
+      if (lastStreakDate == null || lastStreakDate != todayKey) {
+        // First time studying today
+        if (lastStreakDate == yesterdayKey) {
+          // Continuing streak from yesterday
+          currentStreak += 1;
+        } else {
+          // Starting new streak
+          currentStreak = 1;
+        }
+        
+        // Update longest streak if needed
+        if (currentStreak > longestStreak) {
+          longestStreak = currentStreak;
+        }
+        
+        // Save updated values
+        await prefs.setInt('streak_days', currentStreak);
+        await prefs.setInt('longest_streak', longestStreak);
+        await prefs.setString('last_streak_date', todayKey);
+      }
+    }
+  }
+
+  /// Get today's words learned count
+  Future<int> getTodayWordsLearned() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now();
+    final todayKey = '${today.year}-${today.month}-${today.day}';
+    return prefs.getInt('words_learned_$todayKey') ?? 0;
   }
 }

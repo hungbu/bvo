@@ -9,12 +9,22 @@ class Flashcard extends StatefulWidget {
   final Word word;
   final bool sessionHideEnglishText;
   final Function(String)? onAnswerSubmitted;
+  final bool isFlipped;
+  final int countdownSeconds;
+  final bool isCountdownActive;
+  final bool isCountdownPaused;
+  final VoidCallback? onCountdownToggle;
 
   const Flashcard({
     super.key, 
     required this.word,
     this.sessionHideEnglishText = false,
     this.onAnswerSubmitted,
+    this.isFlipped = false,
+    this.countdownSeconds = 0,
+    this.isCountdownActive = false,
+    this.isCountdownPaused = false,
+    this.onCountdownToggle,
   });
 
   @override
@@ -22,8 +32,8 @@ class Flashcard extends StatefulWidget {
 }
 
 class _FlashcardState extends State<Flashcard> {
-  bool _isFlipped = false;
   bool _showEnglishText = true;
+  bool _localIsFlipped = false; // Local flip state for manual flipping
   final FlutterTts _flutterTts = FlutterTts();
 
   @override
@@ -41,6 +51,13 @@ class _FlashcardState extends State<Flashcard> {
         _showEnglishText = !widget.sessionHideEnglishText;
       });
     }
+    
+    // Reset local flip state when parent takes control
+    if (widget.isFlipped != oldWidget.isFlipped && widget.isCountdownActive) {
+      setState(() {
+        _localIsFlipped = false;
+      });
+    }
   }
 
   @override
@@ -50,11 +67,17 @@ class _FlashcardState extends State<Flashcard> {
   }
 
   void _flipCard() {
+    // Nếu đang trong chế độ countdown, không cho phép flip thủ công
+    if (widget.isCountdownActive) {
+      return;
+    }
+    
+    // Flip local state
     setState(() {
-      _isFlipped = !_isFlipped;
+      _localIsFlipped = !_localIsFlipped;
     });
-
-    if (_isFlipped) {
+    
+    if (_localIsFlipped) {
       _speakVietnamese(); // Speak Vietnamese translation when card is flipped
     } else {
       _speakEnglish(); // Speak English word when flipping back
@@ -83,11 +106,6 @@ class _FlashcardState extends State<Flashcard> {
     await _flutterTts.speak(widget.word.vi);
   }
 
-  void _toggleEnglishText() {
-    setState(() {
-      _showEnglishText = !_showEnglishText;
-    });
-  }
 
 
 
@@ -104,7 +122,7 @@ class _FlashcardState extends State<Flashcard> {
             child: child,
           );
         },
-        child: _isFlipped
+        child: (widget.isFlipped || _localIsFlipped)
             ? _buildCardBack(widget.word)
             : _buildCardFront(widget.word),
       ),
@@ -193,36 +211,88 @@ class _FlashcardState extends State<Flashcard> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-              Text(
-                word.vi,
-                style: const TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Pronunciation: ${word.pronunciation}',
-                style: const TextStyle(fontSize: 16, color: Colors.white70),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Flexible(
-                child: Text(
-                  'Sentence: ${word.sentence}',
+                // 3.2: Hiển thị từ tiếng Anh ở đầu (kích thước nhỏ hơn)
+                Text(
+                  word.en,
+                  style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  word.vi,
+                  style: const TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Pronunciation: ${word.pronunciation}',
+                  style: const TextStyle(fontSize: 16, color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Flexible(
+                  child: Text(
+                    'Sentence: ${word.sentence}',
+                    style: const TextStyle(fontSize: 14, color: Colors.white70),
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // 3.3: Hiển thị sentenceVi phía dưới sentence
+                Flexible(
+                  child: Text(
+                    'Nghĩa: ${word.sentenceVi}',
+                    style: const TextStyle(fontSize: 14, color: Colors.white70, fontStyle: FontStyle.italic),
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Topic: ${word.topic}',
                   style: const TextStyle(fontSize: 14, color: Colors.white70),
                   textAlign: TextAlign.center,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Topic: ${word.topic}',
-                style: const TextStyle(fontSize: 14, color: Colors.white70),
-                textAlign: TextAlign.center,
-              ),
-            ],
+                const SizedBox(height: 12),
+                // 3.1: Countdown với nút pause/resume (chỉ hiển thị khi parent control)
+                if (widget.isCountdownActive && widget.isFlipped)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          widget.isCountdownPaused ? Icons.play_arrow : Icons.pause,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: widget.onCountdownToggle,
+                          child: Text(
+                            widget.isCountdownPaused 
+                              ? 'Tiếp tục (${widget.countdownSeconds}s)'
+                              : 'Tạm dừng (${widget.countdownSeconds}s)',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );

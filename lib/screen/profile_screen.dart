@@ -42,7 +42,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         isLoading = true;
       });
 
-      final prefs = await SharedPreferences.getInstance();
       final wordRepo = WordRepository();
       final topicRepo = TopicRepository();
       final quizRepo = QuizRepository();
@@ -86,40 +85,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final currentStreakValue = userStats['streakDays'] ?? 0;
       final longestStreakValue = userStats['longestStreak'] ?? 0;
 
-      // Get today's words learned from comprehensive calculation
-      final today = DateTime.now();
-      final todayKey = '${today.year}-${today.month}-${today.day}';
-      
-      // Try to get from UserProgressRepository first, then fallback to SharedPreferences
-      int todayWords = prefs.getInt('words_learned_$todayKey') ?? 0;
-      
-      // Also check if there are any words learned today from progress tracking
-      try {
-        final allTopicsProgress = await progressRepo.getAllTopicsProgress();
-        int todayWordsFromProgress = 0;
-        
-        for (final topicProgress in allTopicsProgress.values) {
-          final lastStudied = topicProgress['lastStudied'];
-          if (lastStudied != null) {
-            final lastStudiedDate = DateTime.parse(lastStudied);
-            if (lastStudiedDate.year == today.year && 
-                lastStudiedDate.month == today.month && 
-                lastStudiedDate.day == today.day) {
-              // This topic was studied today, count its contribution
-              final sessions = topicProgress['sessions'] ?? 0;
-              if (sessions > 0) {
-                todayWordsFromProgress += (topicProgress['learnedWords'] ?? 0) as int;
-              }
-            }
-          }
-        }
-        
-        // Use the higher value between SharedPreferences and calculated from progress
-        todayWords = todayWords > todayWordsFromProgress ? todayWords : todayWordsFromProgress;
-      } catch (e) {
-        print('Error calculating today words from progress: $e');
-        // Keep the SharedPreferences value
-      }
+      // Get today's words learned from UserProgressRepository
+      final todayWords = await progressRepo.getTodayWordsLearned();
 
       setState(() {
         // Use comprehensive learned words count from UserProgressRepository

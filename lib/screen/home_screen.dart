@@ -262,10 +262,14 @@ class _HomeScreenState extends State<HomeScreen> {
       // Helper function để tính từ đã học thực tế từ UserProgressRepository
       Future<int> calculateLearnedWordsFromProgress(List<Topic> topics) async {
         int totalLearned = 0;
+        print('🔍 [DEBUG] Calculating learned words for ${topics.length} topics');
         for (final topic in topics) {
           final topicProgress = await progressRepo.getTopicProgress(topic.topic);
-          totalLearned += (topicProgress['learnedWords'] ?? 0) as int;
+          final learnedWords = (topicProgress['learnedWords'] ?? 0) as int;
+          print('🔍 [DEBUG] Topic ${topic.topic}: $learnedWords learned words');
+          totalLearned += learnedWords;
         }
+        print('🔍 [DEBUG] Total learned words: $totalLearned');
         return totalLearned;
       }
 

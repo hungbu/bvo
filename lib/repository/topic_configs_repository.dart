@@ -116,7 +116,7 @@ class TopicConfigsRepository {
       color: Colors.orangeAccent,
       estimatedTime: '4 min',
     ),
-    'body_parts': TopicConfig(
+    'body': TopicConfig(
       totalWords: 35,
       difficulty: 'Beginner',
       icon: Icons.accessibility,

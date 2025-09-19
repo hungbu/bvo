@@ -50,6 +50,12 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   
   // Progress tracking
   final UserProgressRepository _progressRepository = UserProgressRepository();
+  
+  // Card flip and countdown state
+  bool _isCardFlipped = false;
+  int _countdownSeconds = 5;
+  bool _isCountdownActive = false;
+  bool _isCountdownPaused = false;
 
   @override
   void initState() {
@@ -265,7 +271,12 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       setState(() {
         _feedbackMessage = 'Correct!';
       });
-      _nextSlide();
+      
+      // 1. Phát âm từ đúng
+      await _speakEnglish(_currentWords[_currentIndex].en);
+      
+      // 2. Lật card qua mặt sau thay vì chuyển card ngay
+      _flipCurrentCard();
     } else {
       // Update progress for incorrect answer
       // await _progressRepository.updateWordProgress(
@@ -280,9 +291,60 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     }
   }
 
-  void _nextSlide({int delay = 500}) {
+  void _flipCurrentCard() {
+    setState(() {
+      _isCardFlipped = true;
+      _countdownSeconds = 5;
+      _isCountdownActive = true;
+      _isCountdownPaused = false;
+    });
+    
+    // Bắt đầu countdown
+    _startCountdown();
+  }
+  
+  void _startCountdown() {
+    if (_countdownSeconds > 0 && !_isCountdownPaused) {
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted && _isCountdownActive && !_isCountdownPaused) {
+          setState(() {
+            _countdownSeconds--;
+          });
+          
+          if (_countdownSeconds > 0) {
+            _startCountdown();
+          } else {
+            // Countdown finished, move to next card
+            _nextSlide();
+          }
+        }
+      });
+    }
+  }
+  
+  void _toggleCountdownPause() {
+    setState(() {
+      _isCountdownPaused = !_isCountdownPaused;
+    });
+    
+    if (!_isCountdownPaused) {
+      _startCountdown();
+    }
+  }
+  
+  void _resetCardState() {
+    setState(() {
+      _isCardFlipped = false;
+      _countdownSeconds = 5;
+      _isCountdownActive = false;
+      _isCountdownPaused = false;
+    });
+  }
+
+  void _nextSlide({int delay = 0}) {
     Future.delayed(Duration(milliseconds: delay), () {
       if (_currentIndex < _currentWords.length - 1) {
+        _resetCardState();
         _carouselController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.linear,
@@ -664,6 +726,11 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         return Flashcard(
           word: _currentWords[index],
           sessionHideEnglishText: _sessionHideEnglishText,
+          isFlipped: index == _currentIndex ? _isCardFlipped : false,
+          countdownSeconds: index == _currentIndex ? _countdownSeconds : 0,
+          isCountdownActive: index == _currentIndex ? _isCountdownActive : false,
+          isCountdownPaused: index == _currentIndex ? _isCountdownPaused : false,
+          onCountdownToggle: index == _currentIndex ? _toggleCountdownPause : null,
           onAnswerSubmitted: (answer) {
             _checkAnswer();
           },

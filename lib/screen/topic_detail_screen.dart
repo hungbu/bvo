@@ -267,7 +267,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
             child: ElevatedButton.icon(
               onPressed: () => _addAllWordsToQuiz(),
               icon: const Icon(Icons.add_task, size: 18),
-              label: const Text('Thêm Tất Cả Vào Quiz'),
+              label: const Text('Add all to Quiz'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
