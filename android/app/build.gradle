@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.dongsonword.app"
+    namespace = "com.vnwebsite.bvoca"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -30,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.dongsonword.app"
+        applicationId = "com.vnwebsite.bvoca"
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

@@ -1,7 +1,7 @@
 // lib/widgets/flashcard.dart
 import 'dart:math';
 
-import 'package:dongsonword/model/word.dart';
+import 'package:bvo/model/word.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 

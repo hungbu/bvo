@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:dongsonword/model/topic.dart';
-import 'package:dongsonword/repository/topic_repository.dart';
-import 'package:dongsonword/repository/topic_configs_repository.dart';
-import 'package:dongsonword/repository/user_progress_repository.dart';
-import 'package:dongsonword/screen/topic_detail_screen.dart';
-import 'package:dongsonword/main.dart';
+import 'package:bvo/model/topic.dart';
+import 'package:bvo/repository/topic_repository.dart';
+import 'package:bvo/repository/topic_configs_repository.dart';
+import 'package:bvo/repository/user_progress_repository.dart';
+import 'package:bvo/screen/topic_detail_screen.dart';
+import 'package:bvo/main.dart';
 
 class TopicScreen extends StatefulWidget {
   const TopicScreen({Key? key}) : super(key: key);
