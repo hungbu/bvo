@@ -425,7 +425,7 @@ class NotificationService {
     await checkAndScheduleStreakWarning();
     await checkAndScheduleDueWordsAlert();
     await checkAndScheduleGoalProgress();
-    await checkAndScheduleQuizReminder();
+    // REMOVED: await checkAndScheduleQuizReminder(); // No longer trigger quiz notification on app open
     await checkAndScheduleComebackEncouragement();
   }
 

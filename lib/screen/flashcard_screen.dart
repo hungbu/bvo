@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bvo/model/word.dart';
 import 'package:bvo/screen/flashcard/flashcard.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
+import 'package:bvo/service/smart_notification_service.dart';
+import 'package:bvo/service/gamification_service.dart';
 
 class FlashCardScreen extends StatefulWidget {
   final List<Word> words;
@@ -51,6 +53,8 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   
   // Progress tracking
   final UserProgressRepository _progressRepository = UserProgressRepository();
+  final SmartNotificationService _smartNotificationService = SmartNotificationService();
+  final GamificationService _gamificationService = GamificationService();
   
   // Card flip and countdown state
   bool _isCardFlipped = false;
@@ -427,6 +431,18 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
 
     // Save completion statistics to SharedPreferences
     await _saveCompletionStatistics(sessionDuration, accuracy);
+    
+    // Trigger smart notification after learning session
+    await _smartNotificationService.triggerAfterLearningSession(_currentWords.length, widget.topic);
+    
+    // Check for achievements
+    final totalWordsLearned = _prefs.getInt('total_words_learned') ?? 0;
+    final streakDays = _prefs.getInt('streak_days') ?? 0;
+    await _gamificationService.checkAchievements(
+      wordsLearned: totalWordsLearned,
+      streakDays: streakDays,
+      accuracy: accuracy,
+    );
 
     String formatDuration(Duration duration) {
       String twoDigits(int n) => n.toString().padLeft(2, "0");

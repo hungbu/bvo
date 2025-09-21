@@ -7,8 +7,10 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'theme/purple_theme.dart';
 import 'screen/main_layout.dart';
 import 'screen/login_screen.dart';
+import 'screen/splash_screen.dart';
 import 'service/auth_service.dart';
 import 'service/notification_service.dart';
+import 'service/smart_notification_service.dart';
 import 'firebase_options.dart';
 
 // Global route observer for tracking navigation
@@ -72,7 +74,7 @@ class _MyAppState extends State<MyApp> {
       _isInitializing = false;
     });
     
-    // Schedule notifications if user is signed in
+    // Setup notifications if user is signed in
     if (user != null) {
       await _setupNotifications();
     }
@@ -80,9 +82,15 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _setupNotifications() async {
     final notificationService = NotificationService();
+    final smartNotificationService = SmartNotificationService();
+    
+    // Setup traditional notifications (daily reminders, etc.)
     await notificationService.scheduleDailyReminders();
-    await notificationService.runExtendedNotificationChecks();
+    await notificationService.runExtendedNotificationChecks(); // This no longer includes quiz reminder
     await notificationService.updateLastActiveDate();
+    
+    // Initialize smart notification system
+    await smartNotificationService.initialize();
   }
 
 
@@ -94,7 +102,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Bun Vocabulary',
+      title: 'Đông Sơn Go',
       debugShowCheckedModeBanner: false,
       theme: PurpleTheme.getTheme(),
       navigatorObservers: [routeObserver], // Add route observer
@@ -111,72 +119,3 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-// Simple splash screen while checking auth state
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Theme.of(context).primaryColor,
-              Theme.of(context).primaryColor.withOpacity(0.8),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // App Logo
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.2),
-                  border: Border.all(color: Colors.white, width: 3),
-                ),
-                child: ClipOval(
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      // Fallback to icon if image not found
-                      return const Icon(
-                        Icons.school,
-                        size: 50,
-                        color: Colors.white,
-                      );
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
-              // Loading indicator
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Đang khởi động...',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-
-}

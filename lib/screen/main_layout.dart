@@ -4,6 +4,7 @@ import 'home_screen.dart';
 import 'topic_screen.dart';
 import 'quiz_screen.dart';
 import 'profile_screen.dart';
+import '../service/smart_notification_service.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({Key? key}) : super(key: key);
@@ -12,11 +13,10 @@ class MainLayout extends StatefulWidget {
   State<MainLayout> createState() => _MainLayoutState();
 }
 
-class _MainLayoutState extends State<MainLayout> {
+class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   int _currentIndex = 0;
   VoidCallback? _profileRefreshCallback;
-  VoidCallback? _homeRefreshCallback;
-  VoidCallback? _topicRefreshCallback;
+  final SmartNotificationService _smartNotificationService = SmartNotificationService();
 
   // Danh sách các màn hình được build dynamically để pass callback
   List<Widget> get _screens => [
@@ -33,6 +33,41 @@ class _MainLayoutState extends State<MainLayout> {
     'Kiểm Tra & Ôn Tập',
     'Tài khoản',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    
+    if (state == AppLifecycleState.paused) {
+      // App goes to background - schedule smart checks
+      _scheduleSmartChecks();
+    } else if (state == AppLifecycleState.resumed) {
+      // App comes to foreground - check for streak motivation
+      _checkStreakMotivation();
+    }
+  }
+
+  Future<void> _scheduleSmartChecks() async {
+    // Check for forgetting words when app goes to background
+    await _smartNotificationService.checkForgettingWords();
+  }
+
+  Future<void> _checkStreakMotivation() async {
+    // Check streak motivation when app resumes
+    await _smartNotificationService.triggerStreakMotivation();
+  }
 
   @override
   Widget build(BuildContext context) {
