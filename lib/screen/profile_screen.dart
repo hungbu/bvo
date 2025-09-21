@@ -6,6 +6,7 @@ import '../repository/word_repository.dart';
 import '../repository/topic_repository.dart';
 import '../repository/quiz_repository.dart';
 import '../repository/user_progress_repository.dart';
+import '../widget/difficult_words_widget.dart';
 
 class ProfileScreen extends StatefulWidget {
   final Function(VoidCallback)? onRefreshCallback;
@@ -333,6 +334,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
 
+                  const SizedBox(height: 24),
+
+                  // Difficult Words Section
+                  const DifficultWordsWidget(),
+                  
                   const SizedBox(height: 24),
 
                   // Achievements Section

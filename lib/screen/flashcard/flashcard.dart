@@ -204,66 +204,81 @@ class _FlashcardState extends State<Flashcard> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 3.2: Hiển thị từ tiếng Anh ở đầu (kích thước nhỏ hơn)
-                Text(
-                  word.en,
-                  style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
+        child: Stack(
+          children: [
+            // Main content
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 3.2: Hiển thị từ tiếng Anh ở đầu (kích thước nhỏ hơn)
+                    Text(
+                      word.en,
+                      style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      word.vi,
+                      style: const TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Pronunciation: ${word.pronunciation}',
+                      style: const TextStyle(fontSize: 16, color: Colors.white70),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Flexible(
+                      child: Text(
+                        'Sentence: ${word.sentence}',
+                        style: const TextStyle(fontSize: 14, color: Colors.white70),
+                        textAlign: TextAlign.center,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // 3.3: Hiển thị sentenceVi phía dưới sentence
+                    Flexible(
+                      child: Text(
+                        'Nghĩa: ${word.sentenceVi}',
+                        style: const TextStyle(fontSize: 14, color: Colors.white70, fontStyle: FontStyle.italic),
+                        textAlign: TextAlign.center,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Topic: ${word.topic}',
+                      style: const TextStyle(fontSize: 14, color: Colors.white70),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  word.vi,
-                  style: const TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Pronunciation: ${word.pronunciation}',
-                  style: const TextStyle(fontSize: 16, color: Colors.white70),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Flexible(
-                  child: Text(
-                    'Sentence: ${word.sentence}',
-                    style: const TextStyle(fontSize: 14, color: Colors.white70),
-                    textAlign: TextAlign.center,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                // 3.3: Hiển thị sentenceVi phía dưới sentence
-                Flexible(
-                  child: Text(
-                    'Nghĩa: ${word.sentenceVi}',
-                    style: const TextStyle(fontSize: 14, color: Colors.white70, fontStyle: FontStyle.italic),
-                    textAlign: TextAlign.center,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Topic: ${word.topic}',
-                  style: const TextStyle(fontSize: 14, color: Colors.white70),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                // 3.1: Countdown với nút pause/resume (chỉ hiển thị khi parent control)
-                if (widget.isCountdownActive && widget.isFlipped)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+            ),
+            // Countdown button positioned at top-right
+            if (widget.isCountdownActive && widget.isFlipped)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: widget.onCountdownToggle,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1,
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -271,28 +286,23 @@ class _FlashcardState extends State<Flashcard> {
                         Icon(
                           widget.isCountdownPaused ? Icons.play_arrow : Icons.pause,
                           color: Colors.white,
-                          size: 20,
+                          size: 16,
                         ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: widget.onCountdownToggle,
-                          child: Text(
-                            widget.isCountdownPaused 
-                              ? 'Tiếp tục (${widget.countdownSeconds}s)'
-                              : 'Tạm dừng (${widget.countdownSeconds}s)',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${widget.countdownSeconds}s',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
                   ),
-              ],
-            ),
-          ),
+                ),
+              ),
+          ],
         ),
       ),
     );

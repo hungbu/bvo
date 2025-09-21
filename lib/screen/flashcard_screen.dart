@@ -37,6 +37,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   
   // Statistics tracking
   int _correctAnswers = 0;
+  int _incorrectAnswers = 0;
   int _totalAttempts = 0;
   DateTime? _sessionStartTime;
   
@@ -85,6 +86,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     _currentWords = widget.words.sublist(startIndex, endIndex);
     _currentIndex = 0;
     _correctAnswers = 0;
+    _incorrectAnswers = 0;
     _totalAttempts = 0;
     _sessionStartTime = DateTime.now();
     
@@ -157,6 +159,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       await _prefs.setString('${sessionKey}_topic', widget.topic);
       await _prefs.setInt('${sessionKey}_words_count', widget.words.length);
       await _prefs.setInt('${sessionKey}_correct_answers', _correctAnswers);
+      await _prefs.setInt('${sessionKey}_incorrect_answers', _incorrectAnswers);
       await _prefs.setInt('${sessionKey}_total_attempts', _totalAttempts);
       await _prefs.setDouble('${sessionKey}_accuracy', accuracy);
       await _prefs.setInt('${sessionKey}_duration_seconds', sessionDuration.inSeconds);
@@ -164,10 +167,12 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       
       // 5. Update topic-specific statistics
       final topicCorrect = _prefs.getInt('${widget.topic}_correct_answers') ?? 0;
+      final topicIncorrect = _prefs.getInt('${widget.topic}_incorrect_answers') ?? 0;
       final topicTotal = _prefs.getInt('${widget.topic}_total_attempts') ?? 0;
       final topicSessions = _prefs.getInt('${widget.topic}_sessions') ?? 0;
       
       await _prefs.setInt('${widget.topic}_correct_answers', topicCorrect + _correctAnswers);
+      await _prefs.setInt('${widget.topic}_incorrect_answers', topicIncorrect + _incorrectAnswers);
       await _prefs.setInt('${widget.topic}_total_attempts', topicTotal + _totalAttempts);
       await _prefs.setInt('${widget.topic}_sessions', topicSessions + 1);
       await _prefs.setString('${widget.topic}_last_studied', now.toIso8601String());
@@ -232,6 +237,31 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   }
 
 
+  /// Helper method để lấy danh sách từ khó (có tỷ lệ sai cao)
+  Future<List<String>> getDifficultWords() async {
+    List<String> difficultWords = [];
+    final allKeys = _prefs.getKeys();
+    
+    for (String key in allKeys) {
+      if (key.contains('_incorrect_answers') && key.contains(widget.topic)) {
+        final incorrectCount = _prefs.getInt(key) ?? 0;
+        final correctKey = key.replaceAll('_incorrect_answers', '_correct_answers');
+        final correctCount = _prefs.getInt(correctKey) ?? 0;
+        final totalAttempts = incorrectCount + correctCount;
+        
+        if (totalAttempts > 0) {
+          final errorRate = incorrectCount / totalAttempts;
+          if (errorRate > 0.3) { // Từ có tỷ lệ sai > 30%
+            final wordKey = key.split('_')[0];
+            difficultWords.add(wordKey);
+          }
+        }
+      }
+    }
+    
+    return difficultWords;
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -249,7 +279,28 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
 
 
 
-  Future<void> _checkAnswer() async {
+  // Hàm kiểm tra realtime - chỉ khi độ dài bằng nhau mới coi là trả lời
+  void _checkAnswerRealtime() {
+    String userAnswer = _controller.text.trim().toLowerCase();
+    String correctAnswer = _currentWords[_currentIndex].en
+        .trim()
+        .toLowerCase()
+        .replaceAll("-", " ");
+
+    // Chỉ khi độ dài input = độ dài từ đúng thì mới coi là một lần trả lời
+    if (userAnswer.length == correctAnswer.length) {
+      // Gọi hàm kiểm tra chính thức để tính thống kê và xử lý
+      _checkAnswerOfficial();
+    } else {
+      // Nếu độ dài chưa bằng nhau, chỉ clear feedback (không coi là trả lời)
+      setState(() {
+        _feedbackMessage = userAnswer.isEmpty ? '' : '';
+      });
+    }
+  }
+
+  // Hàm kiểm tra chính thức (tính thống kê) - chỉ gọi khi độ dài bằng nhau
+  Future<void> _checkAnswerOfficial() async {
     String userAnswer = _controller.text.trim().toLowerCase();
     String correctAnswer = _currentWords[_currentIndex].en
         .trim()
@@ -279,11 +330,13 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       _flipCurrentCard();
     } else {
       // Update progress for incorrect answer
-      // await _progressRepository.updateWordProgress(
-      //   widget.topic, 
-      //   _currentWords[_currentIndex], 
-      //   false
-      // );
+      await _progressRepository.updateWordProgress(
+        widget.topic, 
+        _currentWords[_currentIndex], 
+        false
+      );
+      
+      _incorrectAnswers++; // Track incorrect answers
       
       setState(() {
         _feedbackMessage = 'Try again.';
@@ -291,10 +344,15 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     }
   }
 
+  // Hàm wrapper để tương thích với onSubmitted
+  Future<void> _checkAnswer() async {
+    await _checkAnswerOfficial();
+  }
+
   void _flipCurrentCard() {
     setState(() {
       _isCardFlipped = true;
-      _countdownSeconds = 5;
+      _countdownSeconds = 3;
       _isCountdownActive = true;
       _isCountdownPaused = false;
     });
@@ -503,6 +561,50 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                     ),
                     SizedBox(height: 8),
                     
+                    // Correct answers
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.check_circle, size: 20, color: Colors.green),
+                            SizedBox(width: 8),
+                            Text('Câu đúng:'),
+                          ],
+                        ),
+                        Text(
+                          '$_correctAnswers',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    
+                    // Incorrect answers
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.cancel, size: 20, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Câu sai:'),
+                          ],
+                        ),
+                        Text(
+                          '$_incorrectAnswers',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    
                     // Total attempts
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -587,6 +689,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     setState(() {
       _currentIndex = 0;
       _correctAnswers = 0;
+      _incorrectAnswers = 0;
       _totalAttempts = 0;
       _sessionStartTime = DateTime.now();
       _feedbackMessage = '';
@@ -756,7 +859,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
             onSubmitted: (value) {
               _checkAnswer();
             },
-            onChanged: (value) => _checkAnswer(),
+            onChanged: (value) => _checkAnswerRealtime(),
           ),
           const SizedBox(height: 10),
           Text(
