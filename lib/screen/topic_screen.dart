@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bvo/model/topic.dart';
 import 'package:bvo/repository/topic_repository.dart';
-import 'package:bvo/repository/topic_configs_repository.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/screen/topic_detail_screen.dart';
 import 'package:bvo/main.dart';
@@ -55,13 +54,17 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
       final allProgress = await progressRepo.getAllTopicsProgress();
       
       // Calculate reviewed words from progress data
+      // learnedWords = số từ đã học ≥10 lần (đã được sửa trong UserProgressRepository)
       final reviewedWords = <String, int>{};
       for (final topic in loadedTopics) {
         final progress = allProgress[topic.topic];
         if (progress != null) {
-          reviewedWords[topic.topic] = progress['learnedWords'] ?? 0;
+          final learnedWords = progress['learnedWords'] ?? 0;
+          reviewedWords[topic.topic] = learnedWords;
+          print('📊 Topic ${topic.topic}: $learnedWords/${topic.totalWords} từ đã thuộc');
         } else {
           reviewedWords[topic.topic] = 0;
+          print('📊 Topic ${topic.topic}: 0/${topic.totalWords} từ đã thuộc (no progress)');
         }
       }
       
@@ -227,8 +230,6 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
         return Colors.orange;
       case TopicLevel.ADVANCED:
         return Colors.purple;
-      default:
-        return Colors.blue;
     }
   }
 
@@ -386,13 +387,12 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
     final color = _getTopicColor(topic); // Sử dụng helper method mới
     final estimatedTime = '${(totalWords / 10).ceil()} phút'; // Ước tính thời gian
     
-    // Calculate progress
+    // Calculate progress: reviewedCount = số từ đã học ≥10 lần (từ UserProgressRepository)
     final progress = totalWords > 0 ? (reviewedCount / totalWords).clamp(0.0, 1.0) : 0.0;
     final progressPercentage = (progress * 100).round();
     
     // Determine completion status
     final isCompleted = progress >= 1.0;
-    final isStarted = reviewedCount > 0;
     
     return Card(
       elevation: 2,
@@ -507,7 +507,7 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
                     children: [
                       Flexible(
                         child: Text(
-                          '$reviewedCount/$totalWords words',
+                          '$reviewedCount/$totalWords từ đã thuộc',
                           style: TextStyle(
                             fontSize: 10,
                             color: Colors.grey[700],
@@ -561,7 +561,4 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
     );
   }
 
-  Map<String, dynamic> _getTopicData(String topicName) {
-    return TopicConfigsRepository.getTopicData(topicName);
-  }
 }

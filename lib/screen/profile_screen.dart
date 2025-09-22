@@ -681,7 +681,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Xóa Dữ Liệu Cục Bộ'),
-          content: const Text('Bạn có chắc chắn muốn xóa tất cả dữ liệu cục bộ? Điều này sẽ xóa tất cả chủ đề và từ vựng đã lưu. Bạn có thể làm mới dữ liệu bằng cách điều hướng qua ứng dụng lại.'),
+          content: const Text('Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu cục bộ?\n\n• Tất cả tiến độ học tập\n• Tất cả từ vựng đã lưu\n• Tất cả thống kê và cài đặt\n\n✅ Thông tin đăng nhập sẽ được giữ lại'),
           actions: [
             TextButton(
               onPressed: () {
@@ -718,7 +718,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 CircularProgressIndicator(),
                 SizedBox(height: 16),
-                Text('Clearing local data...'),
+                Text('Đang xóa dữ liệu cục bộ...'),
               ],
             ),
           );
@@ -727,16 +727,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       final prefs = await SharedPreferences.getInstance();
       
-      // Get all keys and remove those related to words and topics
-      final keys = prefs.getKeys();
-      final keysToRemove = keys.where((key) => 
-        key.startsWith('words_') || 
-        key.startsWith('cached_topics') ||
-        key.startsWith('reviewed_words_')
-      ).toList();
-
-      for (String key in keysToRemove) {
-        await prefs.remove(key);
+      // Get all keys
+      final allKeys = prefs.getKeys();
+      
+      // Define keys to preserve (login-related data)
+      final keysToPreserve = <String>{
+        'auth_token',
+        'user_id', 
+        'user_email',
+        'user_name',
+        'login_timestamp',
+        'refresh_token',
+        'is_logged_in',
+        'remember_login',
+        'last_login_date',
+        'auto_login',
+        'firebase_uid',
+        'google_signin_data',
+      };
+      
+      // Backup preserved data
+      final preservedData = <String, dynamic>{};
+      for (final key in keysToPreserve) {
+        if (allKeys.contains(key)) {
+          final value = prefs.get(key);
+          if (value != null) {
+            preservedData[key] = value;
+          }
+        }
+      }
+      
+      // Clear ALL SharedPreferences data
+      await prefs.clear();
+      
+      // Restore preserved login data
+      for (final entry in preservedData.entries) {
+        final key = entry.key;
+        final value = entry.value;
+        
+        if (value is String) {
+          await prefs.setString(key, value);
+        } else if (value is int) {
+          await prefs.setInt(key, value);
+        } else if (value is double) {
+          await prefs.setDouble(key, value);
+        } else if (value is bool) {
+          await prefs.setBool(key, value);
+        } else if (value is List<String>) {
+          await prefs.setStringList(key, value);
+        }
       }
 
       // Close loading dialog
@@ -744,15 +783,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Navigator.of(context).pop();
       }
 
-      // Show success message
+      // Show success message with details
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Local data cleared successfully!'),
+        SnackBar(
+          content: Text('✅ Đã xóa toàn bộ dữ liệu cục bộ!\n🔐 Thông tin đăng nhập được giữ lại'),
           backgroundColor: Colors.green,
+          duration: const Duration(seconds: 3),
         ),
       );
 
-      print('Local data cleared!');
+      print('🗑️ Cleared ${allKeys.length - preservedData.length} SharedPreferences keys');
+      print('🔐 Preserved ${preservedData.length} login-related keys: ${preservedData.keys}');
 
     } catch (error) {
       // Close loading dialog if it's open
@@ -763,7 +804,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error clearing data: $error'),
+          content: Text('❌ Lỗi khi xóa dữ liệu: $error'),
           backgroundColor: Colors.red,
         ),
       );

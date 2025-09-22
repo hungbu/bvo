@@ -4,16 +4,13 @@ import 'dart:math';
 import 'package:bvo/model/word.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:bvo/repository/user_progress_repository.dart';
 
 class Flashcard extends StatefulWidget {
   final Word word;
   final bool sessionHideEnglishText;
   final Function(String)? onAnswerSubmitted;
   final bool isFlipped;
-  final int countdownSeconds;
-  final bool isCountdownActive;
-  final bool isCountdownPaused;
-  final VoidCallback? onCountdownToggle;
 
   const Flashcard({
     super.key, 
@@ -21,10 +18,6 @@ class Flashcard extends StatefulWidget {
     this.sessionHideEnglishText = false,
     this.onAnswerSubmitted,
     this.isFlipped = false,
-    this.countdownSeconds = 0,
-    this.isCountdownActive = false,
-    this.isCountdownPaused = false,
-    this.onCountdownToggle,
   });
 
   @override
@@ -35,11 +28,28 @@ class _FlashcardState extends State<Flashcard> {
   bool _showEnglishText = true;
   bool _localIsFlipped = false; // Local flip state for manual flipping
   final FlutterTts _flutterTts = FlutterTts();
+  int _actualReviewCount = 0;
+  final UserProgressRepository _progressRepository = UserProgressRepository();
 
   @override
   void initState() {
     super.initState();
     _showEnglishText = !widget.sessionHideEnglishText; // Use session setting
+    _loadActualReviewCount();
+  }
+
+  Future<void> _loadActualReviewCount() async {
+    try {
+      final progress = await _progressRepository.getWordProgress(widget.word.topic, widget.word.en);
+      setState(() {
+        _actualReviewCount = progress['reviewCount'] ?? 0;
+      });
+    } catch (e) {
+      // If error, fall back to word.reviewCount
+      setState(() {
+        _actualReviewCount = widget.word.reviewCount;
+      });
+    }
   }
 
   @override
@@ -52,11 +62,16 @@ class _FlashcardState extends State<Flashcard> {
       });
     }
     
-    // Reset local flip state when parent takes control
-    if (widget.isFlipped != oldWidget.isFlipped && widget.isCountdownActive) {
+    // Reset local flip state when parent flips the card
+    if (widget.isFlipped != oldWidget.isFlipped && widget.isFlipped) {
       setState(() {
         _localIsFlipped = false;
       });
+    }
+    
+    // Reload review count if word changes
+    if (widget.word.en != oldWidget.word.en) {
+      _loadActualReviewCount();
     }
   }
 
@@ -67,8 +82,8 @@ class _FlashcardState extends State<Flashcard> {
   }
 
   void _flipCard() {
-    // Nếu đang trong chế độ countdown, không cho phép flip thủ công
-    if (widget.isCountdownActive) {
+    // Don't allow manual flip when parent has control
+    if (widget.isFlipped) {
       return;
     }
     
@@ -177,7 +192,7 @@ class _FlashcardState extends State<Flashcard> {
                 children: [
                   const Icon(Icons.remove_red_eye_outlined),
                   const SizedBox(width: 8),
-                  Text("Lượt xem: ${word.reviewCount}"),
+                  Text("Lượt xem: $_actualReviewCount"),
                 ],
               )
             ],
@@ -263,45 +278,6 @@ class _FlashcardState extends State<Flashcard> {
                 ),
               ),
             ),
-            // Countdown button positioned at top-right
-            if (widget.isCountdownActive && widget.isFlipped)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: GestureDetector(
-                  onTap: widget.onCountdownToggle,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          widget.isCountdownPaused ? Icons.play_arrow : Icons.pause,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${widget.countdownSeconds}s',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),

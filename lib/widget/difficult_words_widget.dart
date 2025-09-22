@@ -237,7 +237,7 @@ class _DifficultWordsWidgetState extends State<DifficultWordsWidget> {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              _buildStatChip('Tổng từ khó', '${stats.totalDifficultWords}', Colors.grey),
+                              _buildStatChip('All', '${stats.totalDifficultWords}', Colors.grey),
                               const SizedBox(width: 8),
                               _buildStatChip('Rất khó', '${stats.highErrorWords}', Colors.red),
                               const SizedBox(width: 8),

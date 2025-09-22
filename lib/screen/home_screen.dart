@@ -35,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int todayWordsLearned = 0;
   String lastTopic = "";
   Map<String, dynamic> wordOfTheDay = {};
+  bool isDashboardLoading = true;
   
   // Topic groups structure
   List<Map<String, dynamic>> topicGroups = [];
@@ -68,7 +69,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // Load word of the day
     await _loadWordOfTheDay();
     
-    setState(() {});
+    setState(() {
+      isDashboardLoading = false;
+    });
   }
 
   Future<void> _calculateRealStatistics() async {
@@ -714,7 +717,22 @@ class _HomeScreenState extends State<HomeScreen> {
   // Removed _buildLevelSection - no longer needed with simplified structure
 
   Widget _buildDailyGoal() {
-    final progress = todayWordsLearned / dailyGoal;
+    if (isDashboardLoading) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.blue[50],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.blue[100]!),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
+    final progress = dailyGoal > 0 ? todayWordsLearned / dailyGoal : 0.0;
     final remainingWords = dailyGoal - todayWordsLearned;
     
     return Container(

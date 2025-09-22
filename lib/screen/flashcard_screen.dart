@@ -61,6 +61,13 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   int _countdownSeconds = 5;
   bool _isCountdownActive = false;
   bool _isCountdownPaused = false;
+  
+  // Countdown time settings (0s means auto-next, -1 means always pause)
+  int _selectedCountdownTime = 5;
+  final List<int> _countdownOptions = [-1, 0, 3, 5, 7, 10, 15];
+  
+  // Track if we're waiting for manual next after correct answer
+  bool _waitingForManualNext = false;
 
   @override
   void initState() {
@@ -172,17 +179,9 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       await _prefs.setInt('${sessionKey}_duration_seconds', sessionDuration.inSeconds);
       await _prefs.setString('${sessionKey}_date', now.toIso8601String());
       
-      // 5. Update topic-specific statistics
-      final topicCorrect = _prefs.getInt('${widget.topic}_correct_answers') ?? 0;
-      final topicIncorrect = _prefs.getInt('${widget.topic}_incorrect_answers') ?? 0;
-      final topicTotal = _prefs.getInt('${widget.topic}_total_attempts') ?? 0;
-      final topicSessions = _prefs.getInt('${widget.topic}_sessions') ?? 0;
-      
-      await _prefs.setInt('${widget.topic}_correct_answers', topicCorrect + _correctAnswers);
-      await _prefs.setInt('${widget.topic}_incorrect_answers', topicIncorrect + _incorrectAnswers);
-      await _prefs.setInt('${widget.topic}_total_attempts', topicTotal + _totalAttempts);
-      await _prefs.setInt('${widget.topic}_sessions', topicSessions + 1);
-      await _prefs.setString('${widget.topic}_last_studied', now.toIso8601String());
+      // 5. Topic statistics are now handled by UserProgressRepository
+      // via updateWordProgress() and updateTopicProgressBatch()
+      print('📊 Session completed: ${widget.words.length} words, ${_correctAnswers}/${_totalAttempts} correct');
       
       // 6. Update streak and learning statistics
       await _updateStreakStatistics();
@@ -249,23 +248,34 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     List<String> difficultWords = [];
     final allKeys = _prefs.getKeys();
     
+    // Sử dụng UserProgressRepository key pattern
     for (String key in allKeys) {
-      if (key.contains('_incorrect_answers') && key.contains(widget.topic)) {
-        final incorrectCount = _prefs.getInt(key) ?? 0;
-        final correctKey = key.replaceAll('_incorrect_answers', '_correct_answers');
-        final correctCount = _prefs.getInt(correctKey) ?? 0;
-        final totalAttempts = incorrectCount + correctCount;
-        
-        if (totalAttempts > 0) {
-          final errorRate = incorrectCount / totalAttempts;
-          if (errorRate > 0.3) { // Từ có tỷ lệ sai > 30%
-            final wordKey = key.split('_')[0];
-            difficultWords.add(wordKey);
+      if (key.startsWith('word_progress_${widget.topic}_')) {
+        final progressJson = _prefs.getString(key);
+        if (progressJson != null) {
+          try {
+            final progress = Map<String, dynamic>.from(jsonDecode(progressJson));
+            final totalAttempts = progress['totalAttempts'] ?? 0;
+            final correctAnswers = progress['correctAnswers'] ?? 0;
+            
+            if (totalAttempts > 0) {
+              final incorrectCount = totalAttempts - correctAnswers;
+              final errorRate = incorrectCount / totalAttempts;
+              if (errorRate > 0.3) { // Từ có tỷ lệ sai > 30%
+                // Extract word từ key: word_progress_topic_word
+                final keyParts = key.split('_');
+                final wordEn = keyParts.sublist(3).join('_');
+                difficultWords.add(wordEn);
+              }
+            }
+          } catch (e) {
+            print('❌ Error parsing progress for key $key: $e');
           }
         }
       }
     }
     
+    print('🔍 Found ${difficultWords.length} difficult words in topic ${widget.topic}');
     return difficultWords;
   }
 
@@ -357,15 +367,21 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   }
 
   void _flipCurrentCard() {
-    setState(() {
-      _isCardFlipped = true;
-      _countdownSeconds = 3;
-      _isCountdownActive = true;
-      _isCountdownPaused = false;
-    });
-    
-    // Bắt đầu countdown
-    _startCountdown();
+    if (_selectedCountdownTime == 0) {
+      // Timer off - immediately move to next card after a brief delay
+      _nextSlide(delay: 1000); // 1 second delay to show feedback
+    } else if (_selectedCountdownTime == -1) {
+      // Always pause - flip card and wait for manual next
+      setState(() {
+        _isCardFlipped = true;
+        _isCountdownActive = false;
+        _isCountdownPaused = false;
+        _waitingForManualNext = true;
+      });
+    } else {
+      // Use the configured countdown settings
+      _startCountdownWithSettings();
+    }
   }
   
   void _startCountdown() {
@@ -396,14 +412,267 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       _startCountdown();
     }
   }
+
+  void _showCountdownSettings() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.timer, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Select Card Control Mode',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Wrap(
+                spacing: 10,
+                children: _countdownOptions.map((seconds) {
+                  final isSelected = _selectedCountdownTime == seconds;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedCountdownTime = seconds;
+                        _countdownSeconds = seconds;
+                        if (_isCountdownActive && seconds == 0) {
+                          _isCountdownActive = false;
+                        }
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.blue : Colors.grey[200],
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: isSelected ? Colors.blue : Colors.grey[300]!,
+                          width: 2,
+                        ),
+                      ),
+                      child: Text(
+                        seconds == -1 ? 'Manual' : seconds == 0 ? 'Off' : '${seconds}s',
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.black87,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _startCountdownWithSettings() {
+    if (_selectedCountdownTime == 0) {
+      // Timer disabled - just flip card without countdown
+      setState(() {
+        _isCardFlipped = true;
+        _isCountdownActive = false;
+        _isCountdownPaused = false;
+      });
+      return;
+    }
+    
+    setState(() {
+      _isCardFlipped = true;
+      _countdownSeconds = _selectedCountdownTime;
+      _isCountdownActive = true;
+      _isCountdownPaused = false;
+    });
+    
+    _startCountdown();
+  }
   
   void _resetCardState() {
     setState(() {
       _isCardFlipped = false;
-      _countdownSeconds = 5;
+      _countdownSeconds = _selectedCountdownTime;
       _isCountdownActive = false;
       _isCountdownPaused = false;
+      _waitingForManualNext = false;
     });
+  }
+
+  Widget _buildCountdownButton() {
+    // Always Pause mode - show different UI based on state
+    if (_selectedCountdownTime == -1) {
+      if (_waitingForManualNext) {
+        // Show "Next Card" button when waiting for manual next
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              _waitingForManualNext = false;
+            });
+            _nextSlide();
+          },
+          onLongPress: _showCountdownSettings,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.arrow_forward, size: 18, color: Colors.white),
+                SizedBox(width: 4),
+                Text(
+                  'Next Card',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      } else {
+        // Show "Manual" mode indicator
+        return GestureDetector(
+          onLongPress: _showCountdownSettings,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.purple[300],
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.purple[400]!, width: 1),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.touch_app, size: 18, color: Colors.white),
+                SizedBox(width: 4),
+                Text(
+                  'Manual',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    }
+    
+    if (_selectedCountdownTime == 0) {
+      // Auto-next mode - show settings button only
+      return GestureDetector(
+        onLongPress: _showCountdownSettings,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.grey[400]!, width: 1),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.timer_off, size: 18, color: Colors.grey),
+              SizedBox(width: 4),
+              Text(
+                'Auto',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Normal countdown mode
+    return GestureDetector(
+      onTap: () {
+        if (_isCountdownActive) {
+          _toggleCountdownPause();
+        } else {
+          _startCountdownWithSettings();
+        }
+      },
+      onLongPress: _showCountdownSettings,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: _isCountdownActive
+              ? (_isCountdownPaused ? Colors.orange : Colors.green)
+              : Colors.blue,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _isCountdownActive
+                  ? (_isCountdownPaused ? Icons.play_arrow : Icons.pause)
+                  : Icons.timer,
+              size: 18,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _isCountdownActive
+                  ? '${_countdownSeconds}s'
+                  : '${_selectedCountdownTime}s',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _nextSlide({int delay = 0}) {
@@ -655,7 +924,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
             TextButton.icon(
               onPressed: () {
                 Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Go back to previous screen
+                Navigator.pop(context, 'completed'); // Go back with result to trigger refresh
               },
               icon: const Icon(Icons.arrow_back),
               label: const Text('Quay lại'),
@@ -776,7 +1045,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('FlashCard - ${widget.topic} (${_currentWords.length} từ)'),
+        title: Text('FlashCard - ${widget.topic} (${_currentWords.length} từ)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -849,10 +1118,6 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
           word: _currentWords[index],
           sessionHideEnglishText: _sessionHideEnglishText,
           isFlipped: index == _currentIndex ? _isCardFlipped : false,
-          countdownSeconds: index == _currentIndex ? _countdownSeconds : 0,
-          isCountdownActive: index == _currentIndex ? _isCountdownActive : false,
-          isCountdownPaused: index == _currentIndex ? _isCountdownPaused : false,
-          onCountdownToggle: index == _currentIndex ? _toggleCountdownPause : null,
           onAnswerSubmitted: (answer) {
             _checkAnswer();
           },
@@ -866,25 +1131,34 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          TextField(
-            controller: _controller,
-            focusNode: _inputFocusNode,
-            autocorrect: false,
-            enableSuggestions: false,
-            decoration: const InputDecoration(
-              labelText: 'Enter the English word',
-              border: OutlineInputBorder(),
-            ),
-            onSubmitted: (value) {
-              _checkAnswer();
-            },
-            onChanged: (value) => _checkAnswerRealtime(),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  focusNode: _inputFocusNode,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  decoration: const InputDecoration(
+                    labelText: 'Enter the English word',
+                    border: OutlineInputBorder(),
+                  ),
+                  onSubmitted: (value) {
+                    _checkAnswer();
+                  },
+                  onChanged: (value) => _checkAnswerRealtime(),
+                ),
+              ),
+              const SizedBox(width: 10),
+              _buildCountdownButton(),
+            ],
           ),
+          
           const SizedBox(height: 10),
           Text(
             _feedbackMessage,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 14,
               color:
                   _feedbackMessage == 'Correct!' ? Colors.green : Colors.orange,
             ),

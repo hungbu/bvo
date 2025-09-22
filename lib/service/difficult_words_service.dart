@@ -1,67 +1,92 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../repository/user_progress_repository.dart';
 
 class DifficultWordsService {
   static const String _reminderSettingsKey = 'reminder_settings';
   
-  /// Lấy danh sách từ khó theo topic
+  /// Lấy danh sách từ khó theo topic từ UserProgressRepository
   Future<List<DifficultWordData>> getDifficultWordsByTopic(String topic) async {
     final prefs = await SharedPreferences.getInstance();
     List<DifficultWordData> difficultWords = [];
     
-    // Lấy tất cả keys liên quan đến topic
+    // Lấy tất cả word progress keys cho topic này
     final allKeys = prefs.getKeys();
     final topicKeys = allKeys.where((key) => 
-      key.startsWith('${topic}_') && key.endsWith('_incorrect_answers')
+      key.startsWith('word_progress_${topic}_')
     ).toList();
     
+    print('🔍 Checking topic "$topic": found ${topicKeys.length} word progress keys');
+    
     for (String key in topicKeys) {
-      final incorrectCount = prefs.getInt(key) ?? 0;
-      final correctKey = key.replaceAll('_incorrect_answers', '_correct_answers');
-      final correctCount = prefs.getInt(correctKey) ?? 0;
-      final totalAttempts = incorrectCount + correctCount;
-      
-      if (totalAttempts > 0 && incorrectCount > 0) {
-        final errorRate = incorrectCount / totalAttempts;
-        final wordEn = key.replaceAll('${topic}_', '').replaceAll('_incorrect_answers', '');
-        
-        difficultWords.add(DifficultWordData(
-          word: wordEn,
-          topic: topic,
-          incorrectCount: incorrectCount,
-          correctCount: correctCount,
-          totalAttempts: totalAttempts,
-          errorRate: errorRate,
-          lastAttempt: DateTime.now(), // Sẽ cập nhật từ dữ liệu thực tế
-        ));
+      final progressJson = prefs.getString(key);
+      if (progressJson != null) {
+        try {
+          final progress = Map<String, dynamic>.from(jsonDecode(progressJson));
+          
+          final totalAttempts = progress['totalAttempts'] ?? 0;
+          final correctAnswers = progress['correctAnswers'] ?? 0;
+          
+          if (totalAttempts > 0) {
+            final incorrectCount = totalAttempts - correctAnswers;
+            final errorRate = incorrectCount / totalAttempts;
+            
+            // Chỉ lấy từ có error rate > 0 (có ít nhất 1 lần sai)
+            if (incorrectCount > 0) {
+              // Extract word từ key: word_progress_topic_word
+              final keyParts = key.split('_');
+              final wordEn = keyParts.sublist(3).join('_'); // Lấy phần sau topic
+              
+              final lastReviewed = progress['lastReviewed'] ?? '';
+              final lastAttempt = DateTime.tryParse(lastReviewed) ?? DateTime.now();
+              
+              difficultWords.add(DifficultWordData(
+                word: wordEn,
+                topic: topic,
+                incorrectCount: incorrectCount,
+                correctCount: correctAnswers,
+                totalAttempts: totalAttempts,
+                errorRate: errorRate,
+                lastAttempt: lastAttempt,
+              ));
+              
+              print('  - Word "$wordEn": $incorrectCount/$totalAttempts errors (${(errorRate * 100).toStringAsFixed(1)}%)');
+            }
+          }
+        } catch (e) {
+          print('❌ Error parsing progress for key $key: $e');
+        }
       }
     }
     
     // Sắp xếp theo tỷ lệ sai giảm dần
     difficultWords.sort((a, b) => b.errorRate.compareTo(a.errorRate));
     
+    print('📊 Topic "$topic": ${difficultWords.length} difficult words found');
     return difficultWords;
   }
   
-  /// Lấy tất cả từ khó (tất cả topics)
+  /// Lấy tất cả từ khó (tất cả topics) từ UserProgressRepository
   Future<List<DifficultWordData>> getAllDifficultWords() async {
     final prefs = await SharedPreferences.getInstance();
     List<DifficultWordData> allDifficultWords = [];
     
-    // Lấy tất cả topics
+    // Lấy tất cả topics từ word progress keys
     final allKeys = prefs.getKeys();
     Set<String> topics = {};
     
     for (String key in allKeys) {
-      if (key.endsWith('_incorrect_answers')) {
-        final parts = key.split('_');
-        if (parts.length >= 3) {
-          final topic = parts[0];
+      if (key.startsWith('word_progress_')) {
+        final keyParts = key.split('_');
+        if (keyParts.length >= 3) {
+          final topic = keyParts[2]; // word_progress_TOPIC_word
           topics.add(topic);
         }
       }
     }
+    
+    print('🔍 Found topics with word progress: $topics');
     
     // Lấy từ khó từ tất cả topics
     for (String topic in topics) {
@@ -72,6 +97,7 @@ class DifficultWordsService {
     // Sắp xếp theo tỷ lệ sai giảm dần
     allDifficultWords.sort((a, b) => b.errorRate.compareTo(a.errorRate));
     
+    print('📊 Total difficult words found: ${allDifficultWords.length}');
     return allDifficultWords;
   }
   
@@ -87,24 +113,26 @@ class DifficultWordsService {
     return allDifficultWords.where((word) => word.errorRate > threshold).toList();
   }
   
-  /// Lấy thống kê từ khó theo topic
+  /// Lấy thống kê từ khó theo topic từ UserProgressRepository
   Future<Map<String, TopicDifficultStats>> getDifficultStatsByTopic() async {
     final prefs = await SharedPreferences.getInstance();
     Map<String, TopicDifficultStats> stats = {};
     
-    // Lấy tất cả topics
+    // Lấy tất cả topics từ word progress keys
     final allKeys = prefs.getKeys();
     Set<String> topics = {};
     
     for (String key in allKeys) {
-      if (key.endsWith('_incorrect_answers')) {
-        final parts = key.split('_');
-        if (parts.length >= 3) {
-          final topic = parts[0];
+      if (key.startsWith('word_progress_')) {
+        final keyParts = key.split('_');
+        if (keyParts.length >= 3) {
+          final topic = keyParts[2]; // word_progress_TOPIC_word
           topics.add(topic);
         }
       }
     }
+    
+    print('🔍 Calculating difficult stats for topics: $topics');
     
     for (String topic in topics) {
       final difficultWords = await getDifficultWordsByTopic(topic);
@@ -125,6 +153,8 @@ class DifficultWordsService {
         averageErrorRate: avgErrorRate,
         topDifficultWords: difficultWords.take(5).toList(),
       );
+      
+      print('📊 Topic "$topic" stats: ${totalWords} difficult, avg error: ${(avgErrorRate * 100).toStringAsFixed(1)}%');
     }
     
     return stats;

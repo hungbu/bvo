@@ -21,6 +21,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
   Map<String, Map<String, dynamic>> wordsProgress = {};
   Map<String, dynamic> topicProgress = {};
   bool isLoading = true;
+  bool hasProgressChanged = false; // Track if progress changed
 
   @override
   void initState() {
@@ -100,7 +101,17 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        // Return result if progress has changed to trigger TopicScreen refresh
+        if (hasProgressChanged) {
+          Navigator.pop(context, 'progress_updated');
+        } else {
+          Navigator.pop(context);
+        }
+        return false; // Prevent default pop behavior
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(widget.topic),
         backgroundColor: Theme.of(context).primaryColor,
@@ -121,6 +132,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
               Expanded(child: _buildWordsList()),
             ],
           ),
+      ),
     );
   }
 
@@ -134,11 +146,10 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
       final progress = wordsProgress[word.en];
       if (progress != null) {
         final reviewCount = progress['reviewCount'] ?? 0;
-        final isLearned = progress['isLearned'] ?? false;
         
         if (reviewCount == 0) {
           newWords++;
-        } else if (isLearned) {
+        } else if (reviewCount >= 10) {
           masteredWords++;
         } else {
           learningWords++;
@@ -248,6 +259,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
                 // Refresh data when returning from FlashCard
                 if (result != null || mounted) {
                   await _refreshProgressData();
+                  hasProgressChanged = true; // Mark that progress has changed
                 }
               },
               icon: const Icon(Icons.quiz, size: 18),
@@ -659,7 +671,4 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
       );
     }
   }
-
-
-
 }

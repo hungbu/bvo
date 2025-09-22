@@ -132,9 +132,13 @@ class UserProgressRepository {
       if (progressJson != null) {
         final wordProgress = Map<String, dynamic>.from(jsonDecode(progressJson));
         
-        // Count words that have been reviewed (more inclusive than just "learned")
+        // Count words that have been learned 10 times for 100% progress
         final reviewCount = (wordProgress['reviewCount'] ?? 0) as int;
-        if (reviewCount > 0) {
+        final wordEn = key.split('_').last; // Extract word from key
+        
+        print('🔍 Word "$wordEn": reviewCount=$reviewCount, ${reviewCount >= 10 ? 'LEARNED' : 'NOT_LEARNED'}');
+        
+        if (reviewCount >= 10) {
           learnedWords++;
         }
         
@@ -142,6 +146,8 @@ class UserProgressRepository {
         totalAttempts += (wordProgress['totalAttempts'] ?? 0) as int;
       }
     }
+    
+    print('🎯 Topic $topic: $learnedWords/$totalWords words learned (≥10 reviews)');
     
     // Update topic statistics
     topicProgress['totalWords'] = totalWords;
@@ -402,10 +408,12 @@ class UserProgressRepository {
 
   /// Update topic progress for batch learning (e.g., flashcard sessions)
   Future<void> updateTopicProgressBatch(String topic, int wordsLearned) async {
+    // Only update session count and last studied date
+    // learnedWords will be calculated properly by _updateTopicProgress()
     final topicProgress = await getTopicProgress(topic);
     
-    // Update topic statistics
-    topicProgress['learnedWords'] = (topicProgress['learnedWords'] ?? 0) + wordsLearned;
+    // Update session info only (don't override learnedWords)
+    topicProgress['sessions'] = (topicProgress['sessions'] ?? 0) + 1;
     topicProgress['lastStudied'] = DateTime.now().toIso8601String();
     
     await saveTopicProgress(topic, topicProgress);
@@ -413,6 +421,6 @@ class UserProgressRepository {
     // Update last topic
     await _updateLastTopic(topic);
     
-    print('📚 Updated topic $topic: +$wordsLearned words (batch)');
+    print('📚 Updated topic $topic: batch session completed (learnedWords calculated by individual word progress)');
   }
 }
