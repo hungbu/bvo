@@ -8,7 +8,7 @@ import 'package:bvo/repository/word_repository.dart';
 import 'package:bvo/repository/topic_repository.dart';
 import 'package:bvo/repository/topic_configs_repository.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
-import 'package:bvo/service/notification_service.dart';
+import 'package:bvo/service/notification_manager.dart';
 import 'package:bvo/screen/topic_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
     
     // Load last topic from UserProgressRepository
     final progressRepo = UserProgressRepository();
-    lastTopic = await progressRepo.getLastTopic() ?? "schools";
+    lastTopic = await progressRepo.getLastTopic() ?? "school";
     print('📍 Loaded last_topic from prefs: $lastTopic');
     
     // Calculate real statistics
@@ -115,11 +115,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // Removed to avoid confusion and ensure single source of truth
 
   Future<int> _calculateTodayWordsLearned() async {
-    final prefs = await SharedPreferences.getInstance();
-    final today = DateTime.now();
-    final todayKey = '${today.year}-${today.month}-${today.day}';
-    
-    return prefs.getInt('words_learned_$todayKey') ?? 0;
+    final progressRepo = UserProgressRepository();
+    return await progressRepo.getTodayWordsLearned();
   }
 
   Future<void> _loadWordOfTheDay() async {
@@ -1228,10 +1225,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final today = DateTime.now();
     final todayKey = '${today.year}-${today.month}-${today.day}';
     
-    // Update today's word count
-    final currentCount = prefs.getInt('words_learned_$todayKey') ?? 0;
-    final newCount = currentCount + wordsLearned;
-    await prefs.setInt('words_learned_$todayKey', newCount);
+    // Update today's word count via UserProgressRepository (centralized)
+    final progressRepo = UserProgressRepository();
+    await progressRepo.updateTodayWordsLearned(wordsLearned);
     
     // Mark today as learned
     await prefs.setBool('learned_$todayKey', true);
@@ -1241,17 +1237,20 @@ class _HomeScreenState extends State<HomeScreen> {
     final newTotalWords = totalWords + wordsLearned;
     await prefs.setInt('total_words_learned', newTotalWords);
     
+    // Get updated today's count for achievements
+    final newCount = await progressRepo.getTodayWordsLearned();
+    
     // Check for achievements and trigger notifications
     await _checkAndTriggerAchievements(newTotalWords, newCount);
     
     // Update last active date and check streak
-    final notificationService = NotificationService();
-    await notificationService.updateLastActiveDate();
+    final notificationManager = NotificationManager();
+    await notificationManager.updateLastActiveDate();
     
     // Check for streak milestone
     final currentStreak = prefs.getInt('streak_days') ?? 0;
     if (currentStreak > 0 && (currentStreak == 7 || currentStreak == 30 || currentStreak == 100 || (currentStreak % 50 == 0 && currentStreak > 100))) {
-      await notificationService.showStreakMilestone(currentStreak);
+      await notificationManager.showStreakMilestone(currentStreak);
     }
     
     // Refresh dashboard data
@@ -1259,51 +1258,57 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _checkAndTriggerAchievements(int totalWords, int todayWords) async {
-    final notificationService = NotificationService();
+    final notificationManager = NotificationManager();
     
     // First word achievement
     if (totalWords == 1) {
-      await notificationService.showAchievementNotification(
-        achievementTitle: 'Từ Đầu Tiên',
-        achievementDescription: 'Your vocabulary journey begins!',
-        achievementType: 'first_word',
+      await notificationManager.showAchievement(
+        title: 'Từ Đầu Tiên',
+        description: 'Chào mừng bạn bắt đầu hành trình học từ vựng!',
+        type: 'words',
+        value: 1,
       );
     }
     
     // Word milestone achievements
     if (totalWords == 10) {
-      await notificationService.showAchievementNotification(
-        achievementTitle: '10 Words Learned',
-        achievementDescription: 'Great start! Keep building your vocabulary',
-        achievementType: 'words_milestone',
+      await notificationManager.showAchievement(
+        title: '10 Từ Đầu Tiên',
+        description: 'Khởi đầu tuyệt vời! Tiếp tục xây dựng vốn từ vựng nhé!',
+        type: 'words',
+        value: 10,
       );
     } else if (totalWords == 50) {
-      await notificationService.showAchievementNotification(
-        achievementTitle: '50 Words Mastered',
-        achievementDescription: 'You\'re making excellent progress!',
-        achievementType: 'words_milestone',
+      await notificationManager.showAchievement(
+        title: '50 Từ Đã Thành Thạo',
+        description: 'Bạn đang tiến bộ xuất sắc!',
+        type: 'words',
+        value: 50,
       );
     } else if (totalWords == 100) {
-      await notificationService.showAchievementNotification(
-        achievementTitle: 'Câu Lạc Bộ Trăm Từ',
-        achievementDescription: '100 words learned! You\'re unstoppable!',
-        achievementType: 'words_milestone',
+      await notificationManager.showAchievement(
+        title: 'Câu Lạc Bộ Trăm Từ',
+        description: '100 từ đã học! Bạn không thể cản được!',
+        type: 'words',
+        value: 100,
       );
     } else if (totalWords % 100 == 0 && totalWords > 100) {
-      await notificationService.showAchievementNotification(
-        achievementTitle: '$totalWords Words Champion',
-        achievementDescription: 'Your dedication is inspiring!',
-        achievementType: 'words_milestone',
+      await notificationManager.showAchievement(
+        title: 'Nhà Vô Địch $totalWords Từ',
+        description: 'Sự tận tâm của bạn thật truyền cảm hứng!',
+        type: 'words',
+        value: totalWords,
       );
     }
     
     // Daily goal achievements
     final dailyGoal = await SharedPreferences.getInstance().then((prefs) => prefs.getInt('daily_goal') ?? 10);
     if (todayWords >= dailyGoal) {
-      await notificationService.showAchievementNotification(
-        achievementTitle: 'Đạt Mục Tiêu Hàng Ngày',
-        achievementDescription: 'You completed today\'s learning goal!',
-        achievementType: 'daily_goal',
+      await notificationManager.showAchievement(
+        title: 'Đạt Mục Tiêu Hàng Ngày',
+        description: 'Bạn đã hoàn thành mục tiêu học tập hôm nay!',
+        type: 'daily_goal',
+        value: todayWords,
       );
     }
   }

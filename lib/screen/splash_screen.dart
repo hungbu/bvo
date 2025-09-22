@@ -56,7 +56,7 @@ class SplashScreen extends StatelessWidget {
               
               // App Tagline
               const Text(
-                'Học từ vựng thông minh',
+                'Offline Mode, No Ads, 100% Free',
                 style: TextStyle(
                   color: Colors.white70,
                   fontSize: 16,

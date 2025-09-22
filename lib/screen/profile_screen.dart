@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../service/auth_service.dart';
-import '../service/notification_service.dart';
+import '../service/notification_manager.dart';
 import '../repository/word_repository.dart';
 import '../repository/topic_repository.dart';
 import '../repository/quiz_repository.dart';
 import '../repository/user_progress_repository.dart';
 import '../widget/difficult_words_widget.dart';
+import 'help_support_screen.dart';
+import 'privacy_policy_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final Function(VoidCallback)? onRefreshCallback;
@@ -394,7 +396,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: 'Help & Support',
                     subtitle: 'Câu hỏi thường gặp và liên hệ',
                     onTap: () {
-                      // Handle help
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HelpSupportScreen(),
+                        ),
+                      );
                     },
                   ),
 
@@ -403,7 +410,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: 'Chính Sách Bảo Mật',
                     subtitle: 'Điều khoản và điều kiện',
                     onTap: () {
-                      // Handle privacy policy
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PrivacyPolicyScreen(),
+                        ),
+                      );
                     },
                   ),
 
@@ -901,12 +913,13 @@ class _NotificationSettingsSheetState extends State<NotificationSettingsSheet> {
     await prefs.setInt('evening_reminder_hour', _eveningTime.hour);
     await prefs.setInt('evening_reminder_minute', _eveningTime.minute);
 
-    // Update notification service
-    final notificationService = NotificationService();
-    await notificationService.setNotificationsEnabled(_notificationsEnabled);
+    // Update notification manager
+    final notificationManager = NotificationManager();
     if (_notificationsEnabled) {
-      await notificationService.scheduleDailyReminders();
-      await notificationService.runExtendedNotificationChecks();
+      await notificationManager.scheduleDailyReminders();
+      await notificationManager.runControlledNotificationChecks();
+    } else {
+      await notificationManager.cancelAllNotifications();
     }
   }
 

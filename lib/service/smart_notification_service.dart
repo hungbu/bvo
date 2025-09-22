@@ -2,8 +2,6 @@ import 'dart:math';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
-import '../repository/quiz_repository.dart';
-import '../repository/user_progress_repository.dart';
 import '../service/difficult_words_service.dart';
 
 class SmartNotificationService {
@@ -25,6 +23,7 @@ class SmartNotificationService {
   Future<void> initialize() async {
     // Schedule daily evening review check
     await _scheduleEveningReviewCheck();
+    print('🤖 Smart Notification Service initialized');
   }
 
   /// Trigger after user completes a learning session (5-10 words)
@@ -162,46 +161,69 @@ class SmartNotificationService {
     );
   }
 
-  /// Generate personalized after-learning notifications
+  /// Generate personalized after-learning notifications with better UX
   List<Map<String, String>> _generateAfterLearningNotifications(int wordsLearned, String topic) {
-    return [
+    final baseNotifications = [
       {
-        'title': '🧠 Ôn nhanh để ghi nhớ sâu!',
-        'body': 'Bạn vừa học $wordsLearned từ mới — thử ôn lại ngay để não ghi nhớ lâu hơn nhé!'
+        'title': '🎉 Tuyệt vời! Vừa hoàn thành bài học',
+        'body': 'Bạn đã học $wordsLearned từ về "$topic". Thử làm quiz nhanh để ghi nhớ lâu hơn nhé!'
       },
       {
-        'title': '✨ Củng cố kiến thức ngay!',
-        'body': '$wordsLearned từ "$topic" đang chờ được ôn tập — chỉ 2 phút thôi!'
+        'title': '✨ Tiến bộ đáng kể rồi đấy!',
+        'body': '$wordsLearned từ mới đã vào não — quiz 2 phút để "khóa" kiến thức này?'
       },
       {
-        'title': '🎯 Hoàn thiện bài học!',
-        'body': 'Quiz nhanh $wordsLearned từ vừa học để khóa chắc kiến thức trong trí nhớ!'
+        'title': '🧠 Não đang "nóng" đây!',
+        'body': 'Đây là lúc tuyệt vời nhất để ôn lại $wordsLearned từ vừa học. Cùng quiz nhé!'
       },
       {
-        'title': '💡 Thời điểm vàng để ôn tập!',
-        'body': 'Não bạn đang ở trạng thái tốt nhất để ghi nhớ — ôn lại $wordsLearned từ nào!'
+        'title': '🎯 Gần xong rồi!',
+        'body': 'Chỉ cần quiz nhanh $wordsLearned từ "$topic" là hoàn thiện bài học!'
+      },
+      {
+        'title': '🌟 Học giỏi quá!',
+        'body': '$wordsLearned từ vựng "$topic" đã sẵn sàng. Quiz để chắc chắn nhớ lâu nhé!'
       }
     ];
+
+    // Add time-sensitive messages based on learning session size
+    if (wordsLearned >= 10) {
+      baseNotifications.add({
+        'title': '🏆 Wow! Học nhiều thế!',
+        'body': '$wordsLearned từ trong một lần — bạn thật kiên trì! Quiz để không quên nhé!'
+      });
+    } else if (wordsLearned >= 5) {
+      baseNotifications.add({
+        'title': '👏 Tiến độ ổn định!',
+        'body': '$wordsLearned từ về "$topic" — momentum tốt đấy! Thử quiz luôn?'
+      });
+    }
+
+    return baseNotifications;
   }
 
-  /// Generate forgetting words notifications
+  /// Generate forgetting words notifications with positive framing
   List<Map<String, String>> _generateForgettingWordsNotifications(DifficultWordData word) {
     return [
       {
-        'title': '⏳ Đừng để từ này biến mất!',
-        'body': '"${word.word}" sắp bị quên rồi — ôn lại trong 60 giây?'
+        'title': '💡 Thời gian "refresh" từ vựng!',
+        'body': 'Từ "${word.word}" cần được ôn lại. 1 phút thôi để ghi nhớ lâu hơn!'
       },
       {
-        'title': '🔄 Từ quen đang "mờ dần"!',
-        'body': 'Bạn còn nhớ "${word.word}" nghĩa là gì không? Ôn ngay nhé!'
+        'title': '🔄 Củng cố kiến thức!',
+        'body': '"${word.word}" đang chờ được "làm mới" trong trí nhớ. Quiz nhanh nhé!'
       },
       {
-        'title': '💭 Cứu lấy từ vựng!',
-        'body': '"${word.word}" đang cần được "sạc lại" trong trí nhớ — giúp nó nhé!'
+        'title': '🧠 Duy trì độ sắc bén!',
+        'body': 'Ôn lại "${word.word}" để não luôn "tươi tỉnh" với từ này!'
       },
       {
-        'title': '🎯 Thử thách trí nhớ!',
-        'body': 'Thử xem bạn còn nhớ "${word.word}" không — chỉ 30 giây thôi!'
+        'title': '🎯 Thử thách nhỏ!',
+        'body': 'Bạn còn nhớ "${word.word}" không? Thử sức với từ này nhé!'
+      },
+      {
+        'title': '⭐ Giữ vững kiến thức!',
+        'body': '"${word.word}" cần một lần ôn tập nữa để khắc sâu trong tâm trí!'
       }
     ];
   }
@@ -262,20 +284,35 @@ class SmartNotificationService {
     }
   }
 
-  /// Show evening review notification
+  /// Show evening review notification with better timing
   Future<void> _showEveningReviewNotification() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now();
+    final todayKey = '${today.year}-${today.month}-${today.day}';
+    final todayWordsLearned = prefs.getInt('words_learned_$todayKey') ?? 0;
+    
+    // Only show if user learned something today
+    if (todayWordsLearned == 0) {
+      print('🌙 Evening review skipped - no words learned today');
+      return;
+    }
+    
     final notifications = [
       {
-        'title': '🌙 Kết thúc ngày thật trọn vẹn!',
-        'body': 'Chỉ cần 3 phút quiz — bạn sẽ ngủ ngon hơn với kiến thức vững chắc!'
+        'title': '🌙 Ngày học tập tuyệt vời!',
+        'body': 'Bạn đã học $todayWordsLearned từ hôm nay. Quiz nhanh để ngủ ngon hơn nhé!'
       },
       {
-        'title': '✨ Tổng kết ngày học tập!',
-        'body': 'Quiz nhanh để xem hôm nay bạn đã tiến bộ như thế nào!'
+        'title': '✨ Hoàn thiện ngày học!',
+        'body': '$todayWordsLearned từ mới trong ngày — thử quiz để kiểm tra xem nhớ được bao nhiêu!'
       },
       {
-        'title': '🎯 Hoàn thiện ngày học!',
-        'body': 'Một bài quiz nhỏ để khép lại ngày học tập hiệu quả!'
+        'title': '🎯 Điểm lại thành quả!',
+        'body': 'Hôm nay tiến bộ $todayWordsLearned từ. Quiz 3 phút để "khóa" kiến thức?'
+      },
+      {
+        'title': '🌟 Kết thúc ngày thành công!',
+        'body': 'Với $todayWordsLearned từ mới, bạn đã làm rất tốt! Quiz để ghi nhớ lâu hơn?'
       }
     ];
 

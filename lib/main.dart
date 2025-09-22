@@ -9,8 +9,8 @@ import 'screen/main_layout.dart';
 import 'screen/login_screen.dart';
 import 'screen/splash_screen.dart';
 import 'service/auth_service.dart';
-import 'service/notification_service.dart';
-import 'service/smart_notification_service.dart';
+import 'service/notification_manager.dart';
+import 'service/notification_fix_service.dart';
 import 'firebase_options.dart';
 
 // Global route observer for tracking navigation
@@ -35,8 +35,11 @@ void main() async {
   // Set up background message handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   
-  // Initialize notification service
-  await NotificationService().initialize();
+  // Fix notification issues first
+  await NotificationFixService.fixNotificationIssues();
+  
+  // Initialize notification manager
+  await NotificationManager().initialize();
   
   runApp(const MyApp());
 }
@@ -81,16 +84,18 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _setupNotifications() async {
-    final notificationService = NotificationService();
-    final smartNotificationService = SmartNotificationService();
+    final notificationManager = NotificationManager();
     
-    // Setup traditional notifications (daily reminders, etc.)
-    await notificationService.scheduleDailyReminders();
-    await notificationService.runExtendedNotificationChecks(); // This no longer includes quiz reminder
-    await notificationService.updateLastActiveDate();
+    // Schedule daily reminders (only once per day)
+    await notificationManager.scheduleDailyReminders();
     
-    // Initialize smart notification system
-    await smartNotificationService.initialize();
+    // Run controlled notification checks (with cooldowns)
+    await notificationManager.runControlledNotificationChecks();
+    
+    // Update last active date
+    await notificationManager.updateLastActiveDate();
+    
+    print('📱 Notification system initialized with smart controls');
   }
 
 

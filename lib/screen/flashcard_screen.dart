@@ -147,9 +147,12 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       final now = DateTime.now();
       final todayKey = '${now.year}-${now.month}-${now.day}';
       
-      // 1. Update daily progress
-      final currentWordsLearned = _prefs.getInt('words_learned_$todayKey') ?? 0;
-      await _prefs.setInt('words_learned_$todayKey', currentWordsLearned + widget.words.length);
+      // 1. Update daily progress via UserProgressRepository (centralized)
+      final progressRepo = UserProgressRepository();
+      await progressRepo.updateTodayWordsLearned(widget.words.length);
+      
+      // 2. Update topic progress for the session  
+      await progressRepo.updateTopicProgressBatch(widget.topic, widget.words.length);
       
       // 2. Mark today as learned
       await _prefs.setBool('learned_$todayKey', true);

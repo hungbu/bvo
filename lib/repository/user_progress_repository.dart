@@ -107,8 +107,8 @@ class UserProgressRepository {
     // Update last_topic in SharedPreferences
     await _updateLastTopic(topic);
     
-    // Update daily streak and today's words count
-    await _updateDailyProgress();
+    // Update daily streak (but NOT word count to avoid double counting)
+    await _updateStreak();
   }
 
   /// Update topic progress statistics
@@ -317,18 +317,18 @@ class UserProgressRepository {
     await _updateLastTopic(topic);
   }
 
-  /// Update daily progress including streak and today's words count
-  Future<void> _updateDailyProgress() async {
+
+  /// Centralized method to update today's words learned count
+  Future<void> updateTodayWordsLearned(int wordsCount) async {
     final prefs = await SharedPreferences.getInstance();
     final today = DateTime.now();
     final todayKey = '${today.year}-${today.month}-${today.day}';
     
     // Update today's words learned count
     final currentTodayWords = prefs.getInt('words_learned_$todayKey') ?? 0;
-    await prefs.setInt('words_learned_$todayKey', currentTodayWords + 1);
+    await prefs.setInt('words_learned_$todayKey', currentTodayWords + wordsCount);
     
-    // Update streak
-    await _updateStreak();
+    print('📊 Updated today words: $currentTodayWords + $wordsCount = ${currentTodayWords + wordsCount}');
   }
 
   /// Update streak based on learning activity
@@ -376,6 +376,43 @@ class UserProgressRepository {
     final prefs = await SharedPreferences.getInstance();
     final today = DateTime.now();
     final todayKey = '${today.year}-${today.month}-${today.day}';
-    return prefs.getInt('words_learned_$todayKey') ?? 0;
+    final count = prefs.getInt('words_learned_$todayKey') ?? 0;
+    print('📊 Today words learned ($todayKey): $count');
+    return count;
+  }
+
+  /// Debug method to check word counting sources
+  Future<Map<String, dynamic>> debugTodayWordCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now();
+    final todayKey = '${today.year}-${today.month}-${today.day}';
+    
+    final debug = <String, dynamic>{
+      'todayKey': todayKey,
+      'words_learned_direct': prefs.getInt('words_learned_$todayKey') ?? 0,
+      'learned_today_flag': prefs.getBool('learned_$todayKey') ?? false,
+      'total_words_learned': prefs.getInt('total_words_learned') ?? 0,
+      'streak_days': prefs.getInt('streak_days') ?? 0,
+      'last_streak_date': prefs.getString('last_streak_date') ?? 'none',
+    };
+    
+    print('🔍 Debug today word count: $debug');
+    return debug;
+  }
+
+  /// Update topic progress for batch learning (e.g., flashcard sessions)
+  Future<void> updateTopicProgressBatch(String topic, int wordsLearned) async {
+    final topicProgress = await getTopicProgress(topic);
+    
+    // Update topic statistics
+    topicProgress['learnedWords'] = (topicProgress['learnedWords'] ?? 0) + wordsLearned;
+    topicProgress['lastStudied'] = DateTime.now().toIso8601String();
+    
+    await saveTopicProgress(topic, topicProgress);
+    
+    // Update last topic
+    await _updateLastTopic(topic);
+    
+    print('📚 Updated topic $topic: +$wordsLearned words (batch)');
   }
 }

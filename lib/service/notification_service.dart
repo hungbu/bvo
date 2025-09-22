@@ -169,32 +169,38 @@ class NotificationService {
     required int minute,
     required String payload,
   }) async {
+    try {
       await notifications.zonedSchedule(
         id,
         title,
         body,
         tz.TZDateTime.from(_nextInstanceOfTime(hour, minute), tz.local),
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'daily_reminders',
-          'Nhắc Nhở Học Hàng Ngày',
-          channelDescription: 'Nhắc nhở hàng ngày để học từ vựng',
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: 'ic_notification',
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'daily_reminders',
+            'Nhắc Nhở Học Hàng Ngày',
+            channelDescription: 'Nhắc nhở hàng ngày để học từ vựng',
+            importance: Importance.high,
+            priority: Priority.high,
+            icon: 'ic_notification',
+          ),
+          iOS: DarwinNotificationDetails(
+            categoryIdentifier: 'daily_reminders',
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
         ),
-        iOS: DarwinNotificationDetails(
-          categoryIdentifier: 'daily_reminders',
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
-      payload: payload,
-    );
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
+        payload: payload,
+      );
+      print('📅 Scheduled daily notification: $title at $hour:$minute');
+    } catch (e) {
+      print('❌ Error scheduling daily notification: $e');
+      // Don't rethrow to prevent app crash
+    }
   }
 
   /// 2. Streak Warning Notifications
@@ -217,31 +223,36 @@ class NotificationService {
         final warningTime = DateTime(today.year, today.month, today.day, 22, 0);
         
         if (today.isBefore(warningTime)) {
-          await notifications.zonedSchedule(
-            streakWarningId,
-            'Đừng phá vỡ chuỗi học! 🔥',
-            'Bạn có chuỗi $currentStreak ngày. Chỉ cần 5 phút học thôi!',
-            tz.TZDateTime.from(warningTime, tz.local),
-            const NotificationDetails(
-              android: AndroidNotificationDetails(
-                'streak_warnings',
-                'Cảnh Báo Chuỗi Học',
-                channelDescription: 'Cảnh báo duy trì chuỗi học tập',
-                importance: Importance.max,
-                priority: Priority.max,
-                icon: 'ic_notification',
+          try {
+            await notifications.zonedSchedule(
+              streakWarningId,
+              'Đừng phá vỡ chuỗi học! 🔥',
+              'Bạn có chuỗi $currentStreak ngày. Chỉ cần 5 phút học thôi!',
+              tz.TZDateTime.from(warningTime, tz.local),
+              const NotificationDetails(
+                android: AndroidNotificationDetails(
+                  'streak_warnings',
+                  'Cảnh Báo Chuỗi Học',
+                  channelDescription: 'Cảnh báo duy trì chuỗi học tập',
+                  importance: Importance.max,
+                  priority: Priority.max,
+                  icon: 'ic_notification',
+                ),
+                iOS: DarwinNotificationDetails(
+                  categoryIdentifier: 'streak_warnings',
+                  presentAlert: true,
+                  presentBadge: true,
+                  presentSound: true,
+                ),
               ),
-              iOS: DarwinNotificationDetails(
-                categoryIdentifier: 'streak_warnings',
-                presentAlert: true,
-                presentBadge: true,
-                presentSound: true,
-              ),
-            ),
-            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-            uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-            payload: 'streak_warning',
-          );
+              androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+              uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+              payload: 'streak_warning',
+            );
+            print('🔥 Scheduled streak warning for $currentStreak days');
+          } catch (e) {
+            print('❌ Error scheduling streak warning: $e');
+          }
         }
       }
     }
@@ -584,30 +595,50 @@ class NotificationService {
     );
   }
 
-  /// 8. Quiz Reminders
+  /// 8. Quiz Reminders (called only during evening review or manually)
   Future<void> checkAndScheduleQuizReminder() async {
     final prefs = await SharedPreferences.getInstance();
     final quizReminderEnabled = prefs.getBool('quiz_reminder_enabled') ?? true;
     
     if (!quizReminderEnabled) return;
 
-    final lastQuizDate = prefs.getString('last_quiz_date');
-    final today = DateTime.now();
-    final todayString = '${today.year}-${today.month}-${today.day}';
+    final now = DateTime.now();
+    // Only trigger quiz reminders in the evening (after 6 PM) or late morning (after 10 AM)
+    if (now.hour < 10 || (now.hour > 12 && now.hour < 18)) {
+      print('🔕 Quiz reminder skipped - not appropriate time (${now.hour}:00)');
+      return;
+    }
 
+    final lastQuizDate = prefs.getString('last_quiz_date');
+    final todayString = '${now.year}-${now.month}-${now.day}';
+
+    // Only remind if no quiz today and it's been more than 1 day since last quiz
     if (lastQuizDate == null || lastQuizDate != todayString) {
-      // Check if user hasn't done quiz in 2 days
       DateTime? lastQuiz;
       if (lastQuizDate != null) {
-        final parts = lastQuizDate.split('-');
-        lastQuiz = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+        try {
+          final parts = lastQuizDate.split('-');
+          lastQuiz = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+        } catch (e) {
+          print('Error parsing last quiz date: $e');
+        }
       }
 
-      if (lastQuiz == null || today.difference(lastQuiz).inDays >= 2) {
+      // Only remind if no quiz in last 2 days (instead of immediately)
+      if (lastQuiz == null || now.difference(lastQuiz).inDays >= 2) {
+        // Check if user learned something today (more contextual reminder)
+        final todayWordsLearned = prefs.getInt('words_learned_$todayString') ?? 0;
+        final reminderTitle = todayWordsLearned > 0 
+            ? '🎯 Thử kiểm tra kiến thức!'
+            : '📝 Đã lâu không quiz rồi!';
+        final reminderBody = todayWordsLearned > 0
+            ? 'Bạn học $todayWordsLearned từ hôm nay. Quiz để xem nhớ được bao nhiêu nhé!'
+            : 'Hãy kiểm tra xem bạn còn nhớ những từ đã học không!';
+
         await notifications.show(
           quizReminderId,
-          'Giờ Kiểm Tra! ❓',
-          'Hãy kiểm tra kiến thức từ vựng với một bài quiz nhanh!',
+          reminderTitle,
+          reminderBody,
           const NotificationDetails(
             android: AndroidNotificationDetails(
               'quiz_reminders',
@@ -626,6 +657,8 @@ class NotificationService {
           ),
           payload: 'quiz_reminder',
         );
+        
+        print('📝 Quiz reminder sent - last quiz: ${lastQuiz?.toString() ?? "never"}');
       }
     }
   }
