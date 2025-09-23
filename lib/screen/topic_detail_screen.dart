@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 import 'package:bvo/model/word.dart';
 import 'package:bvo/repository/word_repository.dart';
@@ -22,6 +23,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
   Map<String, dynamic> topicProgress = {};
   bool isLoading = true;
   bool hasProgressChanged = false; // Track if progress changed
+  final FlutterTts _flutterTts = FlutterTts();
+  Set<String> _addedToQuizWords = {}; // Track words added to quiz
 
   @override
   void initState() {
@@ -41,6 +44,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
   @override
   void dispose() {
     routeObserver.unsubscribe(this);
+    _flutterTts.stop();
     super.dispose();
   }
 
@@ -333,18 +337,17 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
 
     return Card(
       elevation: 1,
-      margin: const EdgeInsets.only(bottom: 6),
+      margin: const EdgeInsets.only(bottom: 4),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
         onTap: () {
-          // Có thể thêm hành động khi nhấn vào từ vựng
           _showWordDetails(word);
         },
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           child: Row(
             children: [
               // Left side - Word info
@@ -404,27 +407,64 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
                       ],
                     ),
                     
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 2),
                     
-                    // English word
-                    Text(
-                      word.en,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    // English word with speaker button
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            word.en,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.deepPurple,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+// Right side - Add to Quiz button (icon only)
+              IconButton(
+                onPressed: () => _addWordToQuiz(word),
+                icon: const Icon(Icons.add_task),
+                color: _addedToQuizWords.contains(word.en) ? Colors.white : Colors.green,
+                iconSize: 18,
+                padding: const EdgeInsets.all(6),
+                constraints: const BoxConstraints(
+                  minWidth: 32,
+                  minHeight: 32,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: _addedToQuizWords.contains(word.en) 
+                    ? Colors.purple 
+                    : Colors.green.withOpacity(0.1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+                        IconButton(
+                          onPressed: () => _speakEnglish(word.en),
+                          icon: const Icon(Icons.volume_up, size: 20),
+                          color: Colors.blue,
+                          padding: const EdgeInsets.all(2),
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                        ),
+                      ],
                     ),
                     
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     
                     // Vietnamese translation
                     Text(
                       word.vi,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         color: Colors.grey[600],
                         fontStyle: FontStyle.italic,
                       ),
@@ -432,7 +472,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
                       overflow: TextOverflow.ellipsis,
                     ),
                     
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 2),
                     
                     // Progress bar (compact)
                     Row(
@@ -460,26 +500,6 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
                 ),
               ),
               
-              const SizedBox(width: 12),
-              
-              // Right side - Add to Quiz button (icon only)
-              IconButton(
-                onPressed: () => _addWordToQuiz(word),
-                icon: const Icon(Icons.add_task),
-                color: Colors.green,
-                iconSize: 20,
-                padding: const EdgeInsets.all(8),
-                constraints: const BoxConstraints(
-                  minWidth: 36,
-                  minHeight: 36,
-                ),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.green.withOpacity(0.1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -493,77 +513,497 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
     final reviewCount = progress?['reviewCount'] ?? 0;
     final correctAnswers = progress?['correctAnswers'] ?? 0;
     final totalAttempts = progress?['totalAttempts'] ?? 0;
+    final isLearned = progress?['isLearned'] ?? false;
     final accuracy = totalAttempts > 0 ? (correctAnswers / totalAttempts * 100).toStringAsFixed(1) : '0.0';
+    
+    // Calculate progress level
+    String progressLevel = reviewCount == 0 ? 'New' : 
+                          !isLearned ? 'Learning' :
+                          double.parse(accuracy) >= 80 ? 'Mastered' : 'Familiar';
+    
+    Color progressColor = reviewCount == 0 ? Colors.blue :
+                         !isLearned ? Colors.orange :
+                         double.parse(accuracy) >= 80 ? Colors.purple : Colors.green;
     
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
+        return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
           ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.info_outline,
-                color: Theme.of(context).primaryColor,
-              ),
-              const SizedBox(width: 8),
-              const Text('Word Details'),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'English: ${word.en}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+          child: Container(
+            constraints: const BoxConstraints(maxHeight: 600, maxWidth: 400),
+            child: SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Theme.of(context).primaryColor.withOpacity(0.1),
+                      Colors.white,
+                    ],
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header with word and pronunciation
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.book_outlined,
+                          color: Theme.of(context).primaryColor,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                word.en,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.deepPurple,
+                                ),
+                              ),
+                              if (word.pronunciation.isNotEmpty)
+                                Text(
+                                  '/${word.pronunciation}/',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[700],
+                                    fontFamily: 'monospace',
+                                  ),
+                                ),
+                              Text(
+                                word.type.toString().split('.').last.toUpperCase(),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue[700],
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          children: [
+                            IconButton(
+                              onPressed: () => _speakEnglish(word.en),
+                              icon: const Icon(Icons.volume_up),
+                              color: Colors.blue,
+                              iconSize: 24,
+                              tooltip: 'Normal Speed',
+                            ),
+                            IconButton(
+                              onPressed: () => _speakEnglishSlow(word.en),
+                              icon: const Icon(Icons.slow_motion_video),
+                              color: Colors.green,
+                              iconSize: 24,
+                              tooltip: 'Slow Speed',
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Vietnamese Translation
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: const Border(left: BorderSide(width: 4, color: Colors.blue)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Vietnamese Meaning:',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue[700],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            word.vi,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 12),
+                    
+                    // Example Sentences
+                    if (word.sentence.isNotEmpty) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: const Border(left: BorderSide(width: 4, color: Colors.green)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'Example Sentence:',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.green[700],
+                                  ),
+                                ),
+                                const Spacer(),
+                                IconButton(
+                                  onPressed: () => _speakEnglish(word.sentence),
+                                  icon: const Icon(Icons.volume_up, size: 16),
+                                  color: Colors.green,
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(
+                                    minWidth: 24,
+                                    minHeight: 24,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              word.sentence,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            if (word.sentenceVi.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                word.sentenceVi,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    
+                    // Synonyms & Antonyms
+                    if (word.synonyms.isNotEmpty || word.antonyms.isNotEmpty) ...[
+                      Row(
+                        children: [
+                          if (word.synonyms.isNotEmpty)
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Synonyms:',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.orange[700],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      word.synonyms.join(', '),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          if (word.synonyms.isNotEmpty && word.antonyms.isNotEmpty)
+                            const SizedBox(width: 8),
+                          if (word.antonyms.isNotEmpty)
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.red[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Antonyms:',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.red[700],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      word.antonyms.join(', '),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    
+                    // Memory aids
+                    if (word.mnemonicTip?.isNotEmpty == true || word.culturalNote?.isNotEmpty == true) ...[
+                      if (word.mnemonicTip?.isNotEmpty == true)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.purple[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: const Border(left: BorderSide(width: 4, color: Colors.purple)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.lightbulb_outline, 
+                                       size: 16, color: Colors.purple[700]),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Memory Tip:',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.purple[700],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                word.mnemonicTip!,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                      if (word.culturalNote?.isNotEmpty == true)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.amber[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: const Border(left: BorderSide(width: 4, color: Colors.amber)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.info_outline, 
+                                       size: 16, color: Colors.amber[700]),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Cultural Note:',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.amber[700],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                word.culturalNote!,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 12),
+                    ],
+                    
+                    // Progress status
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: progressColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: progressColor.withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                progressLevel == 'New' ? Icons.fiber_new :
+                                progressLevel == 'Learning' ? Icons.school :
+                                progressLevel == 'Mastered' ? Icons.star :
+                                Icons.thumb_up,
+                                color: progressColor,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Status: $progressLevel',
+                                style: TextStyle(
+                                  color: progressColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _buildQuickStat('Reviews', reviewCount.toString()),
+                              _buildQuickStat('Accuracy', '$accuracy%'),
+                              _buildQuickStat('Level', word.difficulty.toString()),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Actions
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              _addWordToQuiz(word);
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: _addedToQuizWords.contains(word.en) 
+                                ? Colors.purple : Colors.green,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(_addedToQuizWords.contains(word.en) 
+                                  ? Icons.check : Icons.add_task, size: 18),
+                                const SizedBox(width: 8),
+                                Text(_addedToQuizWords.contains(word.en) 
+                                  ? 'Added' : 'Add to Quiz'),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.grey[200],
+                              foregroundColor: Colors.grey[700],
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text('Close'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Vietnamese: ${word.vi}',
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Topic: ${word.topic}',
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Difficulty: ${word.difficulty}',
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Review Count: $reviewCount',
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Accuracy: $accuracy%',
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Attempts: $correctAnswers/$totalAttempts',
-                style: const TextStyle(fontSize: 14),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
             ),
-          ],
+          ),
         );
       },
     );
+  }
+  
+  Widget _buildQuickStat(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _speakEnglish(String word) async {
+    await _flutterTts.setLanguage("en-US");
+    await _flutterTts.setPitch(1.0);
+    await _flutterTts.setSpeechRate(0.5);
+    await _flutterTts.speak(word);
+  }
+
+  Future<void> _speakEnglishSlow(String word) async {
+    await _flutterTts.setLanguage("en-US");
+    await _flutterTts.setPitch(1.0);
+    await _flutterTts.setSpeechRate(0.2); // Very slow speed
+    await _flutterTts.speak(word);
   }
 
   void _addWordToQuiz(Word word) async {
@@ -571,39 +1011,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
       final success = await QuizRepository().addWordToQuiz(word);
       
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã thêm "${word.en}" vào danh sách ôn tập!'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-            action: SnackBarAction(
-              label: 'Xem danh sách',
-              textColor: Colors.white,
-              onPressed: () {
-                // Navigate to Quiz tab
-                Navigator.of(context).popUntil((route) => route.isFirst);
-                // You can add navigation to quiz tab here if needed
-              },
-            ),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Từ "${word.en}" đã có trong danh sách ôn tập!'),
-            backgroundColor: Colors.orange,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        setState(() {
+          _addedToQuizWords.add(word.en);
+        });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Có lỗi xảy ra: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      // Handle error silently or show minimal feedback
+      print('Error adding word to quiz: $e');
     }
   }
 

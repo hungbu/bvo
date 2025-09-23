@@ -379,8 +379,13 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         _waitingForManualNext = true;
       });
     } else {
-      // Use the configured countdown settings
-      _startCountdownWithSettings();
+      // Countdown mode - flip card but wait for user to start countdown
+      setState(() {
+        _isCardFlipped = true;
+        _isCountdownActive = false;
+        _isCountdownPaused = false;
+        _waitingForManualNext = false;
+      });
     }
   }
   
@@ -420,31 +425,86 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      isScrollControlled: true,
       builder: (BuildContext context) {
         return Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header
               Row(
                 children: [
-                  const Icon(Icons.timer, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Select Card Control Mode',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.settings, color: Colors.blue, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Countdown Settings',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
-              Wrap(
-                spacing: 10,
-                children: _countdownOptions.map((seconds) {
-                  final isSelected = _selectedCountdownTime == seconds;
-                  return GestureDetector(
+              
+              // Description
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue[200]!, width: 1),
+                ),
+                child: const Text(
+                  'Choose how cards advance after you answer correctly:',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Options
+              ...(_countdownOptions.map((seconds) {
+                final isSelected = _selectedCountdownTime == seconds;
+                String title;
+                String description;
+                IconData icon;
+                Color color;
+                
+                if (seconds == -1) {
+                  title = 'Manual';
+                  description = 'Use Next button to advance';
+                  icon = Icons.pan_tool;
+                  color = Colors.blue;
+                } else if (seconds == 0) {
+                  title = 'Auto';
+                  description = 'Advance immediately';
+                  icon = Icons.flash_on;
+                  color = Colors.orange;
+                } else {
+                  title = '${seconds}s Timer';
+                  description = 'Auto-advance after $seconds seconds';
+                  icon = Icons.timer;
+                  color = Colors.green;
+                }
+                
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: GestureDetector(
                     onTap: () {
                       setState(() {
                         _selectedCountdownTime = seconds;
@@ -456,30 +516,66 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                       Navigator.pop(context);
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.blue : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(25),
+                        color: isSelected ? color.withOpacity(0.1) : Colors.grey[50],
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isSelected ? Colors.blue : Colors.grey[300]!,
-                          width: 2,
+                          color: isSelected ? color : Colors.grey[300]!,
+                          width: isSelected ? 2 : 1,
                         ),
                       ),
-                      child: Text(
-                        seconds == -1 ? 'Manual' : seconds == 0 ? 'Off' : '${seconds}s',
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black87,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? color : Colors.grey[400],
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Icon(
+                              icon,
+                              size: 20,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected ? color : Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  description,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isSelected)
+                            Icon(
+                              Icons.check_circle,
+                              color: color,
+                              size: 24,
+                            ),
+                        ],
                       ),
                     ),
-                  );
-                }).toList(),
-              ),
+                  ),
+                );
+              }).toList()),
+              
               const SizedBox(height: 20),
             ],
           ),
@@ -519,127 +615,113 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     });
   }
 
-  Widget _buildCountdownButton() {
-    // Always Pause mode - show different UI based on state
+  // Next Button - Always visible and functional
+  Widget _buildNextButton() {
+    bool canProceed = _isCardFlipped || _waitingForManualNext || _selectedCountdownTime == 0;
+    bool isActive = canProceed;
+    
+    return GestureDetector(
+      onTap: isActive ? () {
+        setState(() {
+          _waitingForManualNext = false;
+        });
+        _nextSlide();
+      } : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.green : Colors.grey[400],
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: isActive ? [
+            BoxShadow(
+              color: Colors.green.withOpacity(0.3),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ] : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.arrow_forward,
+              size: 20,
+              color: isActive ? Colors.white : Colors.grey[600],
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'Next',
+              style: TextStyle(
+                fontSize: 14,
+                color: isActive ? Colors.white : Colors.grey[600],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Countdown Settings Button - Shows current mode and provides access to settings
+  Widget _buildCountdownSettingsButton() {
+    String modeText;
+    Color backgroundColor;
+    Color textColor;
+    
     if (_selectedCountdownTime == -1) {
-      if (_waitingForManualNext) {
-        // Show "Next Card" button when waiting for manual next
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              _waitingForManualNext = false;
-            });
-            _nextSlide();
-          },
-          onLongPress: _showCountdownSettings,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.green,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.arrow_forward, size: 18, color: Colors.white),
-                SizedBox(width: 4),
-                Text(
-                  'Next Card',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+      modeText = 'Manual';
+      backgroundColor = Colors.blue[300]!;
+      textColor = Colors.white;
+    } else if (_selectedCountdownTime == 0) {
+      modeText = 'Auto';
+      backgroundColor = Colors.grey[300]!;
+      textColor = Colors.grey[700]!;
+    } else {
+      if (_isCountdownActive) {
+        modeText = '${_countdownSeconds}s';
+        backgroundColor = _isCountdownPaused ? Colors.orange : Colors.green;
+        textColor = Colors.white;
       } else {
-        // Show "Manual" mode indicator
-        return GestureDetector(
-          onLongPress: _showCountdownSettings,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.purple[300],
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.purple[400]!, width: 1),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.touch_app, size: 18, color: Colors.white),
-                SizedBox(width: 4),
-                Text(
-                  'Manual',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        // Show different state based on whether card is flipped and ready for countdown
+        if (_isCardFlipped) {
+          modeText = 'Start ${_selectedCountdownTime}s';
+          backgroundColor = Colors.blue[600]!;
+          textColor = Colors.white;
+        } else {
+          modeText = '${_selectedCountdownTime}s';
+          backgroundColor = Colors.blue[300]!;
+          textColor = Colors.white;
+        }
       }
     }
     
-    if (_selectedCountdownTime == 0) {
-      // Auto-next mode - show settings button only
-      return GestureDetector(
-        onLongPress: _showCountdownSettings,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey[400]!, width: 1),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(Icons.timer_off, size: 18, color: Colors.grey),
-              SizedBox(width: 4),
-              Text(
-                'Auto',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // Normal countdown mode
     return GestureDetector(
       onTap: () {
-        if (_isCountdownActive) {
-          _toggleCountdownPause();
+        // For countdown mode, allow start/pause/resume
+        if (_selectedCountdownTime > 0) {
+          if (_isCountdownActive) {
+            _toggleCountdownPause(); // Pause/resume if countdown is running
+          } else {
+            _startCountdownWithSettings(); // Start countdown if not running
+          }
         } else {
-          _startCountdownWithSettings();
+          // For other modes (manual/auto), show settings
+          _showCountdownSettings();
         }
       },
       onLongPress: _showCountdownSettings,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: _isCountdownActive
-              ? (_isCountdownPaused ? Colors.orange : Colors.green)
-              : Colors.blue,
-          borderRadius: BorderRadius.circular(20),
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color: backgroundColor == Colors.grey[300] 
+              ? Colors.grey[400]! 
+              : backgroundColor,
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -652,20 +734,16 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              _isCountdownActive
-                  ? (_isCountdownPaused ? Icons.play_arrow : Icons.pause)
-                  : Icons.timer,
+              Icons.settings,  // Always show settings icon to indicate it's for configuration
               size: 18,
-              color: Colors.white,
+              color: textColor,
             ),
             const SizedBox(width: 4),
             Text(
-              _isCountdownActive
-                  ? '${_countdownSeconds}s'
-                  : '${_selectedCountdownTime}s',
-              style: const TextStyle(
+              modeText,
+              style: TextStyle(
                 fontSize: 12,
-                color: Colors.white,
+                color: textColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1150,7 +1228,11 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                 ),
               ),
               const SizedBox(width: 10),
-              _buildCountdownButton(),
+              // Next Button (always visible)
+              _buildNextButton(),
+              const SizedBox(width: 8),
+              // Countdown Settings Button
+              _buildCountdownSettingsButton(),
             ],
           ),
           

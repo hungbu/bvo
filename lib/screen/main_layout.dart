@@ -4,7 +4,7 @@ import 'home_screen.dart';
 import 'topic_screen.dart';
 import 'quiz_screen.dart';
 import 'profile_screen.dart';
-import '../service/smart_notification_service.dart';
+import '../service/notification_manager.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({Key? key}) : super(key: key);
@@ -16,7 +16,7 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   int _currentIndex = 0;
   VoidCallback? _profileRefreshCallback;
-  final SmartNotificationService _smartNotificationService = SmartNotificationService();
+  final NotificationManager _notificationManager = NotificationManager();
 
   // Danh sách các màn hình được build dynamically để pass callback
   List<Widget> get _screens => [
@@ -61,12 +61,12 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
 
   Future<void> _scheduleSmartChecks() async {
     // Check for forgetting words when app goes to background
-    await _smartNotificationService.checkForgettingWords();
+    await _notificationManager.checkForgettingWords();
   }
 
   Future<void> _checkStreakMotivation() async {
-    // Check streak motivation when app resumes
-    await _smartNotificationService.triggerStreakMotivation();
+    // Check streak motivation when app resumes - now with proper cooldown control
+    await _notificationManager.triggerStreakMotivation();
   }
 
   @override

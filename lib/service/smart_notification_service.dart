@@ -35,26 +35,48 @@ class SmartNotificationService {
     // Only prompt once every 4 hours to avoid spam
     if (lastPrompt != null) {
       final lastPromptTime = DateTime.parse(lastPrompt);
-      if (now.difference(lastPromptTime).inHours < 4) return;
+      if (now.difference(lastPromptTime).inHours < 4) {
+        print('🔕 After-learning notification skipped - in 4-hour cooldown');
+        return;
+      }
     }
 
     // Only trigger if learned 5+ words
     if (wordsLearned >= 5) {
       await _showAfterLearningNotification(wordsLearned, topic);
       await prefs.setString('last_after_learning_prompt', now.toIso8601String());
+      print('✅ After-learning notification shown for $wordsLearned words on topic: $topic');
+    } else {
+      print('🔕 After-learning notification skipped - only $wordsLearned words learned (need 5+)');
     }
   }
 
   /// Check for words that are about to be forgotten
   Future<void> checkForgettingWords() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final today = DateTime.now();
+      final todayString = '${today.year}-${today.month}-${today.day}';
+      
+      // Check if forgetting words notification was already shown today
+      final lastForgettingNotificationDate = prefs.getString('last_forgetting_notification_date');
+      if (lastForgettingNotificationDate == todayString) {
+        print('🔕 Forgetting words notification skipped - already shown today');
+        return;
+      }
+      
       final difficultWords = await _difficultWordsService.getWordsNeedingReview(threshold: 0.4);
       
       if (difficultWords.length >= 3) {
         await _showForgettingWordsNotification(difficultWords.take(3).toList());
+        // Mark that we've shown forgetting words notification today
+        await prefs.setString('last_forgetting_notification_date', todayString);
+        print('✅ Forgetting words notification shown and tracked for $todayString');
+      } else {
+        print('🔕 Forgetting words notification skipped - only ${difficultWords.length} words need review (need 3+)');
       }
     } catch (e) {
-      print('Error checking forgetting words: $e');
+      print('❌ Error checking forgetting words: $e');
     }
   }
 
@@ -65,10 +87,22 @@ class SmartNotificationService {
     final lastQuizDate = prefs.getString('last_quiz_date');
     final today = DateTime.now();
     final todayString = '${today.year}-${today.month}-${today.day}';
+    
+    // Check if streak notification was already shown today
+    final lastStreakNotificationDate = prefs.getString('last_streak_notification_date');
+    if (lastStreakNotificationDate == todayString) {
+      print('🔕 Streak motivation skipped - already shown today');
+      return;
+    }
 
     // Check if user hasn't done quiz today and has a streak
     if (streakDays > 0 && (lastQuizDate == null || lastQuizDate != todayString)) {
       await _showStreakMotivationNotification(streakDays);
+      // Mark that we've shown streak notification today
+      await prefs.setString('last_streak_notification_date', todayString);
+      print('✅ Streak motivation notification shown and tracked for $todayString');
+    } else {
+      print('🔕 Streak motivation skipped - no streak or quiz already done today');
     }
   }
 
@@ -199,6 +233,42 @@ class SmartNotificationService {
       });
     }
 
+    // Add more variety for different moods and tones
+    baseNotifications.addAll([
+      {
+        'title': '🚀 Bạn đang tăng tốc!',
+        'body': 'Với $wordsLearned từ mới, não bộ đang hoạt động hết công suất — giữ đà bằng quiz nhé!'
+      },
+      {
+        'title': '📚 Kiến thức mới đã cập bến!',
+        'body': 'Chủ đề "$topic" vừa được cập nhật $wordsLearned từ. Ôn nhanh kẻo trôi!'
+      },
+      {
+        'title': '🧠 Bộ nhớ cần "save"!',
+        'body': '$wordsLearned từ mới đang ở RAM — chuyển sang ROM bằng quiz 2 phút nào!'
+      },
+      {
+        'title': '🎯 Đánh dấu thành công!',
+        'body': 'Hoàn thành $wordsLearned từ — chỉ còn quiz để "chốt sổ" kiến thức hôm nay!'
+      },
+      {
+        'title': '💫 Bạn học nhanh thật!',
+        'body': 'Chỉ vài phút đã xong $wordsLearned từ. Thử thách trí nhớ với quiz ngay nhé!'
+      },
+      {
+        'title': '📈 Biểu đồ tiến bộ đang lên!',
+        'body': 'Thêm $wordsLearned từ vào kho báu — quiz để đảm bảo chúng không "đào tẩu"!'
+      },
+      {
+        'title': '🧩 Ghép nối kiến thức!',
+        'body': 'Bạn vừa ghép $wordsLearned mảnh ghép từ vựng. Hoàn thiện bức tranh với quiz nhé!'
+      },
+      {
+        'title': '⚡️ Momentum đang cực tốt!',
+        'body': 'Đừng dừng lại! Quiz nhanh $wordsLearned từ để giữ nhịp học tập tuyệt vời này.'
+      },
+    ]);
+
     return baseNotifications;
   }
 
@@ -224,7 +294,36 @@ class SmartNotificationService {
       {
         'title': '⭐ Giữ vững kiến thức!',
         'body': '"${word.word}" cần một lần ôn tập nữa để khắc sâu trong tâm trí!'
-      }
+      },
+      // NEW ONES
+      {
+        'title': '🆘 Cứu nguy từ vựng!',
+        'body': '"${word.word}" sắp "trôi" khỏi trí nhớ — 30 giây để kéo nó trở lại!'
+      },
+      {
+        'title': '🧩 Còn nhớ "${word.word}" không?',
+        'body': 'Não đang hỏi bạn đấy — trả lời bằng quiz để chứng minh bạn vẫn nhớ!'
+      },
+      {
+        'title': '⏳ Đếm ngược bắt đầu!',
+        'body': 'Nếu không ôn "${word.word}" ngay, nó sẽ biến mất — thử thách nhỏ nào!'
+      },
+      {
+        'title': '🧠 Não đang nhắc bạn!',
+        'body': 'Ôi, "${word.word}" — hình như bạn lâu rồi chưa gặp nó? Cùng ôn lại nhé!'
+      },
+      {
+        'title': '💎 Đánh bóng viên ngọc!',
+        'body': '"${word.word}" là viên ngọc quý — đừng để nó xỉn màu, ôn lại ngay!'
+      },
+      {
+        'title': '🔁 Lặp lại là mẹ thành công!',
+        'body': 'Lần ôn thứ N cho "${word.word}" — nhưng lần này sẽ dễ hơn nhiều!'
+      },
+      {
+        'title': '❤️‍🩹 Chữa lành khoảng trống!',
+        'body': 'Kiến thức đang có lỗ hổng ở từ "${word.word}" — vá nó bằng quiz 1 phút!'
+      },
     ];
   }
 
@@ -243,7 +342,20 @@ class SmartNotificationService {
         {
           'title': '⭐ $streakDays ngày kiên trì!',
           'body': 'Bạn đã làm được điều tuyệt vời — hãy duy trì đà này!'
-        }
+        },
+        // NEW ONES
+        {
+          'title': '🏅 Huy chương $streakDays ngày!',
+          'body': 'Bạn xứng đáng được vinh danh — đừng để ngày hôm nay làm gián đoạn chiến tích!'
+        },
+        {
+          'title': '🚀 Bay cao cùng chuỗi $streakDays!',
+          'body': 'Mỗi ngày là một bước tiến — hôm nay, hãy thêm một bậc nữa lên đỉnh cao!'
+        },
+        {
+          'title': '💎 Chuỗi kim cương $streakDays ngày!',
+          'body': 'Đừng để một ngày nghỉ phá vỡ viên kim cương bạn đã mài giũa bấy lâu!'
+        },
       ];
     } else {
       return [
@@ -254,7 +366,20 @@ class SmartNotificationService {
         {
           'title': '💪 Tiếp tục chuỗi $streakDays ngày!',
           'body': 'Mỗi ngày một chút — bạn đang xây dựng thói quen tuyệt vời!'
-        }
+        },
+        // NEW ONES
+        {
+          'title': '📅 $streakDays ngày — thói quen vàng!',
+          'body': 'Bạn đang xây dựng thói quen học tập tuyệt vời — đừng bỏ lỡ hôm nay!'
+        },
+        {
+          'title': '🕊️ Thả chim bồ câu $streakDays ngày!',
+          'body': 'Mỗi ngày là một lá thư gửi tới phiên bản tương lai — hãy gửi thêm một lá nữa!'
+        },
+        {
+          'title': '🌱 Gieo hạt $streakDays ngày rồi!',
+          'body': 'Cây tri thức đang lớn từng ngày — tưới nước bằng quiz hôm nay nhé!'
+        },
       ];
     }
   }
@@ -277,10 +402,22 @@ class SmartNotificationService {
     final lastQuizDate = prefs.getString('last_quiz_date');
     final today = DateTime.now();
     final todayString = '${today.year}-${today.month}-${today.day}';
+    
+    // Check if evening review notification was already shown today
+    final lastEveningNotificationDate = prefs.getString('last_evening_notification_date');
+    if (lastEveningNotificationDate == todayString) {
+      print('🔕 Evening review notification skipped - already shown today');
+      return;
+    }
 
     // If no quiz today, send evening motivation
     if (lastQuizDate == null || lastQuizDate != todayString) {
       await _showEveningReviewNotification();
+      // Mark that we've shown evening notification today
+      await prefs.setString('last_evening_notification_date', todayString);
+      print('✅ Evening review notification shown and tracked for $todayString');
+    } else {
+      print('🔕 Evening review notification skipped - quiz already done today');
     }
   }
 
@@ -313,7 +450,28 @@ class SmartNotificationService {
       {
         'title': '🌟 Kết thúc ngày thành công!',
         'body': 'Với $todayWordsLearned từ mới, bạn đã làm rất tốt! Quiz để ghi nhớ lâu hơn?'
-      }
+      },
+      // NEW ONES
+      {
+        'title': '🕯️ Thắp nến ôn tập!',
+        'body': 'Buổi tối yên tĩnh là thời điểm hoàn hảo để ôn $todayWordsLearned từ — thư giãn và ghi nhớ sâu hơn.'
+      },
+      {
+        'title': '📖 Đóng sách thật đẹp!',
+        'body': 'Kết thúc ngày với $todayWordsLearned từ — quiz nhanh để "gói quà" kiến thức mang theo vào giấc ngủ.'
+      },
+      {
+        'title': '🌌 Trước khi chìm vào giấc mơ...',
+        'body': 'Hãy điểm lại $todayWordsLearned từ bạn chinh phục hôm nay — não sẽ xử lý tốt hơn khi ngủ đấy!'
+      },
+      {
+        'title': '🛌 Ôn trước khi ngủ = nhớ lâu hơn!',
+        'body': 'Khoa học chứng minh: ôn $todayWordsLearned từ trước khi ngủ giúp ghi nhớ sâu — thử ngay nhé!'
+      },
+      {
+        'title': '🌠 Kết ngày bằng ánh sao tri thức!',
+        'body': '$todayWordsLearned từ lấp lánh hôm nay — điểm lại để chúng tỏa sáng trong tâm trí bạn mãi mãi.'
+      },
     ];
 
     final notification = notifications[Random().nextInt(notifications.length)];
@@ -342,5 +500,29 @@ class SmartNotificationService {
     await _notifications.cancel(forgettingWordsId);
     await _notifications.cancel(streakMotivationId);
     await _notifications.cancel(eveningReviewId);
+  }
+  
+  /// Reset notification tracking for a new day (called when quiz is completed)
+  Future<void> markQuizCompleted() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now();
+    final todayString = '${today.year}-${today.month}-${today.day}';
+    
+    // Clear all daily notification flags since user completed quiz
+    await prefs.remove('last_streak_notification_date');
+    await prefs.remove('last_evening_notification_date');
+    
+    print('🎯 Quiz completed - cleared daily notification tracking for $todayString');
+  }
+  
+  /// Clear all notification tracking data (for debugging or reset)
+  Future<void> clearAllNotificationTracking() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('last_streak_notification_date');
+    await prefs.remove('last_forgetting_notification_date');
+    await prefs.remove('last_evening_notification_date');
+    await prefs.remove('last_after_learning_prompt');
+    
+    print('🧹 All notification tracking data cleared');
   }
 }
