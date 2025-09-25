@@ -7,26 +7,8 @@ class TopicService {
 
   /// Get all topics sorted by difficulty and progress
   Future<List<Topic>> getTopicsForDisplay() async {
-    final topics = await _repository.getAllTopics();
-    
-    // Sort by: level -> difficulty -> progress
-    topics.sort((a, b) {
-      // First by level (BASIC -> INTERMEDIATE -> ADVANCED)
-      final levelCompare = _getLevelOrder(a.level).compareTo(_getLevelOrder(b.level));
-      if (levelCompare != 0) return levelCompare;
-      
-      // Then by difficulty
-      final difficultyCompare = a.difficulty.compareTo(b.difficulty);
-      if (difficultyCompare != 0) return difficultyCompare;
-      
-      // Finally by progress (started topics first)
-      if (a.isStarted && !b.isStarted) return -1;
-      if (!a.isStarted && b.isStarted) return 1;
-      
-      return a.name.compareTo(b.name);
-    });
-    
-    return topics;
+    // Preserve the original order as defined in topics.json
+    return await _repository.getAllTopics();
   }
 
   /// Get recommended topics for user
@@ -112,14 +94,6 @@ class TopicService {
   }
 
   /// Helper methods
-  int _getLevelOrder(String level) {
-    switch (level) {
-      case 'BASIC': return 0;
-      case 'INTERMEDIATE': return 1;
-      case 'ADVANCED': return 2;
-      default: return 3;
-    }
-  }
 
   double _calculateLevelProgress(List<Topic> topics) {
     if (topics.isEmpty) return 0.0;
