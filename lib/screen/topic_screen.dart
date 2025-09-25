@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bvo/model/topic.dart';
-import 'package:bvo/repository/topic_repository.dart';
-import 'package:bvo/repository/user_progress_repository.dart';
+import 'package:bvo/service/topic_service.dart';
 import 'package:bvo/screen/topic_detail_screen.dart';
 import 'package:bvo/main.dart';
 
@@ -14,9 +13,8 @@ class TopicScreen extends StatefulWidget {
 
 class _TopicScreenState extends State<TopicScreen> with RouteAware {
   List<Topic> topics = [];
-  Map<String, int> reviewedWordsByTopic = {};
-  Map<String, Map<String, dynamic>> topicsProgress = {};
   bool isLoading = true;
+  final TopicService _topicService = TopicService();
 
   @override
   void initState() {
@@ -49,29 +47,10 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
 
   Future<void> _loadTopics() async {
     try {
-      final loadedTopics = await TopicRepository().getTopics();
-      final progressRepo = UserProgressRepository();
-      final allProgress = await progressRepo.getAllTopicsProgress();
-      
-      // Calculate reviewed words from progress data
-      // learnedWords = số từ đã học ≥10 lần (đã được sửa trong UserProgressRepository)
-      final reviewedWords = <String, int>{};
-      for (final topic in loadedTopics) {
-        final progress = allProgress[topic.topic];
-        if (progress != null) {
-          final learnedWords = progress['learnedWords'] ?? 0;
-          reviewedWords[topic.topic] = learnedWords;
-          print('📊 Topic ${topic.topic}: $learnedWords/${topic.totalWords} từ đã thuộc');
-        } else {
-          reviewedWords[topic.topic] = 0;
-          print('📊 Topic ${topic.topic}: 0/${topic.totalWords} từ đã thuộc (no progress)');
-        }
-      }
+      final loadedTopics = await _topicService.getTopicsForDisplay();
       
       setState(() {
         topics = loadedTopics;
-        reviewedWordsByTopic = reviewedWords;
-        topicsProgress = allProgress;
         isLoading = false;
       });
     } catch (e) {
@@ -89,36 +68,11 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
   /// Refresh topics data after returning from TopicDetailScreen
   Future<void> _refreshTopicsData() async {
     print('🔄 Refreshing topics data...');
-    
-    try {
-      final progressRepo = UserProgressRepository();
-      final allProgress = await progressRepo.getAllTopicsProgress();
-      
-      // Calculate reviewed words from progress data
-      final reviewedWords = <String, int>{};
-      for (final topic in topics) {
-        final progress = allProgress[topic.topic];
-        if (progress != null) {
-          reviewedWords[topic.topic] = progress['learnedWords'] ?? 0;
-        } else {
-          reviewedWords[topic.topic] = 0;
-        }
-      }
-      
-      if (mounted) {
-        setState(() {
-          reviewedWordsByTopic = reviewedWords;
-          topicsProgress = allProgress;
-        });
-        
-        print('✅ Topics data refreshed - ${reviewedWords.length} topics updated');
-      }
-    } catch (e) {
-      print('❌ Error refreshing topics data: $e');
-    }
+    await _loadTopics(); // Simply reload all topics with fresh data
   }
 
-  // Helper method để map icon cho từng topic
+  /* Deprecated: Helper methods no longer needed as topic model has built-in icon and color
+  // Helper method để map icon cho từng topic (deprecated - now using topic.icon)
   IconData _getTopicIcon(String topicName) {
     // Map topic names to appropriate icons
     final iconMap = {
@@ -221,17 +175,11 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
     return Icons.topic;
   }
 
-  // Helper method để lấy màu theo level
+  // Helper method để lấy màu theo level (deprecated - now using topic.color)
   Color _getTopicColor(Topic topic) {
-    switch (topic.level) {
-      case TopicLevel.BASIC:
-        return Colors.green;
-      case TopicLevel.INTERMEDIATE:
-        return Colors.orange;
-      case TopicLevel.ADVANCED:
-        return Colors.purple;
-    }
+    return topic.color; // Use built-in color from topic model
   }
+  */
 
   @override
   Widget build(BuildContext context) {
@@ -266,9 +214,9 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
 
   Widget _buildTopicsByLevel() {
     // Nhóm topics theo level
-    final basicTopics = topics.where((topic) => topic.level == TopicLevel.BASIC).toList();
-    final intermediateTopics = topics.where((topic) => topic.level == TopicLevel.INTERMEDIATE).toList();
-    final advancedTopics = topics.where((topic) => topic.level == TopicLevel.ADVANCED).toList();
+    final basicTopics = topics.where((topic) => topic.level == 'BASIC').toList();
+    final intermediateTopics = topics.where((topic) => topic.level == 'INTERMEDIATE').toList();
+    final advancedTopics = topics.where((topic) => topic.level == 'ADVANCED').toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -370,26 +318,25 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
       spacing: 12,
       runSpacing: 12,
       children: levelTopics.map((topic) {
-        final reviewedCount = reviewedWordsByTopic[topic.topic] ?? 0;
         return SizedBox(
           width: (MediaQuery.of(context).size.width - 44) / 2, // 2 columns với padding
-          child: _buildTopicCard(topic, reviewedCount),
+          child: _buildTopicCard(topic),
         );
       }).toList(),
     );
   }
 
-  Widget _buildTopicCard(Topic topic, int reviewedCount) {
-    // Get topic-specific data từ vocabulary data
+  Widget _buildTopicCard(Topic topic) {
+    // Use data from new topic model
     final totalWords = topic.totalWords;
-    final difficulty = topic.level.toString().split('.').last;
-    final icon = _getTopicIcon(topic.topic); // Sử dụng helper method mới
-    final color = _getTopicColor(topic); // Sử dụng helper method mới
-    final estimatedTime = '${(totalWords / 10).ceil()} phút'; // Ước tính thời gian
+    final learnedWords = topic.learnedWords;
+    final icon = topic.icon; // Use built-in icon
+    final color = topic.color; // Use built-in color
+    final estimatedTime = topic.estimatedTime;
     
-    // Calculate progress: reviewedCount = số từ đã học ≥10 lần (từ UserProgressRepository)
-    final progress = totalWords > 0 ? (reviewedCount / totalWords).clamp(0.0, 1.0) : 0.0;
+    final progress = topic.progressPercentage;
     final progressPercentage = (progress * 100).round();
+    final difficulty = topic.level; // Use topic level as difficulty
     
     // Determine completion status
     final isCompleted = progress >= 1.0;
@@ -406,7 +353,7 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
                           final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => TopicDetailScreen(topic: topic.topic),
+                              builder: (context) => TopicDetailScreen(topic: topic.id),
                             ),
                           );
                           
@@ -461,7 +408,7 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
               
               // Topic title
               Text(
-                topic.topic.toUpperCase(),
+                topic.name.toUpperCase(),
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
@@ -506,8 +453,8 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Flexible(
-                        child: Text(
-                          '$reviewedCount/$totalWords từ đã thuộc',
+                        child:               Text(
+                '$learnedWords/$totalWords từ đã thuộc',
                           style: TextStyle(
                             fontSize: 10,
                             color: Colors.grey[700],
@@ -546,8 +493,8 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
   }
 
   Widget _buildDifficultyStars(String difficulty) {
-    int stars = difficulty == 'Beginner' ? 1 : 
-                difficulty == 'Intermediate' ? 2 : 3;
+    int stars = difficulty == 'BASIC' ? 1 : 
+                difficulty == 'INTERMEDIATE' ? 2 : 3;
     
     return Row(
       mainAxisSize: MainAxisSize.min,

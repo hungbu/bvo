@@ -1,0 +1,1252 @@
+[
+  {
+    "id": "greetings_introductions",
+    "name": "Greetings & Introductions",
+    "iconName": "waving_hand",
+    "colorHex": "#4CAF50",
+    "difficulty": 1,
+    "description": "Cách chào hỏi và giới thiệu bản thân",
+    "category": "communication",
+    "level": "BASIC"
+  },
+  {
+    "id": "family_members",
+    "name": "Family Members",
+    "iconName": "family_restroom",
+    "colorHex": "#E91E63",
+    "difficulty": 1,
+    "description": "Các thành viên trong gia đình",
+    "category": "family",
+    "level": "BASIC"
+  },
+  {
+    "id": "numbers_1_100",
+    "name": "Numbers 1-100",
+    "iconName": "numbers",
+    "colorHex": "#2196F3",
+    "difficulty": 1,
+    "description": "Các số từ 1 đến 100",
+    "category": "math",
+    "level": "BASIC"
+  },
+  {
+    "id": "colors_shapes",
+    "name": "Colors & Shapes",
+    "iconName": "palette",
+    "colorHex": "#FF9800",
+    "difficulty": 1,
+    "description": "Màu sắc và hình dạng cơ bản",
+    "category": "visual",
+    "level": "BASIC"
+  },
+  {
+    "id": "days_weeks_months",
+    "name": "Days of the Week & Months",
+    "iconName": "calendar_today",
+    "colorHex": "#9C27B0",
+    "difficulty": 1,
+    "description": "Ngày trong tuần và các tháng",
+    "category": "time",
+    "level": "BASIC"
+  },
+  {
+    "id": "weather_seasons",
+    "name": "Weather & Seasons",
+    "iconName": "wb_sunny",
+    "colorHex": "#FFC107",
+    "difficulty": 1,
+    "description": "Thời tiết và các mùa trong năm",
+    "category": "nature",
+    "level": "BASIC"
+  },
+  {
+    "id": "body_parts",
+    "name": "Body Parts",
+    "iconName": "accessibility",
+    "colorHex": "#FF5722",
+    "difficulty": 1,
+    "description": "Các bộ phận cơ thể",
+    "category": "physical",
+    "level": "BASIC"
+  },
+  {
+    "id": "clothes_accessories",
+    "name": "Clothes & Accessories",
+    "iconName": "checkroom",
+    "colorHex": "#795548",
+    "difficulty": 1,
+    "description": "Quần áo và phụ kiện",
+    "category": "physical",
+    "level": "BASIC"
+  },
+  {
+    "id": "food_drinks_basic",
+    "name": "Food & Drinks (Basic)",
+    "iconName": "fastfood",
+    "colorHex": "#4CAF50",
+    "difficulty": 1,
+    "description": "Đồ ăn và đồ uống cơ bản",
+    "category": "food",
+    "level": "BASIC"
+  },
+  {
+    "id": "animals_pets",
+    "name": "Animals & Pets",
+    "iconName": "pets",
+    "colorHex": "#8BC34A",
+    "difficulty": 1,
+    "description": "Động vật và thú cưng",
+    "category": "animals",
+    "level": "BASIC"
+  },
+  {
+    "id": "house_rooms",
+    "name": "House & Rooms",
+    "iconName": "home",
+    "colorHex": "#607D8B",
+    "difficulty": 1,
+    "description": "Ngôi nhà và các phòng",
+    "category": "home",
+    "level": "BASIC"
+  },
+  {
+    "id": "school_objects",
+    "name": "School Objects",
+    "iconName": "school",
+    "colorHex": "#3F51B5",
+    "difficulty": 1,
+    "description": "Các đồ dùng học tập",
+    "category": "education",
+    "level": "BASIC"
+  },
+  {
+    "id": "classroom_language",
+    "name": "Classroom Language",
+    "iconName": "class",
+    "colorHex": "#009688",
+    "difficulty": 1,
+    "description": "Ngôn ngữ sử dụng trong lớp học",
+    "category": "education",
+    "level": "BASIC"
+  },
+  {
+    "id": "common_verbs",
+    "name": "Common Verbs",
+    "iconName": "directions_run",
+    "colorHex": "#FF4081",
+    "difficulty": 1,
+    "description": "Các động từ thường dùng (go, eat, sleep, play...)",
+    "category": "grammar",
+    "level": "BASIC"
+  },
+  {
+    "id": "feelings_emotions_basic",
+    "name": "Feelings & Emotions",
+    "iconName": "mood",
+    "colorHex": "#E91E63",
+    "difficulty": 1,
+    "description": "Cảm xúc cơ bản (happy, sad, tired...)",
+    "category": "emotions",
+    "level": "BASIC"
+  },
+  {
+    "id": "transportation",
+    "name": "Transportation",
+    "iconName": "directions_car",
+    "colorHex": "#2196F3",
+    "difficulty": 1,
+    "description": "Phương tiện giao thông (car, bus, bike...)",
+    "category": "transport",
+    "level": "BASIC"
+  },
+  {
+    "id": "places_in_town",
+    "name": "Places in Town",
+    "iconName": "location_city",
+    "colorHex": "#9E9E9E",
+    "difficulty": 1,
+    "description": "Các địa điểm trong thành phố (park, market, hospital...)",
+    "category": "places",
+    "level": "BASIC"
+  },
+  {
+    "id": "time_clock",
+    "name": "Time & Clock",
+    "iconName": "access_time",
+    "colorHex": "#795548",
+    "difficulty": 1,
+    "description": "Thời gian và đồng hồ",
+    "category": "time",
+    "level": "BASIC"
+  },
+  {
+    "id": "hobbies_free_time_basic",
+    "name": "Hobbies & Free Time",
+    "iconName": "sports_esports",
+    "colorHex": "#FF9800",
+    "difficulty": 1,
+    "description": "Sở thích và thời gian rảnh cơ bản",
+    "category": "leisure",
+    "level": "BASIC"
+  },
+  {
+    "id": "adjectives_basic",
+    "name": "Basic Adjectives",
+    "iconName": "format_size",
+    "colorHex": "#673AB7",
+    "difficulty": 1,
+    "description": "Tính từ cơ bản (big, small, fast, slow...)",
+    "category": "grammar",
+    "level": "BASIC"
+  },
+  {
+    "id": "prepositions_place",
+    "name": "Prepositions of Place",
+    "iconName": "place",
+    "colorHex": "#00BCD4",
+    "difficulty": 1,
+    "description": "Giới từ chỉ nơi chốn (in, on, under...)",
+    "category": "grammar",
+    "level": "BASIC"
+  },
+  {
+    "id": "daily_routine",
+    "name": "Daily Routine",
+    "iconName": "schedule",
+    "colorHex": "#4CAF50",
+    "difficulty": 1,
+    "description": "Hoạt động hàng ngày",
+    "category": "daily_life",
+    "level": "BASIC"
+  },
+  {
+    "id": "health_illness_basic",
+    "name": "Health & Illness (Basic)",
+    "iconName": "health_and_safety",
+    "colorHex": "#F44336",
+    "difficulty": 1,
+    "description": "Sức khỏe và bệnh tật cơ bản",
+    "category": "health",
+    "level": "BASIC"
+  },
+  {
+    "id": "shopping_money_basic",
+    "name": "Shopping & Money (Basic)",
+    "iconName": "shopping_cart",
+    "colorHex": "#4CAF50",
+    "difficulty": 1,
+    "description": "Mua sắm và tiền bạc cơ bản",
+    "category": "economics",
+    "level": "BASIC"
+  },
+  {
+    "id": "nature_basic",
+    "name": "Nature (Basic)",
+    "iconName": "nature",
+    "colorHex": "#8BC34A",
+    "difficulty": 1,
+    "description": "Thiên nhiên cơ bản (sun, rain, tree, flower...)",
+    "category": "nature",
+    "level": "BASIC"
+  },
+  {
+    "id": "countries_nationalities",
+    "name": "Countries & Nationalities",
+    "iconName": "book",
+    "colorHex": "#00BCD4",
+    "difficulty": 1,
+    "description": "Quốc gia và quốc tịch (Vietnam, America, Vietnamese, American...)",
+    "category": "culture",
+    "level": "BASIC"
+  },
+  {
+    "id": "personal_info_contact",
+    "name": "Personal Info & Contact Details",
+    "iconName": "book",
+    "colorHex": "#9E9E9E",
+    "difficulty": 1,
+    "description": "Thông tin cá nhân: tuổi, địa chỉ, số điện thoại, email",
+    "category": "personal",
+    "level": "BASIC"
+  },
+  {
+    "id": "question_words_wh",
+    "name": "Question Words (WH-words)",
+    "iconName": "quiz",
+    "colorHex": "#3F51B5",
+    "difficulty": 1,
+    "description": "Từ để hỏi: who, what, where, when, why, how",
+    "category": "grammar",
+    "level": "BASIC"
+  },
+  {
+    "id": "frequency_adverbs",
+    "name": "Frequency Adverbs",
+    "iconName": "time",
+    "colorHex": "#795548",
+    "difficulty": 1,
+    "description": "Trạng từ chỉ tần suất: always, usually, often, sometimes, never",
+    "category": "grammar",
+    "level": "BASIC"
+  },
+  {
+    "id": "directions_basic",
+    "name": "Directions (Basic)",
+    "iconName": "map",
+    "colorHex": "#4CAF50",
+    "difficulty": 1,
+    "description": "Hướng đi cơ bản: left, right, straight, turn",
+    "category": "navigation",
+    "level": "BASIC"
+  },
+  {
+    "id": "jobs_occupations",
+    "name": "Jobs & Occupations",
+    "iconName": "work",
+    "colorHex": "#FF9800",
+    "difficulty": 2,
+    "description": "Các nghề nghiệp và công việc",
+    "category": "work",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "work_office_environment",
+    "name": "Work & Office Environment",
+    "iconName": "business_center",
+    "colorHex": "#607D8B",
+    "difficulty": 2,
+    "description": "Môi trường làm việc và văn phòng",
+    "category": "work",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "education_system",
+    "name": "Education System",
+    "iconName": "school",
+    "colorHex": "#3F51B5",
+    "difficulty": 2,
+    "description": "Hệ thống giáo dục (schools, subjects, exams)",
+    "category": "education",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "technology_devices",
+    "name": "Technology & Devices",
+    "iconName": "devices",
+    "colorHex": "#2196F3",
+    "difficulty": 2,
+    "description": "Công nghệ và thiết bị",
+    "category": "technology",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "internet_social_media",
+    "name": "Internet & Social Media",
+    "iconName": "wifi",
+    "colorHex": "#00BCD4",
+    "difficulty": 2,
+    "description": "Internet và mạng xã hội",
+    "category": "technology",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "travel_tourism",
+    "name": "Travel & Tourism",
+    "iconName": "flight",
+    "colorHex": "#FF5722",
+    "difficulty": 2,
+    "description": "Du lịch và khách sạn",
+    "category": "travel",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "restaurants_ordering_food",
+    "name": "Restaurants & Ordering Food",
+    "iconName": "restaurant",
+    "colorHex": "#FF9800",
+    "difficulty": 2,
+    "description": "Nhà hàng và gọi món",
+    "category": "food",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "cooking_recipes",
+    "name": "Cooking & Recipes",
+    "iconName": "kitchen",
+    "colorHex": "#795548",
+    "difficulty": 2,
+    "description": "Nấu ăn và công thức nấu ăn",
+    "category": "food",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "sports_fitness",
+    "name": "Sports & Fitness",
+    "iconName": "fitness_center",
+    "colorHex": "#4CAF50",
+    "difficulty": 2,
+    "description": "Thể thao và thể hình",
+    "category": "sports",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "music_entertainment",
+    "name": "Music & Entertainment",
+    "iconName": "music_note",
+    "colorHex": "#E91E63",
+    "difficulty": 2,
+    "description": "Âm nhạc và giải trí",
+    "category": "entertainment",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "movies_tv_shows",
+    "name": "Movies & TV Shows",
+    "iconName": "movie",
+    "colorHex": "#9C27B0",
+    "difficulty": 2,
+    "description": "Phim ảnh và chương trình truyền hình",
+    "category": "entertainment",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "books_reading",
+    "name": "Books & Reading",
+    "iconName": "menu_book",
+    "colorHex": "#795548",
+    "difficulty": 2,
+    "description": "Sách và đọc",
+    "category": "education",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "personality_traits",
+    "name": "Personality Traits",
+    "iconName": "psychology",
+    "colorHex": "#673AB7",
+    "difficulty": 2,
+    "description": "Tính cách và đặc điểm cá nhân",
+    "category": "personality",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "relationships",
+    "name": "Relationships",
+    "iconName": "favorite",
+    "colorHex": "#E91E63",
+    "difficulty": 2,
+    "description": "Các mối quan hệ (friends, dating, marriage)",
+    "category": "social",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "social_issues",
+    "name": "Social Issues",
+    "iconName": "group",
+    "colorHex": "#FF5722",
+    "difficulty": 2,
+    "description": "Các vấn đề xã hội (pollution, poverty, equality)",
+    "category": "social",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "environment_sustainability",
+    "name": "Environment & Sustainability",
+    "iconName": "eco",
+    "colorHex": "#4CAF50",
+    "difficulty": 2,
+    "description": "Môi trường và phát triển bền vững",
+    "category": "environment",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "health_medicine_intermediate",
+    "name": "Health & Medicine (Intermediate)",
+    "iconName": "local_hospital",
+    "colorHex": "#F44336",
+    "difficulty": 2,
+    "description": "Sức khỏe và y học trung cấp",
+    "category": "health",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "emotions_mental_health",
+    "name": "Emotions & Mental Health",
+    "iconName": "psychology",
+    "colorHex": "#9C27B0",
+    "difficulty": 2,
+    "description": "Cảm xúc và sức khỏe tinh thần",
+    "category": "emotions",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "shopping_consumerism",
+    "name": "Shopping & Consumerism",
+    "iconName": "shopping_bag",
+    "colorHex": "#FF9800",
+    "difficulty": 2,
+    "description": "Mua sắm và chủ nghĩa tiêu dùng",
+    "category": "economics",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "banking_finance_basic",
+    "name": "Banking & Finance (Basic)",
+    "iconName": "account_balance",
+    "colorHex": "#607D8B",
+    "difficulty": 2,
+    "description": "Ngân hàng và tài chính cơ bản",
+    "category": "economics",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "housing_renting",
+    "name": "Housing & Renting",
+    "iconName": "apartment",
+    "colorHex": "#795548",
+    "difficulty": 2,
+    "description": "Nhà ở và thuê nhà",
+    "category": "housing",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "public_services",
+    "name": "Public Services",
+    "iconName": "local_post_office",
+    "colorHex": "#009688",
+    "difficulty": 2,
+    "description": "Dịch vụ công (post office, police, library)",
+    "category": "services",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "emergencies_safety",
+    "name": "Emergencies & Safety",
+    "iconName": "emergency",
+    "colorHex": "#F44336",
+    "difficulty": 2,
+    "description": "Tình huống khẩn cấp và an toàn",
+    "category": "safety",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "directions_maps",
+    "name": "Directions & Maps",
+    "iconName": "map",
+    "colorHex": "#4CAF50",
+    "difficulty": 2,
+    "description": "Chỉ đường và bản đồ",
+    "category": "navigation",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "comparisons_superlatives",
+    "name": "Comparisons & Superlatives",
+    "iconName": "compare_arrows",
+    "colorHex": "#2196F3",
+    "difficulty": 2,
+    "description": "So sánh và so sánh nhất",
+    "category": "grammar",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "modal_verbs_obligations",
+    "name": "Modal Verbs & Obligations",
+    "iconName": "rule",
+    "colorHex": "#673AB7",
+    "difficulty": 2,
+    "description": "Động từ khuyết thiếu và nghĩa vụ",
+    "category": "grammar",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "phrasal_verbs_common",
+    "name": "Phrasal Verbs (Common)",
+    "iconName": "extension",
+    "colorHex": "#FF5722",
+    "difficulty": 2,
+    "description": "Cụm động từ thường dùng",
+    "category": "grammar",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "idioms_basic",
+    "name": "Idioms (Basic)",
+    "iconName": "lightbulb",
+    "colorHex": "#FFC107",
+    "difficulty": 2,
+    "description": "Thành ngữ cơ bản",
+    "category": "expressions",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "slang_informal_expressions",
+    "name": "Slang & Informal Expressions",
+    "iconName": "chat",
+    "colorHex": "#00BCD4",
+    "difficulty": 2,
+    "description": "Tiếng lóng và cách diễn đạt thân mật",
+    "category": "expressions",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "cultural_differences",
+    "name": "Cultural Differences",
+    "iconName": "public",
+    "colorHex": "#9C27B0",
+    "difficulty": 2,
+    "description": "Sự khác biệt văn hóa",
+    "category": "culture",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "holidays_celebrations",
+    "name": "Holidays & Celebrations",
+    "iconName": "celebration",
+    "colorHex": "#FF9800",
+    "difficulty": 2,
+    "description": "Kỳ nghỉ và lễ kỷ niệm",
+    "category": "culture",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "festivals_global_vietnamese",
+    "name": "Festivals (Global & Vietnamese)",
+    "iconName": "festival",
+    "colorHex": "#E91E63",
+    "difficulty": 2,
+    "description": "Lễ hội toàn cầu và Việt Nam",
+    "category": "culture",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "communication_styles",
+    "name": "Communication Styles",
+    "iconName": "forum",
+    "colorHex": "#3F51B5",
+    "difficulty": 2,
+    "description": "Phong cách giao tiếp",
+    "category": "communication",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "making_complaints_requests",
+    "name": "Making Complaints & Requests",
+    "iconName": "contact_support",
+    "colorHex": "#FF5722",
+    "difficulty": 2,
+    "description": "Khiếu nại và yêu cầu",
+    "category": "communication",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "giving_opinions_agreeing_disagreeing",
+    "name": "Giving Opinions & Agreeing/Disagreeing",
+    "iconName": "thumbs_up_down",
+    "colorHex": "#4CAF50",
+    "difficulty": 2,
+    "description": "Đưa ra ý kiến và đồng ý/không đồng ý",
+    "category": "communication",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "storytelling_narratives",
+    "name": "Storytelling & Narratives",
+    "iconName": "auto_stories",
+    "colorHex": "#795548",
+    "difficulty": 2,
+    "description": "Kể chuyện và tường thuật",
+    "category": "communication",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "describing_events",
+    "name": "Describing Events",
+    "iconName": "event",
+    "colorHex": "#9E9E9E",
+    "difficulty": 2,
+    "description": "Mô tả sự kiện (past, present, future)",
+    "category": "communication",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "conditionals_type_1_2",
+    "name": "Conditionals (Type 1 & 2)",
+    "iconName": "alt_route",
+    "colorHex": "#607D8B",
+    "difficulty": 2,
+    "description": "Câu điều kiện loại 1 và 2",
+    "category": "grammar",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "passive_voice_common",
+    "name": "Passive Voice (Common)",
+    "iconName": "swap_horiz",
+    "colorHex": "#009688",
+    "difficulty": 2,
+    "description": "Câu bị động thường dùng",
+    "category": "grammar",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "reported_speech_basic",
+    "name": "Reported Speech (Basic)",
+    "iconName": "record_voice_over",
+    "colorHex": "#673AB7",
+    "difficulty": 2,
+    "description": "Câu tường thuật cơ bản",
+    "category": "grammar",
+    "level": "INTERMEDIATE"
+  },
+  {
+    "id": "academic_writing_vocabulary",
+    "name": "Academic Writing & Vocabulary",
+    "iconName": "article",
+    "colorHex": "#3F51B5",
+    "difficulty": 3,
+    "description": "Viết học thuật và từ vựng",
+    "category": "academic",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "university_life_research",
+    "name": "University Life & Research",
+    "iconName": "school",
+    "colorHex": "#607D8B",
+    "difficulty": 3,
+    "description": "Đời sống đại học và nghiên cứu",
+    "category": "academic",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "business_economics",
+    "name": "Business & Economics",
+    "iconName": "business",
+    "colorHex": "#FF9800",
+    "difficulty": 3,
+    "description": "Kinh doanh và kinh tế học",
+    "category": "business",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "politics_government",
+    "name": "Politics & Government",
+    "iconName": "account_balance",
+    "colorHex": "#795548",
+    "difficulty": 3,
+    "description": "Chính trị và chính phủ",
+    "category": "politics",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "law_justice_system",
+    "name": "Law & Justice System",
+    "iconName": "gavel",
+    "colorHex": "#607D8B",
+    "difficulty": 3,
+    "description": "Luật pháp và hệ thống tư pháp",
+    "category": "law",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "science_technology_advanced",
+    "name": "Science & Technology (Advanced)",
+    "iconName": "science",
+    "colorHex": "#2196F3",
+    "difficulty": 3,
+    "description": "Khoa học và công nghệ nâng cao",
+    "category": "science",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "medicine_healthcare_advanced",
+    "name": "Medicine & Healthcare (Advanced)",
+    "iconName": "medical_services",
+    "colorHex": "#F44336",
+    "difficulty": 3,
+    "description": "Y học và chăm sóc sức khỏe nâng cao",
+    "category": "medicine",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "psychology_human_behavior",
+    "name": "Psychology & Human Behavior",
+    "iconName": "psychology",
+    "colorHex": "#9C27B0",
+    "difficulty": 3,
+    "description": "Tâm lý học và hành vi con người",
+    "category": "psychology",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "philosophy_ethics",
+    "name": "Philosophy & Ethics",
+    "iconName": "psychology_alt",
+    "colorHex": "#673AB7",
+    "difficulty": 3,
+    "description": "Triết học và đạo đức",
+    "category": "philosophy",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "art_literature",
+    "name": "Art & Literature",
+    "iconName": "palette",
+    "colorHex": "#E91E63",
+    "difficulty": 3,
+    "description": "Nghệ thuật và văn học",
+    "category": "arts",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "architecture_design",
+    "name": "Architecture & Design",
+    "iconName": "architecture",
+    "colorHex": "#795548",
+    "difficulty": 3,
+    "description": "Kiến trúc và thiết kế",
+    "category": "arts",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "history_civilization",
+    "name": "History & Civilization",
+    "iconName": "history",
+    "colorHex": "#9E9E9E",
+    "difficulty": 3,
+    "description": "Lịch sử và văn minh",
+    "category": "history",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "religion_beliefs",
+    "name": "Religion & Beliefs",
+    "iconName": "church",
+    "colorHex": "#FF9800",
+    "difficulty": 3,
+    "description": "Tôn giáo và tín ngưỡng",
+    "category": "religion",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "media_journalism",
+    "name": "Media & Journalism",
+    "iconName": "newspaper",
+    "colorHex": "#607D8B",
+    "difficulty": 3,
+    "description": "Truyền thông và báo chí",
+    "category": "media",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "advertising_marketing",
+    "name": "Advertising & Marketing",
+    "iconName": "campaign",
+    "colorHex": "#FF5722",
+    "difficulty": 3,
+    "description": "Quảng cáo và tiếp thị",
+    "category": "marketing",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "leadership_management",
+    "name": "Leadership & Management",
+    "iconName": "supervisor_account",
+    "colorHex": "#4CAF50",
+    "difficulty": 3,
+    "description": "Lãnh đạo và quản lý",
+    "category": "management",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "negotiation_diplomacy",
+    "name": "Negotiation & Diplomacy",
+    "iconName": "handshake",
+    "colorHex": "#009688",
+    "difficulty": 3,
+    "description": "Đàm phán và ngoại giao",
+    "category": "diplomacy",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "idioms_proverbs_advanced",
+    "name": "Idioms & Proverbs (Advanced)",
+    "iconName": "format_quote",
+    "colorHex": "#FFC107",
+    "difficulty": 3,
+    "description": "Thành ngữ và tục ngữ nâng cao",
+    "category": "expressions",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "slang_regional_expressions",
+    "name": "Slang & Regional Expressions",
+    "iconName": "language",
+    "colorHex": "#00BCD4",
+    "difficulty": 3,
+    "description": "Tiếng lóng và cách diễn đạt theo vùng (US/UK/AU)",
+    "category": "expressions",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "figurative_language_metaphors",
+    "name": "Figurative Language & Metaphors",
+    "iconName": "auto_fix_high",
+    "colorHex": "#9C27B0",
+    "difficulty": 3,
+    "description": "Ngôn ngữ bóng bẩy và ẩn dụ",
+    "category": "language",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "humor_sarcasm",
+    "name": "Humor & Sarcasm",
+    "iconName": "sentiment_very_satisfied",
+    "colorHex": "#FFC107",
+    "difficulty": 3,
+    "description": "Hài hước và châm biếm",
+    "category": "communication",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "debating_persuasion",
+    "name": "Debating & Persuasion",
+    "iconName": "campaign",
+    "colorHex": "#FF5722",
+    "difficulty": 3,
+    "description": "Tranh luận và thuyết phục",
+    "category": "communication",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "public_speaking_presentations",
+    "name": "Public Speaking & Presentations",
+    "iconName": "present_to_all",
+    "colorHex": "#3F51B5",
+    "difficulty": 3,
+    "description": "Diễn thuyết công khai và thuyết trình",
+    "category": "communication",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "writing_formal_letters_emails",
+    "name": "Writing Formal Letters & Emails",
+    "iconName": "email",
+    "colorHex": "#607D8B",
+    "difficulty": 3,
+    "description": "Viết thư và email chính thức",
+    "category": "communication",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "cv_job_interviews_advanced",
+    "name": "CV & Job Interviews (Advanced)",
+    "iconName": "work_outline",
+    "colorHex": "#795548",
+    "difficulty": 3,
+    "description": "CV và phỏng vấn xin việc nâng cao",
+    "category": "career",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "grammar_nuances",
+    "name": "Grammar Nuances",
+    "iconName": "tune",
+    "colorHex": "#673AB7",
+    "difficulty": 3,
+    "description": "Sắc thái ngữ pháp (articles, tenses, subjunctive)",
+    "category": "grammar",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "word_formation",
+    "name": "Word Formation",
+    "iconName": "build",
+    "colorHex": "#FF9800",
+    "difficulty": 3,
+    "description": "Cấu tạo từ (prefixes, suffixes, roots)",
+    "category": "vocabulary",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "synonyms_antonyms_advanced",
+    "name": "Synonyms & Antonyms (Advanced)",
+    "iconName": "compare",
+    "colorHex": "#4CAF50",
+    "difficulty": 3,
+    "description": "Từ đồng nghĩa và trái nghĩa nâng cao",
+    "category": "vocabulary",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "collocations_advanced",
+    "name": "Collocations (Advanced)",
+    "iconName": "link",
+    "colorHex": "#2196F3",
+    "difficulty": 3,
+    "description": "Cụm từ cố định nâng cao (verb+noun, adj+noun)",
+    "category": "vocabulary",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "connotation_register",
+    "name": "Connotation & Register",
+    "iconName": "psychology",
+    "colorHex": "#E91E63",
+    "difficulty": 3,
+    "description": "Hàm ý và phong cách ngôn ngữ (formal/informal)",
+    "category": "language",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "discourse_markers_cohesion",
+    "name": "Discourse Markers & Cohesion",
+    "iconName": "linear_scale",
+    "colorHex": "#009688",
+    "difficulty": 3,
+    "description": "Từ nối và tính liên kết trong văn bản",
+    "category": "language",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "critical_thinking_vocabulary",
+    "name": "Critical Thinking Vocabulary",
+    "iconName": "psychology",
+    "colorHex": "#9C27B0",
+    "difficulty": 3,
+    "description": "Từ vựng tư duy phản biện",
+    "category": "academic",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "abstract_concepts",
+    "name": "Abstract Concepts",
+    "iconName": "lightbulb_outline",
+    "colorHex": "#FFC107",
+    "difficulty": 3,
+    "description": "Các khái niệm trừu tượng (freedom, justice, identity...)",
+    "category": "philosophy",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "vietnamese_culture_context",
+    "name": "Vietnamese Culture & Context",
+    "iconName": "public",
+    "colorHex": "#F44336",
+    "difficulty": 3,
+    "description": "Văn hóa và bối cảnh Việt Nam (for learners)",
+    "category": "culture",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "global_issues",
+    "name": "Global Issues",
+    "iconName": "public",
+    "colorHex": "#4CAF50",
+    "difficulty": 3,
+    "description": "Các vấn đề toàn cầu (climate change, AI, migration)",
+    "category": "global",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "future_trends_predictions",
+    "name": "Future Trends & Predictions",
+    "iconName": "trending_up",
+    "colorHex": "#00BCD4",
+    "difficulty": 3,
+    "description": "Xu hướng tương lai và dự đoán",
+    "category": "futurism",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "literature_analysis_terms",
+    "name": "Literature Analysis Terms",
+    "iconName": "auto_stories",
+    "colorHex": "#795548",
+    "difficulty": 3,
+    "description": "Thuật ngữ phân tích văn học",
+    "category": "literature",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "film_theater_terminology",
+    "name": "Film & Theater Terminology",
+    "iconName": "theaters",
+    "colorHex": "#E91E63",
+    "difficulty": 3,
+    "description": "Thuật ngữ phim ảnh và sân khấu",
+    "category": "arts",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "music_theory_genres",
+    "name": "Music Theory & Genres",
+    "iconName": "music_note",
+    "colorHex": "#9C27B0",
+    "difficulty": 3,
+    "description": "Lý thuyết âm nhạc và thể loại",
+    "category": "music",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "culinary_arts_gastronomy",
+    "name": "Culinary Arts & Gastronomy",
+    "iconName": "restaurant",
+    "colorHex": "#FF9800",
+    "difficulty": 3,
+    "description": "Nghệ thuật ẩm thực và ăn uống tinh tế",
+    "category": "culinary",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "fashion_trends",
+    "name": "Fashion & Trends",
+    "iconName": "checkroom",
+    "colorHex": "#E91E63",
+    "difficulty": 3,
+    "description": "Thời trang và xu hướng",
+    "category": "fashion",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "urban_life_society",
+    "name": "Urban Life & Society",
+    "iconName": "location_city",
+    "colorHex": "#607D8B",
+    "difficulty": 3,
+    "description": "Đời sống đô thị và xã hội",
+    "category": "society",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "rural_life_traditions",
+    "name": "Rural Life & Traditions",
+    "iconName": "agriculture",
+    "colorHex": "#8BC34A",
+    "difficulty": 3,
+    "description": "Đời sống nông thôn và truyền thống",
+    "category": "tradition",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "education_philosophy",
+    "name": "Education Philosophy",
+    "iconName": "school",
+    "colorHex": "#3F51B5",
+    "difficulty": 3,
+    "description": "Triết lý giáo dục",
+    "category": "education",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "learning_strategies_metacognition",
+    "name": "Learning Strategies & Metacognition",
+    "iconName": "psychology",
+    "colorHex": "#673AB7",
+    "difficulty": 3,
+    "description": "Chiến lược học tập và nhận thức siêu việt",
+    "category": "learning",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "language_learning_terminology",
+    "name": "Language Learning Terminology",
+    "iconName": "translate",
+    "colorHex": "#4CAF50",
+    "difficulty": 3,
+    "description": "Thuật ngữ học ngoại ngữ",
+    "category": "linguistics",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "translation_interpretation",
+    "name": "Translation & Interpretation",
+    "iconName": "translate",
+    "colorHex": "#FF5722",
+    "difficulty": 3,
+    "description": "Dịch thuật và phiên dịch",
+    "category": "linguistics",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "multilingualism_code_switching",
+    "name": "Multilingualism & Code-switching",
+    "iconName": "language",
+    "colorHex": "#00BCD4",
+    "difficulty": 3,
+    "description": "Đa ngôn ngữ và chuyển đổi mã ngôn ngữ",
+    "category": "linguistics",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "accent_pronunciation_advanced",
+    "name": "Accent & Pronunciation (Advanced)",
+    "iconName": "record_voice_over",
+    "colorHex": "#9C27B0",
+    "difficulty": 3,
+    "description": "Giọng điệu và phát âm nâng cao",
+    "category": "pronunciation",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "phonetics_phonology_basic",
+    "name": "Phonetics & Phonology (Basic)",
+    "iconName": "hearing",
+    "colorHex": "#795548",
+    "difficulty": 3,
+    "description": "Ngữ âm học và âm vị học cơ bản (for learners)",
+    "category": "linguistics",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "error_analysis_common_mistakes",
+    "name": "Error Analysis & Common Mistakes",
+    "iconName": "error",
+    "colorHex": "#F44336",
+    "difficulty": 3,
+    "description": "Phân tích lỗi và những sai lầm thường gặp",
+    "category": "learning",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "corpus_linguistics_frequency",
+    "name": "Corpus Linguistics & Frequency",
+    "iconName": "analytics",
+    "colorHex": "#2196F3",
+    "difficulty": 3,
+    "description": "Ngôn ngữ học kho ngữ liệu và tần suất",
+    "category": "linguistics",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "pragmatics_politeness",
+    "name": "Pragmatics & Politeness",
+    "iconName": "handshake",
+    "colorHex": "#009688",
+    "difficulty": 3,
+    "description": "Ngữ dụng học và phép lịch sự",
+    "category": "linguistics",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "discourse_analysis_basic",
+    "name": "Discourse Analysis (Basic)",
+    "iconName": "forum",
+    "colorHex": "#607D8B",
+    "difficulty": 3,
+    "description": "Phân tích diễn ngôn cơ bản",
+    "category": "linguistics",
+    "level": "ADVANCED"
+  },
+  {
+    "id": "testing_assessment_vocabulary",
+    "name": "Testing & Assessment Vocabulary",
+    "iconName": "quiz",
+    "colorHex": "#FF9800",
+    "difficulty": 3,
+    "description": "Từ vựng kiểm tra và đánh giá",
+    "category": "assessment",
+    "level": "ADVANCED"
+  }
+]

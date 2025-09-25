@@ -5,8 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bvo/model/word.dart';
 import 'package:bvo/model/topic.dart';
 import 'package:bvo/repository/word_repository.dart';
-import 'package:bvo/repository/topic_repository.dart';
-import 'package:bvo/repository/topic_configs_repository.dart';
+import 'package:bvo/service/topic_service.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/service/notification_manager.dart';
 import 'package:bvo/screen/topic_detail_screen.dart';
@@ -22,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final WordRepository _wordRepository = WordRepository();
+  final TopicService _topicService = TopicService();
   Map<String, List<Word>> reviewedWordsByTopic = {};
   List<Topic> topics = [];
   bool isLoadingTopics = true;
@@ -224,8 +224,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadTopics() async {
     try {
       print("Starting to load topics...");
-      final loadedTopics = await TopicRepository().getTopics();
-      print("Loaded ${loadedTopics.length} topics: ${loadedTopics.map((t) => t.topic).toList()}");
+      final loadedTopics = await _topicService.getTopicsForDisplay();
+      print("Loaded ${loadedTopics.length} topics: ${loadedTopics.map((t) => t.id).toList()}");
       
       // Tạo topicGroups từ vocabulary data
       await _createTopicGroupsFromVocabulary();
@@ -251,26 +251,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _createTopicGroupsFromVocabulary() async {
     try {
-      final allTopics = await TopicRepository().getTopics();
-      final progressRepo = UserProgressRepository();
+      final allTopics = await _topicService.getTopicsForDisplay();
+      // Progress data is now calculated within TopicService
       
       // Phân loại topics theo level từ vocabulary data (chỉ 3 level)
-      final basicTopics = allTopics.where((topic) => topic.level == TopicLevel.BASIC).toList();
-      final intermediateTopics = allTopics.where((topic) => topic.level == TopicLevel.INTERMEDIATE).toList();
-      final advancedTopics = allTopics.where((topic) => topic.level == TopicLevel.ADVANCED).toList();
+      final basicTopics = allTopics.where((topic) => topic.level == 'BASIC').toList();
+      final intermediateTopics = allTopics.where((topic) => topic.level == 'INTERMEDIATE').toList();
+      final advancedTopics = allTopics.where((topic) => topic.level == 'ADVANCED').toList();
 
-      // Helper function để tính từ đã học thực tế từ UserProgressRepository
-      Future<int> calculateLearnedWordsFromProgress(List<Topic> topics) async {
-        int totalLearned = 0;
-        print('🔍 [DEBUG] Calculating learned words for ${topics.length} topics');
-        for (final topic in topics) {
-          final topicProgress = await progressRepo.getTopicProgress(topic.topic);
-          final learnedWords = (topicProgress['learnedWords'] ?? 0) as int;
-          print('🔍 [DEBUG] Topic ${topic.topic}: $learnedWords learned words');
-          totalLearned += learnedWords;
-        }
-        print('🔍 [DEBUG] Total learned words: $totalLearned');
-        return totalLearned;
+      // Helper function để tính từ đã học từ topic model mới
+      int calculateLearnedWordsFromTopics(List<Topic> topics) {
+        return topics.fold<int>(0, (sum, topic) => sum + topic.learnedWords);
       }
 
       int calculateTargetWords(List<Topic> topics) {
@@ -282,7 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Basic Group
       if (basicTopics.isNotEmpty) {
-        final learnedWords = await calculateLearnedWordsFromProgress(basicTopics);
+        final learnedWords = calculateLearnedWordsFromTopics(basicTopics);
         groups.add({
           'id': 'basic',
           'name': 'Basic',
@@ -291,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
           'learnedWords': learnedWords,
           'color': Colors.green,
           'icon': Icons.star,
-          'topics': basicTopics.map((t) => t.topic).toList(),
+          'topics': basicTopics.map((t) => t.id).toList(),
           'level': 'basic',
           'topicObjects': basicTopics,
         });
@@ -299,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Intermediate Group
       if (intermediateTopics.isNotEmpty) {
-        final learnedWords = await calculateLearnedWordsFromProgress(intermediateTopics);
+        final learnedWords = calculateLearnedWordsFromTopics(intermediateTopics);
         groups.add({
           'id': 'intermediate',
           'name': 'Intermediate',
@@ -308,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
           'learnedWords': learnedWords,
           'color': Colors.purple,
           'icon': Icons.psychology,
-          'topics': intermediateTopics.map((t) => t.topic).toList(),
+          'topics': intermediateTopics.map((t) => t.id).toList(),
           'level': 'intermediate',
           'topicObjects': intermediateTopics,
         });
@@ -316,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Advanced Group
       if (advancedTopics.isNotEmpty) {
-        final learnedWords = await calculateLearnedWordsFromProgress(advancedTopics);
+        final learnedWords = calculateLearnedWordsFromTopics(advancedTopics);
         groups.add({
           'id': 'advanced',
           'name': 'Advanced',
@@ -325,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
           'learnedWords': learnedWords,
           'color': Colors.teal,
           'icon': Icons.work,
-          'topics': advancedTopics.map((t) => t.topic).toList(),
+          'topics': advancedTopics.map((t) => t.id).toList(),
           'level': 'advanced',
           'topicObjects': advancedTopics,
         });
@@ -877,7 +868,7 @@ class _HomeScreenState extends State<HomeScreen> {
             itemCount: recommendedTopics.length,
             itemBuilder: (context, index) {
               final topic = recommendedTopics[index];
-              final reviewedCount = reviewedWordsByTopic[topic.topic]?.length ?? 0;
+              final reviewedCount = reviewedWordsByTopic[topic.id]?.length ?? 0;
               return _buildRecommendedTopicCard(topic, reviewedCount);
             },
           ),
@@ -887,7 +878,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecommendedTopicCard(Topic topic, int reviewedCount) {
-    final topicData = _getTopicData(topic.topic);
+    final topicData = _getTopicData(topic.id);
     final totalWords = topicData['totalWords'] as int;
     final icon = topicData['icon'] as IconData;
     final color = topicData['color'] as Color;
@@ -907,7 +898,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TopicDetailScreen(topic: topic.topic),
+                            builder: (context) => TopicDetailScreen(topic: topic.id),
                           ),
                         );
           },
@@ -931,7 +922,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 
                 // Topic name
                 Text(
-                  topic.topic.toUpperCase(),
+                  topic.name.toUpperCase(),
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -1164,7 +1155,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Map<String, dynamic> _getTopicData(String topicName) {
-    return TopicConfigsRepository.getTopicData(topicName);
+    // Fallback for unknown topics - should use topic model properties instead
+    return {
+      'totalWords': 20,
+      'difficulty': 'Beginner',
+      'icon': Icons.book,
+      'color': Colors.blue,
+      'estimatedTime': '10 min',
+    };
   }
 
   // Removed _getGroupDisplayName - no longer needed with simplified group names
