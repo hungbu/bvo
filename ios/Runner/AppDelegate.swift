@@ -1,6 +1,6 @@
 import Flutter
 import UIKit
-import FirebaseCore
+// import FirebaseCore
 import UserNotifications
 
 @main
@@ -9,9 +9,9 @@ import UserNotifications
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    FirebaseApp.configure()
+    // Firebase removed (offline app)
     
-    // Request notification permissions
+    // Local notifications only
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self
       let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
@@ -19,13 +19,7 @@ import UserNotifications
         options: authOptions,
         completionHandler: { _, _ in }
       )
-    } else {
-      let settings: UIUserNotificationSettings =
-        UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil)
-      application.registerUserNotificationSettings(settings)
     }
-    
-    application.registerForRemoteNotifications()
     
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

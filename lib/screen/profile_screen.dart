@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../service/auth_service.dart';
 import '../service/notification_manager.dart';
 import '../repository/word_repository.dart';
 import '../repository/topic_repository.dart';
@@ -449,32 +448,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Sign Out Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        _showSignOutDialog();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade50,
-                        foregroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: Colors.red.shade200),
-                        ),
-                      ),
-                      child: const Text(
-                        'Đăng Xuất',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-
                   const SizedBox(height: 40),
                 ],
               ),
@@ -645,35 +618,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-    void _showSignOutDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Đăng Xuất'),
-          content: const Text('Bạn có chắc chắn muốn đăng xuất? Điều này sẽ xóa tất cả dữ liệu cục bộ của bạn.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Hủy'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _handleSignOut();
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-              ),
-              child: const Text('Đăng Xuất'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // Sign-out flow removed (offline app)
 
   void _showClearDataDialog() {
     showDialog(
@@ -760,7 +705,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       // Clear ALL SharedPreferences data
       await prefs.clear();
       
-      // Restore preserved login data
+      // Restore preserved login data (none preserved for offline mode)
       for (final entry in preservedData.entries) {
         final key = entry.key;
         final value = entry.value;
@@ -812,48 +757,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> _handleSignOut() async {
-    try {
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        },
-      );
-
-      // Sign out using AuthService
-      await AuthService().signOut();
-
-      // Close loading dialog
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
-
-      // Navigate to login page (replace entire navigation stack)
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/login',
-        (Route<dynamic> route) => false,
-      );
-
-    } catch (error) {
-      // Close loading dialog if it's open
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
-
-      // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error signing out: $error'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
+  // _handleSignOut removed (offline app)
 
   void _showNotificationSettings() {
     showModalBottomSheet(
