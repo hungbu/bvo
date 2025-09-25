@@ -218,35 +218,12 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
     final intermediateTopics = topics.where((topic) => topic.level == 'INTERMEDIATE').toList();
     final advancedTopics = topics.where((topic) => topic.level == 'ADVANCED').toList();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Basic Level Section
-          if (basicTopics.isNotEmpty) ...[
-            _buildLevelHeader('Cơ Bản', Colors.green, basicTopics.length),
-            const SizedBox(height: 12),
-            _buildTopicGrid(basicTopics),
-            const SizedBox(height: 24),
-          ],
-          
-          // Intermediate Level Section
-          if (intermediateTopics.isNotEmpty) ...[
-            _buildLevelHeader('Trung Cấp', Colors.orange, intermediateTopics.length),
-            const SizedBox(height: 12),
-            _buildTopicGrid(intermediateTopics),
-            const SizedBox(height: 24),
-          ],
-          
-          // Advanced Level Section
-          if (advancedTopics.isNotEmpty) ...[
-            _buildLevelHeader('Nâng Cao', Colors.purple, advancedTopics.length),
-            const SizedBox(height: 12),
-            _buildTopicGrid(advancedTopics),
-          ],
-        ],
-      ),
+    return CustomScrollView(
+      slivers: [
+        if (basicTopics.isNotEmpty) ..._buildLevelSection('Cơ Bản', Colors.green, basicTopics),
+        if (intermediateTopics.isNotEmpty) ..._buildLevelSection('Trung Cấp', Colors.orange, intermediateTopics),
+        if (advancedTopics.isNotEmpty) ..._buildLevelSection('Nâng Cao', Colors.purple, advancedTopics),
+      ],
     );
   }
 
@@ -313,17 +290,34 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
     }
   }
 
-  Widget _buildTopicGrid(List<Topic> levelTopics) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: levelTopics.map((topic) {
-        return SizedBox(
-          width: (MediaQuery.of(context).size.width - 44) / 2, // 2 columns với padding
-          child: _buildTopicCard(topic),
-        );
-      }).toList(),
-    );
+  List<Widget> _buildLevelSection(String levelName, Color color, List<Topic> levelTopics) {
+    return [
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          child: _buildLevelHeader(levelName, color, levelTopics.length),
+        ),
+      ),
+      SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        sliver: SliverGrid(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.30,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              final topic = levelTopics[index];
+              return _buildTopicCard(topic);
+            },
+            childCount: levelTopics.length,
+          ),
+        ),
+      ),
+      const SliverToBoxAdapter(child: SizedBox(height: 24)),
+    ];
   }
 
   Widget _buildTopicCard(Topic topic) {
@@ -337,9 +331,8 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
     final progress = topic.progressPercentage;
     final progressPercentage = (progress * 100).round();
     final difficulty = topic.level; // Use topic level as difficulty
-    
-    // Determine completion status
     final isCompleted = progress >= 1.0;
+    final isStarted = topic.isStarted || topic.lastStudied != null;
     
     return Card(
       elevation: 2,
@@ -373,6 +366,12 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
+            border: Border.all(
+              color: isCompleted
+                  ? Colors.green.withOpacity(0.6)
+                  : (isStarted ? Colors.orange.withOpacity(0.5) : Colors.grey.withOpacity(0.3)),
+              width: 1,
+            ),
           ),
           padding: const EdgeInsets.all(10),
           child: Column(
@@ -395,12 +394,7 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
                       size: 16,
                     ),
                   ),
-                  if (isCompleted)
-                    Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                      size: 16,
-                    ),
+                  _buildStatusChip(isCompleted: isCompleted, isStarted: isStarted),
                 ],
               ),
               
@@ -505,6 +499,70 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
           color: index < stars ? Colors.amber : Colors.grey[400],
         );
       }),
+    );
+  }
+
+  Widget _buildStatusChip({required bool isCompleted, required bool isStarted}) {
+    if (isCompleted) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.green.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.green.withOpacity(0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.check_circle, color: Colors.green, size: 14),
+            SizedBox(width: 4),
+            Text(
+              'Đã xong',
+              style: TextStyle(fontSize: 10, color: Colors.green, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      );
+    }
+    if (isStarted) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.orange.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.orange.withOpacity(0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.local_fire_department, color: Colors.orange, size: 14),
+            SizedBox(width: 4),
+            Text(
+              'Đang học',
+              style: TextStyle(fontSize: 10, color: Colors.orange, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          Icon(Icons.hourglass_empty, color: Colors.grey, size: 14),
+          SizedBox(width: 4),
+          Text(
+            'Chưa học',
+            style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
     );
   }
 

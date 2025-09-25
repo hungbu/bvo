@@ -9,6 +9,7 @@ import 'package:bvo/service/topic_service.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/service/notification_manager.dart';
 import 'package:bvo/screen/topic_detail_screen.dart';
+import 'package:bvo/service/difficult_words_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int)? onTabChange;
@@ -22,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final WordRepository _wordRepository = WordRepository();
   final TopicService _topicService = TopicService();
+  final DifficultWordsService _difficultWordsService = DifficultWordsService();
   Map<String, List<Word>> reviewedWordsByTopic = {};
   List<Topic> topics = [];
   bool isLoadingTopics = true;
@@ -34,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int dailyGoal = 10;
   int todayWordsLearned = 0;
   String lastTopic = "";
+  String lastTopicName = "";
   Map<String, dynamic> wordOfTheDay = {};
   bool isDashboardLoading = true;
   
@@ -58,8 +61,9 @@ class _HomeScreenState extends State<HomeScreen> {
     
     // Load last topic from UserProgressRepository
     final progressRepo = UserProgressRepository();
-    lastTopic = await progressRepo.getLastTopic() ?? "school";
-    print('📍 Loaded last_topic from prefs: $lastTopic');
+    lastTopic = await progressRepo.getLastTopic() ?? (await _getFirstTopicId()) ?? '';
+    print('📍 Loaded last_topic from prefs (fallback first topic if empty): $lastTopic');
+    await _resolveLastTopicName();
     
     // Calculate real statistics
     await _calculateRealStatistics();
@@ -72,6 +76,31 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       isDashboardLoading = false;
     });
+  }
+
+  Future<String?> _getFirstTopicId() async {
+    try {
+      final all = await _topicService.getTopicsForDisplay();
+      if (all.isNotEmpty) return all.first.id;
+    } catch (_) {}
+    return null;
+  }
+
+  Future<void> _resolveLastTopicName() async {
+    try {
+      if (lastTopic.isEmpty) {
+        lastTopicName = '';
+        return;
+      }
+      final topic = await _topicService.getTopicDetail(lastTopic);
+      setState(() {
+        lastTopicName = topic?.name ?? lastTopic;
+      });
+    } catch (_) {
+      setState(() {
+        lastTopicName = lastTopic;
+      });
+    }
   }
 
   Future<void> _calculateRealStatistics() async {
@@ -124,13 +153,117 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadWordOfTheDay() async {
     try {
-      // Get random word from repository
-      final randomWords = await _wordRepository.getRandomWords(1);
-      if (randomWords.isEmpty) {
-        throw Exception('No words available');
+      // 0) Prefer words that are due for review today (prioritize current topic)
+      Word? selectedWord;
+      String? selectedTopic;
+      String? selectedSource;
+      final progressRepo = UserProgressRepository();
+      final dueWordProgress = await progressRepo.getWordsForReview();
+      if (dueWordProgress.isNotEmpty) {
+        // Sort by nextReview ascending (most overdue first)
+        dueWordProgress.sort((a, b) {
+          final aNext = a['nextReview'] != null ? DateTime.parse(a['nextReview']) : DateTime.now();
+          final bNext = b['nextReview'] != null ? DateTime.parse(b['nextReview']) : DateTime.now();
+          return aNext.compareTo(bNext);
+        });
+        // Prefer lastTopic if available
+        Map<String, dynamic>? candidate = dueWordProgress.firstWhere(
+          (wp) => lastTopic.isNotEmpty && (wp['topic'] == lastTopic),
+          orElse: () => dueWordProgress.first,
+        );
+        final topic = (candidate['topic'] ?? '').toString();
+        final wordEn = (candidate['word'] ?? '').toString();
+        if (topic.isNotEmpty && wordEn.isNotEmpty) {
+          final topicWords = await _wordRepository.getWordsByTopic(topic);
+          for (final w in topicWords) {
+            if (w.en.toLowerCase() == wordEn.toLowerCase()) {
+              selectedWord = w;
+              selectedTopic = topic;
+              selectedSource = 'review';
+              break;
+            }
+          }
+        }
       }
-      
-      final selectedWord = randomWords.first;
+      // 1) If none, try a difficult word from the current/last topic
+      if (selectedWord == null && lastTopic.isNotEmpty) {
+        final difficultInTopic = await _difficultWordsService.getDifficultWordsByTopic(lastTopic);
+        if (difficultInTopic.isNotEmpty) {
+          // Pick the most difficult (highest error rate)
+          final hardest = difficultInTopic.first;
+          final topicWords = await _wordRepository.getWordsByTopic(hardest.topic);
+          Word? match;
+          for (final w in topicWords) {
+            if (w.en.toLowerCase() == hardest.word.toLowerCase()) {
+              match = w;
+              break;
+            }
+          }
+          if (match != null || topicWords.isNotEmpty) {
+            selectedWord = match ?? topicWords.first;
+            selectedTopic = hardest.topic;
+            selectedSource = 'difficult';
+          }
+        }
+      }
+
+      // 2) If none, try any difficult word across topics
+      selectedWord ??= await () async {
+        final allDifficult = await _difficultWordsService.getAllDifficultWords();
+        if (allDifficult.isNotEmpty) {
+          final hardest = allDifficult.first;
+          final topicWords = await _wordRepository.getWordsByTopic(hardest.topic);
+          Word? match;
+          for (final w in topicWords) {
+            if (w.en.toLowerCase() == hardest.word.toLowerCase()) {
+              match = w;
+              break;
+            }
+          }
+          if (match != null || topicWords.isNotEmpty) {
+            selectedTopic = hardest.topic;
+            selectedSource = 'difficult';
+          }
+          return match ?? (topicWords.isNotEmpty ? topicWords.first : null);
+        }
+        return null;
+      }();
+
+      // 3) If still none, pick a word from the current/last topic
+      if (selectedWord == null && lastTopic.isNotEmpty) {
+        final topicWords = await _wordRepository.getWordsByTopic(lastTopic);
+        if (topicWords.isNotEmpty) {
+          topicWords.shuffle();
+          selectedWord = topicWords.first;
+          selectedTopic = lastTopic;
+          selectedSource = 'topic';
+        }
+      }
+
+      // 3.5) If still none, pick from the first topic (beginner)
+      if (selectedWord == null) {
+        final allTopics = await _topicService.getTopicsForDisplay();
+        if (allTopics.isNotEmpty) {
+          final firstTopicId = allTopics.first.essentials.id;
+          final firstTopicWords = await _wordRepository.getWordsByTopic(firstTopicId);
+          if (firstTopicWords.isNotEmpty) {
+            firstTopicWords.shuffle();
+            selectedWord = firstTopicWords.first;
+            selectedTopic = firstTopicId;
+            selectedSource = 'first_topic';
+          }
+        }
+      }
+
+      // 4) Final fallback: any random word
+      selectedWord ??= await () async {
+        final randomWords = await _wordRepository.getRandomWords(1);
+        if (randomWords.isEmpty) {
+          throw Exception('No words available');
+        }
+        selectedSource = 'random';
+        return randomWords.first;
+      }();
       
       wordOfTheDay = {
         'word': selectedWord.en,
@@ -138,6 +271,8 @@ class _HomeScreenState extends State<HomeScreen> {
         'meaning': selectedWord.vi,
         'example': selectedWord.sentence,
         'exampleVi': selectedWord.sentenceVi,
+        'topic': selectedTopic ?? selectedWord.topic,
+        'source': selectedSource ?? 'topic',
       };
     } catch (e) {
       print('Error loading word of the day: $e');
@@ -784,7 +919,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? 'Học thêm $remainingWords từ để hoàn thành mục tiêu hôm nay!'
                 : 'Tuyệt vời! Bạn đã hoàn thành mục tiêu hôm nay! 🎉',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               color: Colors.grey[700],
             ),
           ),
@@ -797,11 +932,20 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
+        onPressed: () async {
+          final targetTopicId = lastTopic.isNotEmpty ? lastTopic : (await _getFirstTopicId()) ?? '';
+          if (targetTopicId.isEmpty) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Chưa có chủ đề để bắt đầu.')),
+              );
+            }
+            return;
+          }
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TopicDetailScreen(topic: lastTopic),
+              builder: (context) => TopicDetailScreen(topic: targetTopicId),
             ),
           );
         },
@@ -819,13 +963,18 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const Icon(Icons.play_arrow, size: 24),
             const SizedBox(width: 8),
-            Text(
-              lastTopic.isNotEmpty 
-                  ? 'Tiếp tục học chủ đề ${lastTopic.toUpperCase()}'
-                  : 'Bắt đầu học',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            Flexible(
+              child: Text(
+                (lastTopic.isNotEmpty || lastTopicName.isNotEmpty)
+                    ? 'Tiếp tục học chủ đề ${(lastTopicName.isNotEmpty ? lastTopicName : lastTopic).toUpperCase()}'
+                    : 'Bắt đầu học',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -1053,6 +1202,64 @@ class _HomeScreenState extends State<HomeScreen> {
           
           const SizedBox(height: 12),
           
+          // Source chip and quick link
+          Builder(
+            builder: (context) {
+              final source = (wordOfTheDay['source'] ?? 'topic').toString();
+              final topicId = (wordOfTheDay['topic'] ?? '').toString();
+              String sourceLabel;
+              switch (source) {
+                case 'review':
+                  sourceLabel = 'Đến hạn ôn tập';
+                  break;
+                case 'difficult':
+                  sourceLabel = 'Từ khó';
+                  break;
+                case 'topic':
+                  sourceLabel = 'Chủ đề đang học';
+                  break;
+                default:
+                  sourceLabel = 'Ngẫu nhiên';
+              }
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.purple[50],
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.purple[100]!),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline, size: 14, color: Colors.purple),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Nguồn: $sourceLabel',
+                          style: const TextStyle(fontSize: 12, color: Colors.purple),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (topicId.isNotEmpty)
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => TopicDetailScreen(topic: topicId),
+                          ),
+                        );
+                      },
+                      child: const Text('Mở chủ đề'),
+                    ),
+                ],
+              );
+            },
+          ),
+
+          const SizedBox(height: 12),
+
           // Example
           Container(
             padding: const EdgeInsets.all(12),

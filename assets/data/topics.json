@@ -1,15 +1,5 @@
 [
   {
-    "id": "greetings_introductions",
-    "name": "Greetings & Introductions",
-    "iconName": "waving_hand",
-    "colorHex": "#4CAF50",
-    "difficulty": 1,
-    "description": "Cách chào hỏi và giới thiệu bản thân",
-    "category": "communication",
-    "level": "BASIC"
-  },
-  {
     "id": "family_members",
     "name": "Family Members",
     "iconName": "family_restroom",
@@ -147,6 +137,16 @@
     "difficulty": 1,
     "description": "Cảm xúc cơ bản (happy, sad, tired...)",
     "category": "emotions",
+    "level": "BASIC"
+  },
+  {
+    "id": "greetings_introductions",
+    "name": "Greetings & Introductions",
+    "iconName": "waving_hand",
+    "colorHex": "#4CAF50",
+    "difficulty": 1,
+    "description": "Cách chào hỏi và giới thiệu bản thân",
+    "category": "communication",
     "level": "BASIC"
   },
   {

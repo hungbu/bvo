@@ -8,6 +8,7 @@ import 'package:bvo/repository/quiz_repository.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/screen/flashcard_screen.dart';
 import 'package:bvo/main.dart';
+import 'package:bvo/repository/topic_repository.dart';
 
 class TopicDetailScreen extends StatefulWidget {
   final String topic;
@@ -25,6 +26,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
   bool hasProgressChanged = false; // Track if progress changed
   final FlutterTts _flutterTts = FlutterTts();
   Set<String> _addedToQuizWords = {}; // Track words added to quiz
+  String _topicTitle = '';
 
   @override
   void initState() {
@@ -64,6 +66,14 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
     
     final progressRepo = UserProgressRepository();
     topicProgress = await progressRepo.getTopicProgress(widget.topic);
+
+    // Resolve topic display name from repository
+    try {
+      final topic = await TopicRepository().getTopicById(widget.topic);
+      _topicTitle = topic?.name ?? widget.topic;
+    } catch (_) {
+      _topicTitle = widget.topic;
+    }
     
     // Load individual word progress
     final wordProgressList = await progressRepo.getTopicWordsWithProgress(widget.topic);
@@ -117,7 +127,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
       },
       child: Scaffold(
       appBar: AppBar(
-        title: Text(widget.topic),
+        title: Text(_topicTitle.isEmpty ? widget.topic : _topicTitle),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
