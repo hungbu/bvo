@@ -6,7 +6,7 @@ import 'package:bvo/model/word.dart';
 import 'package:bvo/repository/word_repository.dart';
 import 'package:bvo/repository/quiz_repository.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
-import 'package:bvo/screen/flashcard_screen.dart';
+import 'package:bvo/screen/new_pair_flashcard_screen.dart';
 import 'package:bvo/main.dart';
 import 'package:bvo/repository/topic_repository.dart';
 
@@ -262,10 +262,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => FlashCardScreen(
+                    builder: (context) => NewPairFlashcardScreen(
                       topic: widget.topic,
-                      words: words,
-                      startIndex: 0, // Start from beginning
                     ),
                   ),
                 );

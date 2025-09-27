@@ -55,6 +55,11 @@ class _NewPairFlashcardScreenState extends State<NewPairFlashcardScreen> {
     _loadSession();
   }
 
+  void _log(String message) {
+    // ignore: avoid_print
+    print('[NewPairFC] $message');
+  }
+
   Future<void> _loadSession() async {
     setState(() { _isLoading = true; });
     final res = await _scheduler.selectSessionWords(topic: widget.topic, config: widget.config);
@@ -66,6 +71,7 @@ class _NewPairFlashcardScreenState extends State<NewPairFlashcardScreen> {
       _stage = 'learn';
       _sessionStart = DateTime.now();
     });
+    _log('Session loaded: topic=${widget.topic}, words=${_words.length}, stage=$_stage, pairStart=$_pairStartIndex, pairSize=$_pairSize');
     if (_words.isNotEmpty) {
       await _speak(_words.first.en);
     }
@@ -89,6 +95,7 @@ class _NewPairFlashcardScreenState extends State<NewPairFlashcardScreen> {
 
   void _flip() {
     setState(() { _flipped = true; });
+    _log('Flip card at index=$_currentIndex (stage=$_stage)');
   }
 
   Future<void> _checkAnswerRealtime() async {
@@ -109,6 +116,7 @@ class _NewPairFlashcardScreenState extends State<NewPairFlashcardScreen> {
     final correct = word.en.trim().toLowerCase().replaceAll('-', ' ');
     _attempts += 1;
     final ok = answer == correct;
+    _log('Check answer: idx=$_currentIndex pairStart=$_pairStartIndex stage=$_stage | "$answer" vs "$correct" => ${ok ? 'OK' : 'NG'}');
     await _progressRepository.updateWordProgress(widget.topic, word, ok);
     if (ok) {
       _correct += 1;
@@ -122,30 +130,43 @@ class _NewPairFlashcardScreenState extends State<NewPairFlashcardScreen> {
 
   void _next() {
     final pairEnd = (_pairStartIndex + _pairSize - 1).clamp(0, _words.length - 1);
+    _log('Next: stage=$_stage, currentIndex=$_currentIndex, pairStart=$_pairStartIndex, pairEnd=$pairEnd');
     if (_stage == 'learn') {
       if (_currentIndex < pairEnd) {
         setState(() { _flipped = false; });
+        _log('Learn advance within pair: ${_currentIndex} -> ${_currentIndex + 1}');
         _carouselController.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.linear);
       } else {
+        _log('Learn reached pair end. Switch to recall and jump back to pairStart=$_pairStartIndex');
         setState(() {
           _stage = 'recall';
           _feedback = '';
           _flipped = false;
+          _currentIndex = _pairStartIndex;
         });
         _controller.clear();
         _carouselController.animateToPage(_pairStartIndex, duration: const Duration(milliseconds: 200), curve: Curves.linear);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_words.isNotEmpty) {
+            _speak(_words[_currentIndex].en);
+          }
+          _inputFocusNode.requestFocus();
+        });
       }
     } else {
       if (_currentIndex < pairEnd) {
         setState(() { _flipped = false; });
         _controller.clear();
+        _log('Recall advance within pair: ${_currentIndex} -> ${_currentIndex + 1}');
         _carouselController.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.linear);
       } else {
         _pairStartIndex += _pairSize;
         if (_pairStartIndex >= _words.length) {
+          _log('Recall finished last pair. Finish session');
           _finishSession();
           return;
         }
+        _log('Recall finished pair. Move to next pairStart=$_pairStartIndex');
         setState(() {
           _stage = 'learn';
           _feedback = '';
@@ -232,6 +253,7 @@ class _NewPairFlashcardScreenState extends State<NewPairFlashcardScreen> {
                             viewportFraction: 0.8,
                             enableInfiniteScroll: false,
                             onPageChanged: (index, reason) {
+                              _log('onPageChanged: reason=$reason stage=$_stage from=$_currentIndex to=$index pairStart=$_pairStartIndex');
                               setState(() {
                                 if (_stage == 'learn') {
                                   final pairEnd = (_pairStartIndex + _pairSize - 1).clamp(0, _words.length - 1);
@@ -251,16 +273,14 @@ class _NewPairFlashcardScreenState extends State<NewPairFlashcardScreen> {
                                 _feedback = '';
                                 _flipped = false;
                               });
-
-                              if (_stage == 'learn') {
-                                final pairEnd = (_pairStartIndex + _pairSize - 1).clamp(0, _words.length - 1);
-                                if (_currentIndex >= pairEnd) {
-                                  setState(() { _stage = 'recall'; _feedback = ''; });
-                                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                                    _carouselController.animateToPage(_pairStartIndex, duration: const Duration(milliseconds: 150), curve: Curves.linear);
-                                  });
+                              // Auto speak whenever a card is shown (learn) or when quiz for a word is loaded (recall)
+                              if (_words.isNotEmpty) {
+                                _speak(_words[_currentIndex].en);
+                                if (_stage == 'recall') {
+                                  _inputFocusNode.requestFocus();
                                 }
                               }
+                              // Note: Auto-switch moved to Next button at pair end for smoother UX
                             },
                           ),
                           itemBuilder: (context, index, realIdx) {
@@ -306,57 +326,62 @@ class _NewPairFlashcardScreenState extends State<NewPairFlashcardScreen> {
 
   Widget _buildRecallInputs() {
     final pairEnd = (_pairStartIndex + _pairSize - 1).clamp(0, _words.length - 1);
-    final inputs = <Widget>[];
-    for (int i = _pairStartIndex; i <= pairEnd; i++) {
-      final active = i == _currentIndex;
-      inputs.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: Row(
-            children: [
-              Container(
-                width: 26,
-                height: 26,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: active ? Colors.green : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(6),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: List.generate(_pairSize, (offset) {
+              final i = _pairStartIndex + offset;
+              if (i > pairEnd) return const SizedBox.shrink();
+              final isDone = i < _currentIndex;
+              final isActive = i == _currentIndex;
+              final bg = isActive ? Colors.green : (isDone ? Colors.green[100] : Colors.grey[300]);
+              final fg = isActive ? Colors.white : Colors.black87;
+              return Padding(
+                padding: EdgeInsets.only(right: offset == 0 ? 8.0 : 0.0),
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
+                  child: Text('${offset + 1}', style: TextStyle(color: fg, fontWeight: FontWeight.bold, fontSize: 12)),
                 ),
-                child: Text('${(i - _pairStartIndex) + 1}', style: TextStyle(color: active ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 12)),
-              ),
-              const SizedBox(width: 8),
+              );
+            }),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
               Expanded(
                 child: TextField(
-                  controller: active ? _controller : TextEditingController(text: ''),
-                  focusNode: active ? _inputFocusNode : null,
-                  readOnly: !active,
+                  controller: _controller,
+                  focusNode: _inputFocusNode,
                   autocorrect: false,
                   enableSuggestions: false,
                   decoration: InputDecoration(
-                    labelText: active ? 'Nhập từ tiếng Anh #${(i - _pairStartIndex) + 1}' : 'Chờ... (#${(i - _pairStartIndex) + 1})',
+                    labelText: 'Nhập từ tiếng Anh #${(_currentIndex - _pairStartIndex) + 1}',
                     border: const OutlineInputBorder(),
                   ),
                   onSubmitted: (_) => _checkAnswer(),
                   onChanged: (_) => _checkAnswerRealtime(),
                 ),
               ),
-              const SizedBox(width: 10),
-              if (active) _buildNextButton(alwaysEnabled: _stage == 'learn'),
+              const SizedBox(width: 8),
+              _buildNextButton(alwaysEnabled: false),
             ],
           ),
-        ),
-      );
-    }
-    return Column(
-      children: [
-        ...inputs,
-        const SizedBox(height: 8),
-        if (_feedback.isNotEmpty)
-          Text(
-            _feedback,
-            style: TextStyle(color: _feedback == 'Correct!' ? Colors.green : Colors.orange, fontWeight: FontWeight.w600),
-          ),
-      ],
+          const SizedBox(height: 8),
+          if (_feedback.isNotEmpty)
+            Text(
+              _feedback,
+              style: TextStyle(
+                color: _feedback == 'Correct!' ? Colors.green : Colors.orange,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+        ],
+      ),
     );
   }
 
