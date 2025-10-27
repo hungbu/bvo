@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 import 'theme/purple_theme.dart';
@@ -10,12 +10,17 @@ import 'screen/splash_screen.dart';
 // import 'service/auth_service.dart';
 import 'service/notification_manager.dart';
 import 'service/notification_fix_service.dart';
-// import 'firebase_options.dart';
+import 'firebase_options.dart';
 
 // Global route observer for tracking navigation
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
-// Background messaging removed (offline app)
+// Background messaging handler
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print('Handling a background message: ${message.messageId}');
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +28,11 @@ void main() async {
   // Initialize timezone
   tz.initializeTimeZones();
   
-  // Firebase removed (offline app)
+  // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
+  // Set up background message handler
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   
   // Fix notification issues first
   await NotificationFixService.fixNotificationIssues();
@@ -47,9 +56,8 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    
-    // No auth: just delay splash then proceed
     _startSplashCountdown();
+    _setupFirebaseMessaging();
   }
 
   Future<void> _startSplashCountdown() async {
@@ -75,9 +83,48 @@ class _MyAppState extends State<MyApp> {
     print('📱 Notification system initialized with smart controls');
   }
 
+  Future<void> _setupFirebaseMessaging() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
 
+    // Request permission for notifications
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
 
+    print('User granted permission: ${settings.authorizationStatus}');
 
+    // Get the device token
+    String? token = await messaging.getToken();
+    print('FCM Token: $token');
+
+    // Handle foreground messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Got a message whilst in the foreground!');
+      print('Message data: ${message.data}');
+
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
+      }
+    });
+
+    // Handle messages when the app is opened from a terminated state
+    FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+      if (message != null) {
+        print('App opened from terminated state with message: ${message.messageId}');
+      }
+    });
+
+    // Handle interaction when the app is in the background but not terminated
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('App opened from background with message: ${message.messageId}');
+    });
+  }
 
 
   // This widget is the root of your application.
@@ -95,4 +142,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
