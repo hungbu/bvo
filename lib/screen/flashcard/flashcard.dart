@@ -83,9 +83,9 @@ class _FlashcardState extends State<Flashcard> {
 
   void _flipCard() {
     // Don't allow manual flip when parent has control
-    if (widget.isFlipped) {
-      return;
-    }
+    // if (widget.isFlipped) {
+    //   return;
+    // }
     
     // Flip local state
     setState(() {
@@ -121,9 +121,6 @@ class _FlashcardState extends State<Flashcard> {
     await _flutterTts.speak(widget.word.vi);
   }
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -137,7 +134,7 @@ class _FlashcardState extends State<Flashcard> {
             child: child,
           );
         },
-        child: (widget.isFlipped || _localIsFlipped)
+        child: _localIsFlipped
             ? _buildCardBack(widget.word)
             : _buildCardFront(widget.word),
       ),
@@ -146,7 +143,7 @@ class _FlashcardState extends State<Flashcard> {
 
   Widget _buildCardFront(Word word) {
     return Card(
-      key: const ValueKey('front'),
+      key: ValueKey('front-${widget.isFlipped}-$_localIsFlipped'),
       elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Center(
@@ -204,7 +201,7 @@ class _FlashcardState extends State<Flashcard> {
 
   Widget _buildCardBack(Word word) {
     return Card(
-      key: const ValueKey('back'),
+      key: ValueKey('back-${widget.isFlipped}-$_localIsFlipped'),
       elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
