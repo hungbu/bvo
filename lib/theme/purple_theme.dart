@@ -5,7 +5,7 @@ class PurpleTheme {
     return ThemeData(
       appBarTheme: AppBarTheme(
         backgroundColor:
-            ColorScheme.fromSeed(seedColor: Colors.deepPurple).inversePrimary,
+            Colors.deepPurple[800],
       ),
       colorScheme: ColorScheme.fromSeed(
         seedColor: Colors.deepPurple,

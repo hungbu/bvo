@@ -29,8 +29,8 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   // Danh sách title cho từng màn hình
   List<String> get _screenTitles => [
     'Home',
-    'Tất Cả Chủ Đề',
-    'Kiểm Tra & Ôn Tập',
+    'Chủ Đề',
+    'Ôn Tập',
     'Tài khoản',
   ];
 
@@ -72,7 +72,7 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _currentIndex == 0 ? null : AppBar(
+      appBar: AppBar(
         title: Text(_screenTitles[_currentIndex]),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,

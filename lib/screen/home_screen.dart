@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,9 @@ import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/service/notification_manager.dart';
 import 'package:bvo/screen/topic_detail_screen.dart';
 import 'package:bvo/service/difficult_words_service.dart';
+import 'package:bvo/screen/flashcard_screen.dart';
+import 'package:bvo/screen/quiz_game_screen.dart';
+import 'package:bvo/screen/smart_review_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int)? onTabChange;
@@ -33,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int streakDays = 0;
   int longestStreak = 0;
   int totalWordsLearned = 0;
+  int totalTargetWords = 1000; // Default target
   int dailyGoal = 10;
   int todayWordsLearned = 0;
   String lastTopic = "";
@@ -43,6 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
   // Topic groups structure
   List<Map<String, dynamic>> topicGroups = [];
   String currentActiveGroup = "Basic";
+  
+  // Recent words
+  List<Word> recentWords = [];
 
   @override
   void initState() {
@@ -50,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadDashboardData();
     _loadTopics();
     _loadReviewedWords();
+    _loadRecentWords();
   }
 
   Future<void> _loadDashboardData() async {
@@ -119,6 +128,11 @@ class _HomeScreenState extends State<HomeScreen> {
       // Calculate today's words learned
       todayWordsLearned = await _calculateTodayWordsLearned();
       
+      // Calculate total target words from topic groups
+      if (topicGroups.isNotEmpty) {
+        totalTargetWords = topicGroups.fold<int>(0, (sum, group) => sum + (group['targetWords'] as int));
+      }
+      
       // Save calculated values
       await prefs.setInt('total_words_learned', totalWordsLearned);
       await prefs.setInt('streak_days', streakDays);
@@ -140,6 +154,60 @@ class _HomeScreenState extends State<HomeScreen> {
       streakDays = prefs.getInt('streak_days') ?? 0;
       longestStreak = prefs.getInt('longest_streak') ?? 0;
       todayWordsLearned = prefs.getInt('today_words_learned') ?? 0;
+    }
+  }
+  
+  Future<void> _loadRecentWords() async {
+    try {
+      final allWords = await _wordRepository.getAllWords();
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Get all word progress keys
+      final allKeys = prefs.getKeys();
+      final wordKeys = allKeys.where((key) => 
+        key.startsWith('word_progress_')
+      ).toList();
+      
+      // Get words with lastReviewed data
+      final wordsWithReview = <Map<String, dynamic>>[];
+      for (final key in wordKeys) {
+        final progressJson = prefs.getString(key);
+        if (progressJson != null) {
+          final progress = Map<String, dynamic>.from(jsonDecode(progressJson));
+          final lastReviewedStr = progress['lastReviewed'];
+          if (lastReviewedStr != null) {
+            final topic = progress['topic'] ?? '';
+            final wordEn = progress['word'] ?? '';
+            Word? word;
+            try {
+              word = allWords.firstWhere(
+                (w) => w.en.toLowerCase() == wordEn.toString().toLowerCase() && w.topic == topic,
+              );
+            } catch (e) {
+              // Word not found, skip this entry
+              continue;
+            }
+            if (word != null) {
+              wordsWithReview.add({
+                'word': word,
+                'lastReviewed': DateTime.parse(lastReviewedStr),
+              });
+            }
+          }
+        }
+      }
+      
+      // Sort by lastReviewed descending (most recent first)
+      wordsWithReview.sort((a, b) => 
+        (b['lastReviewed'] as DateTime).compareTo(a['lastReviewed'] as DateTime)
+      );
+      
+      // Get top 3 recent words
+      setState(() {
+        recentWords = wordsWithReview.take(3).map((item) => item['word'] as Word).toList();
+      });
+    } catch (e) {
+      print('Error loading recent words: $e');
     }
   }
 
@@ -462,9 +530,17 @@ class _HomeScreenState extends State<HomeScreen> {
       // Determine current active group based on progress
       _determineActiveGroup();
       
+      // Update total target words
+      totalTargetWords = groups.fold<int>(0, (sum, group) => sum + (group['targetWords'] as int));
+      
       print('📊 Created ${groups.length} topic groups:');
       for (final group in groups) {
         print('  - ${group['name']}: ${group['learnedWords']}/${group['targetWords']} từ');
+      }
+      
+      // Refresh statistics to update totalTargetWords
+      if (mounted) {
+        setState(() {});
       }
       
     } catch (e) {
@@ -525,43 +601,24 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.deepPurple[800],
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Header with greeting and streak
-            _buildHeader(),
+            // 1. Tiến độ của bạn
+            _buildProgressSection(),
             
             const SizedBox(height: 24),
             
-            // 2. Overall Progress Circle
-            _buildOverallProgress(),
+            // 2. Bắt đầu học
+            _buildLearningActionsSection(),
             
             const SizedBox(height: 24),
             
-            // 3. Daily Goal Tracker
-            _buildDailyGoal(),
-            
-            const SizedBox(height: 24),
-            
-            // 4. Primary Action Button
-            _buildContinueLearningButton(),
-            
-            const SizedBox(height: 24),
-            
-            // 5. Recommended Topics
-            _buildRecommendedTopics(),
-            
-            const SizedBox(height: 24),
-            
-            // 6. Word of the Day
-            _buildWordOfTheDay(),
-            
-            const SizedBox(height: 24),
-            
-            // 7. Footer Stats
-            _buildFooterStats(),
+            // 3. Từ vựng gần đây
+            _buildRecentWordsSection(),
           ],
         ),
       ),
@@ -1540,5 +1597,455 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> refreshDashboard() async {
     await _loadDashboardData();
     await _loadReviewedWords();
+    await _loadRecentWords();
+  }
+  
+  // ==================== NEW UI WIDGETS ====================
+  
+  Widget _buildProgressSection() {
+    final progress = totalTargetWords > 0 ? totalWordsLearned / totalTargetWords : 0.0;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Tiến độ của bạn',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 16),
+        
+        // Total progress bar
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Tổng tiến độ',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
+              ),
+            ),
+            Text(
+              '$totalWordsLearned/$totalTargetWords',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        LinearProgressIndicator(
+          value: progress.clamp(0.0, 1.0),
+          backgroundColor: Colors.white.withOpacity(0.2),
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.purple[400]!),
+          minHeight: 8,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Two cards: Words mastered and Study streak
+        Row(
+          children: [
+            Expanded(
+              child: _buildProgressCard(
+                'Từ đã thuộc',
+                totalWordsLearned.toString(),
+                Icons.book,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildProgressCard(
+                'Chuỗi ngày học',
+                streakDays.toString(),
+                Icons.local_fire_department,
+                isStreak: true,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildProgressCard(String title, String value, IconData icon, {bool isStreak = false}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.white70,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              if (isStreak) const Text('🔥', style: TextStyle(fontSize: 20)),
+              if (isStreak) const SizedBox(width: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildLearningActionsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Bắt đầu học',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 16),
+        
+        // Flashcard button
+        _buildActionButton(
+          'Bắt đầu Flashcard',
+          'Học từ mới và ôn tập',
+          Icons.style,
+          Colors.purple[400]!,
+          onTap: () => _startFlashcard(),
+        ),
+        
+        const SizedBox(height: 12),
+        
+        // Quiz button
+        _buildActionButton(
+          'Làm bài Quiz',
+          'Kiểm tra kiến thức của bạn',
+          Icons.quiz,
+          Colors.purple[700]!,
+          onTap: () => _startQuiz(),
+        ),
+        
+        const SizedBox(height: 12),
+        
+        // Smart review button
+        _buildActionButton(
+          'Ôn tập thông minh',
+          'Gợi ý các từ bạn hay quên',
+          Icons.psychology,
+          Colors.purple[700]!,
+          onTap: () => _openSmartReview(),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildActionButton(String title, String subtitle, IconData icon, Color color, {required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildRecentWordsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Từ vựng gần đây',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                // TODO: Navigate to all recent words screen
+              },
+              child: Text(
+                'Xem tất cả',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.purple[300],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        
+        if (recentWords.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Center(
+              child: Text(
+                'Chưa có từ vựng gần đây',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          )
+        else
+          ...recentWords.map((word) => _buildRecentWordCard(word)),
+      ],
+    );
+  }
+  
+  Widget _buildRecentWordCard(Word word) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  word.en,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  word.pronunciation,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.7),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '- ${word.vi}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.volume_up, color: Colors.white),
+            onPressed: () {
+              // TODO: Play pronunciation
+            },
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // ==================== HELPER METHODS ====================
+  
+  /// Get next 10 words for flashcard (sorted by ID, excluding mastered words)
+  Future<List<Word>> _getNextFlashcardWords() async {
+    try {
+      final allWords = await _wordRepository.getAllWords();
+      final progressRepo = UserProgressRepository();
+      
+      // Filter out mastered words (reviewCount >= 10)
+      final nonMasteredWords = <Word>[];
+      for (final word in allWords) {
+        final progress = await progressRepo.getWordProgress(word.topic, word.en);
+        final reviewCount = progress['reviewCount'] ?? 0;
+        if (reviewCount < 10) {
+          nonMasteredWords.add(word);
+        }
+      }
+      
+      // Sort by ID (or use index if ID is null)
+      nonMasteredWords.sort((a, b) {
+        if (a.id != null && b.id != null) {
+          return a.id!.compareTo(b.id!);
+        }
+        return 0;
+      });
+      
+      // Get next 10 words
+      return nonMasteredWords.take(10).toList();
+    } catch (e) {
+      print('Error getting flashcard words: $e');
+      return [];
+    }
+  }
+  
+  /// Get words currently being learned for quiz (not mastered)
+  Future<List<Word>> _getQuizWords() async {
+    try {
+      final allWords = await _wordRepository.getAllWords();
+      final progressRepo = UserProgressRepository();
+      
+      // Get words that have been reviewed but not mastered
+      final learningWords = <Word>[];
+      for (final word in allWords) {
+        final progress = await progressRepo.getWordProgress(word.topic, word.en);
+        final reviewCount = progress['reviewCount'] ?? 0;
+        
+        // Include words that have been reviewed at least once but not mastered
+        if (reviewCount > 0 && reviewCount < 10) {
+          learningWords.add(word);
+        }
+      }
+      
+      return learningWords;
+    } catch (e) {
+      print('Error getting quiz words: $e');
+      return [];
+    }
+  }
+  
+  Future<void> _startFlashcard() async {
+    final words = await _getNextFlashcardWords();
+    if (words.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không có từ nào để học. Tất cả từ đã được thuộc!')),
+        );
+      }
+      return;
+    }
+    
+    // Group words by topic (use first topic as default)
+    final topic = words.first.topic;
+    
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FlashCardScreen(
+            words: words,
+            topic: topic,
+            startIndex: 0,
+          ),
+        ),
+      ).then((_) {
+        refreshDashboard();
+      });
+    }
+  }
+  
+  Future<void> _startQuiz() async {
+    final words = await _getQuizWords();
+    if (words.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không có từ nào để quiz. Hãy học thêm từ mới!')),
+        );
+      }
+      return;
+    }
+    
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => QuizGameScreen(
+            words: words,
+            title: 'Quiz từ đang học',
+          ),
+        ),
+      ).then((_) {
+        refreshDashboard();
+      });
+    }
+  }
+  
+  Future<void> _openSmartReview() async {
+    // Navigate to smart review screen
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SmartReviewScreen(),
+        ),
+      ).then((_) {
+        refreshDashboard();
+      });
+    }
   }
 }
