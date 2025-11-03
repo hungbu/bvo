@@ -178,20 +178,17 @@ class _HomeScreenState extends State<HomeScreen> {
           if (lastReviewedStr != null) {
             final topic = progress['topic'] ?? '';
             final wordEn = progress['word'] ?? '';
-            Word? word;
             try {
-              word = allWords.firstWhere(
+              final word = allWords.firstWhere(
                 (w) => w.en.toLowerCase() == wordEn.toString().toLowerCase() && w.topic == topic,
               );
-            } catch (e) {
-              // Word not found, skip this entry
-              continue;
-            }
-            if (word != null) {
               wordsWithReview.add({
                 'word': word,
                 'lastReviewed': DateTime.parse(lastReviewedStr),
               });
+            } catch (e) {
+              // Word not found, skip this entry
+              continue;
             }
           }
         }
@@ -1922,11 +1919,17 @@ class _HomeScreenState extends State<HomeScreen> {
   
   // ==================== HELPER METHODS ====================
   
-  /// Get next 10 words for flashcard (sorted by ID, excluding mastered words)
+  /// Get next 10 words for flashcard (sorted by ID/index, excluding mastered words)
   Future<List<Word>> _getNextFlashcardWords() async {
     try {
       final allWords = await _wordRepository.getAllWords();
       final progressRepo = UserProgressRepository();
+      
+      // Create a map to track original index for sorting
+      final wordIndexMap = <Word, int>{};
+      for (int i = 0; i < allWords.length; i++) {
+        wordIndexMap[allWords[i]] = i;
+      }
       
       // Filter out mastered words (reviewCount >= 10)
       final nonMasteredWords = <Word>[];
@@ -1938,12 +1941,16 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
       
-      // Sort by ID (or use index if ID is null)
+      // Sort by ID first, then by original index (maintain order from JSON array)
       nonMasteredWords.sort((a, b) {
+        // If both have IDs, sort by ID
         if (a.id != null && b.id != null) {
           return a.id!.compareTo(b.id!);
         }
-        return 0;
+        // Otherwise, maintain original order from JSON array
+        final indexA = wordIndexMap[a] ?? 0;
+        final indexB = wordIndexMap[b] ?? 0;
+        return indexA.compareTo(indexB);
       });
       
       // Get next 10 words

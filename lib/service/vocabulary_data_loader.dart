@@ -21,8 +21,8 @@ class VocabularyDataLoader {
       return _allWords!;
     }
 
-    // Load all topic word files under assets/data/word
-    print('getAllWords: loading from AssetManifest.json and assets/data/word/*.json');
+    // Load all topic word files under assets/data/1000
+    print('getAllWords: loading from AssetManifest.json and assets/data/1000/*.json');
     final words = await _loadAllTopicWordsFromAssets();
 
     // Sort by difficulty (ascending), then by English word (alphabetical)
@@ -198,12 +198,12 @@ class VocabularyDataLoader {
       }
 
       final assetPaths = candidateKeys
-          .where((key) => key.startsWith('assets/data/word/') && key.endsWith('.json'))
+          .where((key) => key.startsWith('assets/data/1000/') && key.endsWith('.json'))
           .toList()
             ..sort();
 
       if (assetPaths.isEmpty) {
-        print('No topic word JSON files found under assets/data/word/.');
+        print('No topic word JSON files found under assets/data/1000/.');
         return [];
       }
       print('Found \'${assetPaths.length}\' topic word files. First few: ' + (assetPaths.isNotEmpty ? assetPaths.take(5).join(', ') : '<none>'));
