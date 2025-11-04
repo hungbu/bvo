@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -12,6 +13,15 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin notifications = FlutterLocalNotificationsPlugin();
   final NotificationVocabularyService _vocabularyService = NotificationVocabularyService();
+
+  // Check if platform supports notifications
+  bool get _isNotificationSupported {
+    try {
+      return Platform.isAndroid || Platform.isIOS;
+    } catch (e) {
+      return false;
+    }
+  }
 
   // Notification IDs
   static const int morningReminderId = 1;
@@ -29,6 +39,11 @@ class NotificationService {
   static const int comebackEncouragementId = 11;
 
   Future<void> initialize() async {
+    if (!_isNotificationSupported) {
+      print('⚠️ Notifications not supported on this platform (${Platform.operatingSystem})');
+      return;
+    }
+
     // Android initialization
     const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('ic_notification');
     
@@ -85,6 +100,8 @@ class NotificationService {
 
   /// 1. Daily Learning Reminders
   Future<void> scheduleDailyReminders() async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     
     // Check if notifications are enabled
@@ -205,6 +222,8 @@ class NotificationService {
 
   /// 2. Streak Warning Notifications
   Future<void> checkAndScheduleStreakWarning() async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     final streakWarningEnabled = prefs.getBool('streak_warning_enabled') ?? true;
     
@@ -260,6 +279,8 @@ class NotificationService {
 
   /// 3. Due Words Alert
   Future<void> checkAndScheduleDueWordsAlert() async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     final dueWordsEnabled = prefs.getBool('due_words_enabled') ?? true;
     
@@ -300,6 +321,8 @@ class NotificationService {
 
   /// 4. Daily Goal Progress Notifications
   Future<void> checkAndScheduleGoalProgress() async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     final goalProgressEnabled = prefs.getBool('goal_progress_enabled') ?? true;
     
@@ -392,6 +415,11 @@ class NotificationService {
 
   /// Test notification immediately
   Future<void> sendTestNotification() async {
+    if (!_isNotificationSupported) {
+      print('⚠️ Notifications not supported on this platform');
+      return;
+    }
+    
     await notifications.show(
       999,
       'Test Notification',
@@ -430,6 +458,8 @@ class NotificationService {
 
   /// Run all notification checks (call this periodically)
   Future<void> runNotificationChecks() async {
+    if (!_isNotificationSupported) return;
+    
     final enabled = await areNotificationsEnabled();
     if (!enabled) return;
 
@@ -448,6 +478,8 @@ class NotificationService {
     required String achievementDescription,
     required String achievementType,
   }) async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     final achievementEnabled = prefs.getBool('achievement_enabled') ?? true;
     
@@ -501,6 +533,8 @@ class NotificationService {
 
   /// 6. Weekly Summary Notifications
   Future<void> scheduleWeeklySummary() async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     final weeklySummaryEnabled = prefs.getBool('weekly_summary_enabled') ?? true;
     
@@ -547,6 +581,8 @@ class NotificationService {
 
   /// 7. Streak Milestone Celebrations
   Future<void> showStreakMilestone(int streakDays) async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     final streakMilestoneEnabled = prefs.getBool('streak_milestone_enabled') ?? true;
     
@@ -597,6 +633,8 @@ class NotificationService {
 
   /// 8. Quiz Reminders (called only during evening review or manually)
   Future<void> checkAndScheduleQuizReminder() async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     final quizReminderEnabled = prefs.getBool('quiz_reminder_enabled') ?? true;
     
@@ -665,6 +703,8 @@ class NotificationService {
 
   /// 9. Comeback Encouragement
   Future<void> checkAndScheduleComebackEncouragement() async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     final comebackEnabled = prefs.getBool('comeback_enabled') ?? true;
     
@@ -775,6 +815,11 @@ class NotificationService {
 
   /// Test method để kiểm tra thông báo với từ vựng
   Future<void> testVocabularyNotifications() async {
+    if (!_isNotificationSupported) {
+      print('⚠️ Notifications not supported on this platform');
+      return;
+    }
+    
     print('🧪 Testing vocabulary notifications...');
     
     try {
@@ -827,6 +872,11 @@ class NotificationService {
   Future<void> showImmediateVocabularyNotification({
     required String timeOfDay, // 'morning', 'noon', 'evening'
   }) async {
+    if (!_isNotificationSupported) {
+      print('⚠️ Notifications not supported on this platform');
+      return;
+    }
+    
     try {
       dWord? word;
       String title;

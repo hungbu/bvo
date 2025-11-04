@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bvo/model/topic.dart';
 import 'package:bvo/service/topic_service.dart';
 import 'package:bvo/screen/topic_detail_screen.dart';
+import 'package:bvo/screen/topic_level_screen.dart';
 import 'package:bvo/main.dart';
 
 class TopicScreen extends StatefulWidget {
@@ -208,6 +209,28 @@ class _TopicScreenState extends State<TopicScreen> with RouteAware {
                     ),
                   )
                 : _buildTopicsByLevel(),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const TopicLevelScreen(),
+            ),
+          ).then((_) {
+            // Refresh data when returning
+            _refreshTopicsData();
+          });
+        },
+        backgroundColor: Theme.of(context).primaryColor,
+        icon: const Icon(Icons.layers, color: Colors.white),
+        label: const Text(
+          'Học theo Level',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }

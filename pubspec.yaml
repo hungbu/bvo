@@ -43,6 +43,14 @@ dependencies:
   convex_bottom_bar: ^3.2.0
   shared_preferences: ^2.0.15
   timezone: ^0.9.2
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  image_path: "assets/images/logo.png"
+  windows:
+    generate: true
+    image_path: "assets/images/logo.png"
+    icon_size: 48
 
 dev_dependencies:
   flutter_test:

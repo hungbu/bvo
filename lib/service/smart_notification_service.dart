@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'dart:math';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,6 +13,15 @@ class SmartNotificationService {
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
   final DifficultWordsService _difficultWordsService = DifficultWordsService();
 
+  // Check if platform supports notifications
+  bool get _isNotificationSupported {
+    try {
+      return Platform.isAndroid || Platform.isIOS;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Smart notification IDs
   static const int smartQuizReminderId = 100;
   static const int afterLearningQuizId = 101;
@@ -21,6 +31,11 @@ class SmartNotificationService {
 
   /// Initialize the smart notification service
   Future<void> initialize() async {
+    if (!_isNotificationSupported) {
+      print('⚠️ Smart notifications not supported on this platform (${Platform.operatingSystem})');
+      return;
+    }
+    
     // Schedule daily evening review check
     await _scheduleEveningReviewCheck();
     print('🤖 Smart Notification Service initialized');
@@ -28,6 +43,8 @@ class SmartNotificationService {
 
   /// Trigger after user completes a learning session (5-10 words)
   Future<void> triggerAfterLearningSession(int wordsLearned, String topic) async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     final lastPrompt = prefs.getString('last_after_learning_prompt');
     final now = DateTime.now();
@@ -53,6 +70,8 @@ class SmartNotificationService {
 
   /// Check for words that are about to be forgotten
   Future<void> checkForgettingWords() async {
+    if (!_isNotificationSupported) return;
+    
     try {
       final prefs = await SharedPreferences.getInstance();
       final today = DateTime.now();
@@ -82,6 +101,8 @@ class SmartNotificationService {
 
   /// Trigger streak motivation notification
   Future<void> triggerStreakMotivation() async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     final streakDays = prefs.getInt('streak_days') ?? 0;
     final lastQuizDate = prefs.getString('last_quiz_date');
@@ -398,6 +419,8 @@ class SmartNotificationService {
 
   /// Evening review check - called by scheduled notification
   Future<void> performEveningReviewCheck() async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     final lastQuizDate = prefs.getString('last_quiz_date');
     final today = DateTime.now();

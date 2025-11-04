@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'home_screen.dart';
-import 'topic_screen.dart';
+// import 'topic_screen.dart'; // Will be used later when switching back to topic-based learning
+import 'topic_level_screen.dart';
 import 'quiz_screen.dart';
 import 'profile_screen.dart';
 import '../service/notification_manager.dart';
@@ -21,16 +22,17 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   // Danh sách các màn hình được build dynamically để pass callback
   List<Widget> get _screens => [
     HomeScreen(onTabChange: (index) => setState(() => _currentIndex = index)), // Home - Dashboard & Overview
-    const TopicScreen(), // Topics - All topics list
-    const QuizScreen(), // Quiz - Review & Testing unlearned words
+    const TopicLevelScreen(), // Topics - Learning by Level (temporarily replacing TopicScreen)
+    // const TopicScreen(), // Topics - All topics list (will be used later)
+    //const QuizScreen(), // Quiz - Review & Testing unlearned words
     ProfileScreen(onRefreshCallback: (callback) => _profileRefreshCallback = callback), // Profile - Stats & Settings
   ];
 
   // Danh sách title cho từng màn hình
   List<String> get _screenTitles => [
     'Home',
-    'Chủ Đề',
-    'Ôn Tập',
+    'Học theo Level',
+    //'Ôn Tập',
     'Tài khoản',
   ];
 
@@ -101,7 +103,7 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
           items: const [
             TabItem(icon: Icons.home, title: 'Home'),
             TabItem(icon: Icons.topic, title: 'Chủ Đề'),
-            TabItem(icon: Icons.quiz, title: 'Kiểm Tra'),
+            //TabItem(icon: Icons.quiz, title: 'Kiểm Tra'),
             TabItem(icon: Icons.person, title: 'Tài khoản'),
           ],
           initialActiveIndex: 0,

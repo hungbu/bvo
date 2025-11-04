@@ -54,7 +54,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _startSplashCountdown() async {
     await _setupNotifications();
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 1500));
     setState(() {
       _isInitializing = false;
     });

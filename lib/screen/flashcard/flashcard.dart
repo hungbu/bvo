@@ -10,6 +10,7 @@ class Flashcard extends StatefulWidget {
   final Word word;
   final bool sessionHideEnglishText;
   final Function(String)? onAnswerSubmitted;
+  final VoidCallback? onMastered; // Callback when user marks word as mastered
   final bool isFlipped;
 
   const Flashcard({
@@ -17,6 +18,7 @@ class Flashcard extends StatefulWidget {
     required this.word,
     this.sessionHideEnglishText = false,
     this.onAnswerSubmitted,
+    this.onMastered,
     this.isFlipped = false,
   });
 
@@ -121,6 +123,56 @@ class _FlashcardState extends State<Flashcard> {
     await _flutterTts.speak(widget.word.vi);
   }
 
+  Future<void> _markAsMastered(Word word) async {
+    try {
+      // Get current progress
+      final currentProgress = await _progressRepository.getWordProgress(word.topic, word.en);
+      
+      // Update to mastered status (reviewCount = 5)
+      currentProgress['reviewCount'] = 5;
+      currentProgress['isLearned'] = true;
+      currentProgress['lastReviewed'] = DateTime.now().toIso8601String();
+      
+      // Save updated progress
+      await _progressRepository.saveWordProgress(word.topic, word.en, currentProgress);
+      
+      print('✅ FlashCard: Marked "${word.en}" as mastered (reviewCount = 5)');
+      
+      // Show success feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 8),
+              Text('Đã đánh dấu "${word.en}" là đã thuộc!'),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      
+      // Notify parent to enable Next button
+      if (widget.onMastered != null) {
+        widget.onMastered!();
+      }
+      
+      // No automatic card flipping - user must flip manually
+      
+    } catch (e) {
+      print('❌ Error marking word as mastered: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Có lỗi xảy ra khi đánh dấu từ'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -146,55 +198,133 @@ class _FlashcardState extends State<Flashcard> {
       key: ValueKey('front-${widget.isFlipped}-$_localIsFlipped'),
       elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Center(
-        child: SizedBox(
-          height: 160,
-          child: Column(
-            children: [
-              // Audio controls row
-              Row(
+      child: Stack(
+        children: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      _speakEnglish();
-                    },
-                    icon: const Icon(Icons.volume_up, size: 32),
-                    tooltip: 'Phát âm bình thường',
+                  // Audio controls row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          _speakEnglish();
+                        },
+                        icon: const Icon(Icons.volume_up, size: 28),
+                        tooltip: 'Phát âm bình thường',
+                        padding: const EdgeInsets.all(8),
+                        constraints: const BoxConstraints(),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        onPressed: () {
+                          _speakEnglishSlow();
+                        },
+                        icon: const Icon(Icons.hearing, size: 28),
+                        tooltip: 'Phát âm chậm',
+                        padding: const EdgeInsets.all(8),
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 16),
-                  IconButton(
-                    onPressed: () {
-                      _speakEnglishSlow();
-                    },
-                    icon: const Icon(Icons.hearing, size: 32),
-                    tooltip: 'Phát âm chậm',
+                  const SizedBox(height: 4),
+                  // English text (can be hidden)
+                  AnimatedOpacity(
+                    opacity: _showEnglishText ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      _showEnglishText ? word.en : '???',
+                      style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
+                  const SizedBox(height: 2),
+                  // Phonetic pronunciation
+                  AnimatedOpacity(
+                    opacity: _showEnglishText ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      _showEnglishText && word.pronunciation.isNotEmpty 
+                          ? '/${word.pronunciation}/' 
+                          : '',
+                      style: TextStyle(
+                        fontSize: 14, 
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.remove_red_eye_outlined, size: 18, color: Colors.grey[600]),
+                      const SizedBox(width: 6),
+                      Text(
+                        "Lượt xem: $_actualReviewCount",
+                        style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                      ),
+                    ],
+                  )
                 ],
               ),
-              const SizedBox(height: 16),
-              // English text (can be hidden)
-              AnimatedOpacity(
-                opacity: _showEnglishText ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 300),
-                child: Text(
-                  _showEnglishText ? word.en : '???',
-                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+          ),
+          // "Đã thuộc" button at top right
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () async {
+                  // Mark word as mastered
+                  await _markAsMastered(word);
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).primaryColor.withOpacity(0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle, size: 16, color: Colors.white),
+                      SizedBox(width: 4),
+                      Text(
+                        'Đã thuộc',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.remove_red_eye_outlined),
-                  const SizedBox(width: 8),
-                  Text("Lượt xem: $_actualReviewCount"),
-                ],
-              )
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

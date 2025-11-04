@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -8,6 +9,15 @@ class GamificationService {
   GamificationService._internal();
 
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+
+  // Check if platform supports notifications
+  bool get _isNotificationSupported {
+    try {
+      return Platform.isAndroid || Platform.isIOS;
+    } catch (e) {
+      return false;
+    }
+  }
 
   // Achievement notification IDs
   static const int achievementNotificationId = 200;
@@ -21,6 +31,8 @@ class GamificationService {
     double? accuracy,
     int? quizzesTaken,
   }) async {
+    if (!_isNotificationSupported) return;
+    
     final prefs = await SharedPreferences.getInstance();
     
     // Check various achievements
@@ -271,6 +283,8 @@ class GamificationService {
 
   /// Show encouragement notification for struggling users
   Future<void> showEncouragementNotification() async {
+    if (!_isNotificationSupported) return;
+    
     final encouragements = [
       {
         'title': '💪 Đừng bỏ cuộc!',

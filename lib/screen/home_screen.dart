@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bvo/model/word.dart';
 import 'package:bvo/model/topic.dart';
 import 'package:bvo/repository/word_repository.dart';
+import 'package:bvo/repository/quiz_repository.dart';
 import 'package:bvo/service/topic_service.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/service/notification_manager.dart';
@@ -115,22 +116,53 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _calculateRealStatistics() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
-      // Calculate total words learned from user progress
       final progressRepo = UserProgressRepository();
-      final userStats = await progressRepo.getUserStatistics();
-      totalWordsLearned = userStats['totalLearnedWords'] ?? 0;
       
-      // Use streak data from UserProgressRepository (consistent with ProfileScreen)
-      streakDays = userStats['streakDays'] ?? 0;
-      longestStreak = userStats['longestStreak'] ?? 0;
+      // Calculate total words learned by counting ALL words with reviewCount >= 5
+      // (Same approach as TopicLevelScreen)
+      final allWords = await _wordRepository.getAllWords();
+      int learnedCount = 0;
+      
+      print('📊 HomeScreen: Counting learned words from ${allWords.length} total words...');
+      
+      for (final word in allWords) {
+        final progress = await progressRepo.getWordProgress(word.topic, word.en);
+        final reviewCount = progress['reviewCount'] ?? 0;
+        if (reviewCount >= 5) {
+          learnedCount++;
+        }
+      }
+      
+      print('📊 HomeScreen: Found $learnedCount words with reviewCount >= 5');
+      
+      // Get streak data from UserProgressRepository
+      final userStats = await progressRepo.getUserStatistics();
       
       // Calculate today's words learned
-      todayWordsLearned = await _calculateTodayWordsLearned();
+      final todayWords = await _calculateTodayWordsLearned();
       
       // Calculate total target words from topic groups
+      int targetWords = totalTargetWords;
       if (topicGroups.isNotEmpty) {
-        totalTargetWords = topicGroups.fold<int>(0, (sum, group) => sum + (group['targetWords'] as int));
+        targetWords = topicGroups.fold<int>(0, (sum, group) => sum + (group['targetWords'] as int));
+      }
+      
+      // Update values and trigger UI refresh
+      if (mounted) {
+        setState(() {
+          totalWordsLearned = learnedCount; // Use directly counted value
+          streakDays = userStats['streakDays'] ?? 0;
+          longestStreak = userStats['longestStreak'] ?? 0;
+          todayWordsLearned = todayWords;
+          totalTargetWords = targetWords;
+        });
+      } else {
+        // If widget is not mounted, just update values without setState
+        totalWordsLearned = learnedCount;
+        streakDays = userStats['streakDays'] ?? 0;
+        longestStreak = userStats['longestStreak'] ?? 0;
+        todayWordsLearned = todayWords;
+        totalTargetWords = targetWords;
       }
       
       // Save calculated values
@@ -140,20 +172,30 @@ class _HomeScreenState extends State<HomeScreen> {
       await prefs.setInt('today_words_learned', todayWordsLearned);
       
       // Debug info
-      print('📊 HomePage Stats:');
+      print('📊 HomePage Stats (Updated - Direct Count):');
       print('  - Current Streak: $streakDays days');
       print('  - Longest Streak: $longestStreak days');
-      print('  - Total Words Learned: $totalWordsLearned');
+      print('  - Total Words Learned (reviewCount >= 5): $totalWordsLearned');
       print('  - Today Words Learned: $todayWordsLearned');
+      print('  - Total Target Words: $totalTargetWords');
       
     } catch (e) {
       print('Error calculating statistics: $e');
       // Fallback to saved values or defaults
       final prefs = await SharedPreferences.getInstance();
-      totalWordsLearned = prefs.getInt('total_words_learned') ?? 0;
-      streakDays = prefs.getInt('streak_days') ?? 0;
-      longestStreak = prefs.getInt('longest_streak') ?? 0;
-      todayWordsLearned = prefs.getInt('today_words_learned') ?? 0;
+      if (mounted) {
+        setState(() {
+          totalWordsLearned = prefs.getInt('total_words_learned') ?? 0;
+          streakDays = prefs.getInt('streak_days') ?? 0;
+          longestStreak = prefs.getInt('longest_streak') ?? 0;
+          todayWordsLearned = prefs.getInt('today_words_learned') ?? 0;
+        });
+      } else {
+        totalWordsLearned = prefs.getInt('total_words_learned') ?? 0;
+        streakDays = prefs.getInt('streak_days') ?? 0;
+        longestStreak = prefs.getInt('longest_streak') ?? 0;
+        todayWordsLearned = prefs.getInt('today_words_learned') ?? 0;
+      }
     }
   }
   
@@ -598,7 +640,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.deepPurple[800],
+      backgroundColor: Colors.grey[100],
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -1592,9 +1634,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Method to refresh dashboard when returning from other screens
   Future<void> refreshDashboard() async {
+    print('🔄 HomeScreen: Refreshing dashboard after flashcard session...');
     await _loadDashboardData();
     await _loadReviewedWords();
     await _loadRecentWords();
+    
+    // Force UI refresh
+    if (mounted) {
+      setState(() {
+        // This will trigger rebuild of all widgets, including flashcard button
+      });
+    }
+    print('✅ HomeScreen: Dashboard refreshed');
   }
   
   // ==================== NEW UI WIDGETS ====================
@@ -1610,39 +1661,57 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Colors.black87,
           ),
         ),
         const SizedBox(height: 16),
         
-        // Total progress bar
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Tổng tiến độ',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white70,
+        // Total progress bar card
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
               ),
-            ),
-            Text(
-              '$totalWordsLearned/$totalTargetWords',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            ],
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Tổng tiến độ',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  Text(
+                    '$totalWordsLearned/$totalTargetWords từ',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        LinearProgressIndicator(
-          value: progress.clamp(0.0, 1.0),
-          backgroundColor: Colors.white.withOpacity(0.2),
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.purple[400]!),
-          minHeight: 8,
-          borderRadius: BorderRadius.circular(4),
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                value: progress.clamp(0.0, 1.0),
+                backgroundColor: Colors.grey[200],
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                minHeight: 8,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ],
+          ),
         ),
         
         const SizedBox(height: 16),
@@ -1676,22 +1745,35 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.white70,
-            ),
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: isStreak ? Colors.orange : Theme.of(context).primaryColor,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           Row(
@@ -1700,10 +1782,10 @@ class _HomeScreenState extends State<HomeScreen> {
               if (isStreak) const SizedBox(width: 4),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: isStreak ? Colors.orange : Theme.of(context).primaryColor,
                 ),
               ),
             ],
@@ -1722,7 +1804,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Colors.black87,
           ),
         ),
         const SizedBox(height: 16),
@@ -1732,7 +1814,6 @@ class _HomeScreenState extends State<HomeScreen> {
           'Bắt đầu Flashcard',
           'Học từ mới và ôn tập',
           Icons.style,
-          Colors.purple[400]!,
           onTap: () => _startFlashcard(),
         ),
         
@@ -1743,7 +1824,6 @@ class _HomeScreenState extends State<HomeScreen> {
           'Làm bài Quiz',
           'Kiểm tra kiến thức của bạn',
           Icons.quiz,
-          Colors.purple[700]!,
           onTap: () => _startQuiz(),
         ),
         
@@ -1754,14 +1834,13 @@ class _HomeScreenState extends State<HomeScreen> {
           'Ôn tập thông minh',
           'Gợi ý các từ bạn hay quên',
           Icons.psychology,
-          Colors.purple[700]!,
           onTap: () => _openSmartReview(),
         ),
       ],
     );
   }
   
-  Widget _buildActionButton(String title, String subtitle, IconData icon, Color color, {required VoidCallback onTap}) {
+  Widget _buildActionButton(String title, String subtitle, IconData icon, {required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -1769,12 +1848,23 @@ class _HomeScreenState extends State<HomeScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Theme.of(context).primaryColor.withOpacity(0.3),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.white, size: 24),
+            Icon(icon, color: Theme.of(context).primaryColor, size: 24),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -1785,7 +1875,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -1793,13 +1883,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     subtitle,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.grey[600],
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+            Icon(Icons.arrow_forward_ios, color: Theme.of(context).primaryColor, size: 16),
           ],
         ),
       ),
@@ -1818,7 +1908,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Colors.black87,
               ),
             ),
             TextButton(
@@ -1829,7 +1919,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 'Xem tất cả',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.purple[300],
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
             ),
@@ -1841,14 +1931,21 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: const Center(
+            child: Center(
               child: Text(
                 'Chưa có từ vựng gần đây',
                 style: TextStyle(
-                  color: Colors.white70,
+                  color: Colors.grey[600],
                   fontSize: 14,
                 ),
               ),
@@ -1865,12 +1962,15 @@ class _HomeScreenState extends State<HomeScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -1883,31 +1983,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  word.pronunciation,
+                  word.pronunciation.isNotEmpty ? '/${word.pronunciation}/' : '',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.grey[600],
                     fontStyle: FontStyle.italic,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '- ${word.vi}',
+                  word.vi,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.grey[700],
                   ),
                 ),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.volume_up, color: Colors.white),
+            icon: Icon(Icons.volume_up, color: Theme.of(context).primaryColor),
             onPressed: () {
               // TODO: Play pronunciation
             },
@@ -1925,21 +2025,31 @@ class _HomeScreenState extends State<HomeScreen> {
       final allWords = await _wordRepository.getAllWords();
       final progressRepo = UserProgressRepository();
       
+      print('🎯 HomeScreen: Total words in repository: ${allWords.length}');
+      
       // Create a map to track original index for sorting
       final wordIndexMap = <Word, int>{};
       for (int i = 0; i < allWords.length; i++) {
         wordIndexMap[allWords[i]] = i;
       }
       
-      // Filter out mastered words (reviewCount >= 10)
+      // Filter out mastered words (reviewCount >= 5 = đã thuộc)
       final nonMasteredWords = <Word>[];
+      final masteredWords = <String>[];
+      
       for (final word in allWords) {
         final progress = await progressRepo.getWordProgress(word.topic, word.en);
         final reviewCount = progress['reviewCount'] ?? 0;
-        if (reviewCount < 10) {
+        
+        if (reviewCount < 5) {
           nonMasteredWords.add(word);
+        } else {
+          masteredWords.add(word.en);
         }
       }
+      
+      print('🎯 HomeScreen: Non-mastered words: ${nonMasteredWords.length}');
+      print('🎯 HomeScreen: Mastered words (filtered out): ${masteredWords.length}');
       
       // Sort by ID first, then by original index (maintain order from JSON array)
       nonMasteredWords.sort((a, b) {
@@ -1954,7 +2064,10 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       
       // Get next 10 words
-      return nonMasteredWords.take(10).toList();
+      final flashcardWords = nonMasteredWords.take(10).toList();
+      print('🎯 HomeScreen: Flashcard words to show: ${flashcardWords.length}');
+      
+      return flashcardWords;
     } catch (e) {
       print('Error getting flashcard words: $e');
       return [];
@@ -1964,22 +2077,52 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Get words currently being learned for quiz (not mastered)
   Future<List<Word>> _getQuizWords() async {
     try {
-      final allWords = await _wordRepository.getAllWords();
+      final quizRepo = QuizRepository();
       final progressRepo = UserProgressRepository();
       
-      // Get words that have been reviewed but not mastered
+      // Lấy từ đã add vào quiz (từ QuizRepository)
+      final quizWords = await quizRepo.getQuizWords();
+      
+      // Lấy từ đang học (từ UserProgressRepository)
+      final allWords = await _wordRepository.getAllWords();
       final learningWords = <Word>[];
       for (final word in allWords) {
         final progress = await progressRepo.getWordProgress(word.topic, word.en);
         final reviewCount = progress['reviewCount'] ?? 0;
         
-        // Include words that have been reviewed at least once but not mastered
-        if (reviewCount > 0 && reviewCount < 10) {
+        // Include words that have been reviewed at least once but not mastered (< 5)
+        if (reviewCount > 0 && reviewCount < 5) {
           learningWords.add(word);
         }
       }
       
-      return learningWords;
+      // Combine: Quiz words first, then learning words (avoid duplicates)
+      final combinedWords = <Word>[];
+      final addedKeys = <String>{};
+      
+      // Add quiz words first (priority)
+      for (final word in quizWords) {
+        final key = '${word.topic}_${word.en}';
+        if (!addedKeys.contains(key)) {
+          combinedWords.add(word);
+          addedKeys.add(key);
+        }
+      }
+      
+      // Add learning words (avoid duplicates)
+      for (final word in learningWords) {
+        final key = '${word.topic}_${word.en}';
+        if (!addedKeys.contains(key)) {
+          combinedWords.add(word);
+          addedKeys.add(key);
+        }
+      }
+      
+      print('📝 Quiz: ${quizWords.length} words from Quiz Repository');
+      print('📝 Learning: ${learningWords.length} words from Progress');
+      print('📝 Total: ${combinedWords.length} unique words for quiz');
+      
+      return combinedWords;
     } catch (e) {
       print('Error getting quiz words: $e');
       return [];
@@ -1988,14 +2131,20 @@ class _HomeScreenState extends State<HomeScreen> {
   
   Future<void> _startFlashcard() async {
     final words = await _getNextFlashcardWords();
+    
     if (words.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Không có từ nào để học. Tất cả từ đã được thuộc!')),
+          const SnackBar(
+            content: Text('🎉 Không có từ nào để học. Tất cả từ đã được thuộc!'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
       return;
     }
+    
+    print('🎯 HomeScreen: Starting flashcard with ${words.length} words');
     
     // Group words by topic (use first topic as default)
     final topic = words.first.topic;
@@ -2010,8 +2159,9 @@ class _HomeScreenState extends State<HomeScreen> {
             startIndex: 0,
           ),
         ),
-      ).then((_) {
-        refreshDashboard();
+      ).then((_) async {
+        // Refresh dashboard to reload flashcard word list
+        await refreshDashboard();
       });
     }
   }

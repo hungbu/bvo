@@ -103,27 +103,12 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   }
 
   Future<void> loadWords() async {
-    List<String>? savedWordsJson = _prefs.getStringList('words_${widget.topic}');
-    if (savedWordsJson != null) {
-      widget.words.clear();
-      for (var wordJson in savedWordsJson) {
-        widget.words.add(Word.fromJson(jsonDecode(wordJson)));
-      }
-      _sortWordsByDifficulty();
-    } else {
-      _sortWordsByDifficulty();
-      await saveWords();
-    }
-  }
-
-  void _sortWordsByDifficulty() {
-    widget.words.sort((a, b) {
-      int difficultyComparison = a.difficulty.compareTo(b.difficulty);
-      if (difficultyComparison != 0) {
-        return difficultyComparison;
-      }
-      return a.en.toLowerCase().compareTo(b.en.toLowerCase());
-    });
+    // DON'T reload from SharedPreferences - use the filtered list passed to this screen
+    // This preserves the filtering (e.g., removing mastered words) done before launching FlashCardScreen
+    print('📚 FlashCardScreen: Using ${widget.words.length} words passed to screen (already filtered)');
+    
+    // Don't sort - maintain the order from the caller (already sorted if needed)
+    // Sorting by alphabet would put mastered words like "a" at the beginning
   }
 
   Future<void> saveWords() async {
@@ -727,9 +712,16 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         return Flashcard(
           word: _currentWords[index],
           sessionHideEnglishText: _sessionHideEnglishText,
-          isFlipped: index == _currentIndex ? _isCardFlipped : false,
+          //isFlipped: index == _currentIndex ? _isCardFlipped : false,
           onAnswerSubmitted: (answer) {
             _checkAnswer();
+          },
+          onMastered: () {
+            // Enable Next button when word is marked as mastered
+            setState(() {
+              _isCardFlipped = true;
+            });
+            print('✅ Word marked as mastered - Next button enabled');
           },
         );
       },
@@ -743,6 +735,8 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         children: [
           Row(
             children: [
+              _buildPreviousButton(),
+              const SizedBox(width: 8),
               Expanded(
                 child: TextField(
                   controller: _controller,
@@ -759,8 +753,8 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                   onChanged: (value) => _checkAnswerRealtime(),
                 ),
               ),
-              const SizedBox(width: 10),
-              _buildPreviousButton(),
+              
+              
               const SizedBox(width: 8),
               _buildNextButton(),
             ],
