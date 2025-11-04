@@ -1,0 +1,1164 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../model/practice_question.dart';
+import '../repository/practice_repository.dart';
+
+class PracticeScreen extends StatefulWidget {
+  const PracticeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<PracticeScreen> createState() => _PracticeScreenState();
+}
+
+class _PracticeScreenState extends State<PracticeScreen> {
+  final PracticeRepository _repository = PracticeRepository();
+  List<PracticeQuestion> _questions = [];
+  Map<String, List<String>> _userAnswers = {};
+  Map<String, bool> _submittedResults = {}; // Track if question has been submitted
+  Map<String, bool> _isCorrect = {}; // Track if answer is correct
+  bool _allQuestionsSubmitted = false; // Track if all questions have been submitted
+  int _currentQuestionIndex = 0;
+  bool _isLoading = true;
+  
+  // For question input
+  final TextEditingController _questionInputController = TextEditingController();
+  final ScrollController _inputScrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  @override
+  void dispose() {
+    _questionInputController.dispose();
+    _inputScrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final questions = await _repository.loadQuestions();
+      final answers = await _repository.loadAllAnswers();
+      
+      setState(() {
+        _questions = questions;
+        _userAnswers = answers;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading data: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _parseAndAddQuestions(String text) async {
+    final lines = text.split('\n');
+    final List<PracticeQuestion> newQuestions = [];
+    final List<String> parseErrors = [];
+    
+    String currentQuestion = '';
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i].trim();
+      
+      if (line.startsWith('[q]')) {
+        // If we have a previous question, save it
+        if (currentQuestion.isNotEmpty) {
+          final questionId = DateTime.now().millisecondsSinceEpoch.toString() + '_${newQuestions.length}';
+          final question = PracticeQuestion.parseFromText(currentQuestion, questionId);
+          if (question != null) {
+            newQuestions.add(question);
+          } else {
+            parseErrors.add('Question ${newQuestions.length + 1} (line ${i + 1}): Failed to parse');
+          }
+        }
+        currentQuestion = line;
+      } else if (line.startsWith('[a]')) {
+        currentQuestion += '\n' + line;
+      } else if (currentQuestion.isNotEmpty && line.isNotEmpty) {
+        // Add non-empty lines to current question
+        currentQuestion += '\n' + line;
+      }
+      // Skip empty lines if we're already building a question
+    }
+    
+    // Don't forget the last question
+    if (currentQuestion.isNotEmpty) {
+      final questionId = DateTime.now().millisecondsSinceEpoch.toString() + '_${newQuestions.length}';
+      final question = PracticeQuestion.parseFromText(currentQuestion, questionId);
+      if (question != null) {
+        newQuestions.add(question);
+      } else {
+        parseErrors.add('Question ${newQuestions.length + 1}: Failed to parse');
+      }
+    }
+    
+    if (newQuestions.isEmpty) {
+      if (mounted) {
+        final errorMsg = parseErrors.isNotEmpty 
+            ? 'No valid questions found. Errors: ${parseErrors.join(", ")}'
+            : 'No valid questions found in the input. Please check the format.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMsg), duration: const Duration(seconds: 5)),
+        );
+      }
+      return;
+    }
+    
+    // Add to existing questions
+    final updatedQuestions = [..._questions, ...newQuestions];
+    await _repository.saveQuestions(updatedQuestions);
+    
+    setState(() {
+      _questions = updatedQuestions;
+    });
+    
+    _questionInputController.clear();
+    
+    if (mounted) {
+      String message = 'Added ${newQuestions.length} question(s)';
+      if (parseErrors.isNotEmpty) {
+        message += ' (${parseErrors.length} failed to parse)';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
+      );
+    }
+  }
+
+  Future<void> _loadFromFile() async {
+    // For file picker, we'll use a simple dialog to input file path
+    // In a real app, you'd use file_picker package
+    final TextEditingController pathController = TextEditingController();
+    
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Load from File'),
+        content: TextField(
+          controller: pathController,
+          decoration: const InputDecoration(
+            hintText: 'Enter file path or paste content',
+            labelText: 'File Path',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, pathController.text),
+            child: const Text('Load'),
+          ),
+        ],
+      ),
+    );
+    
+    if (result != null && result.isNotEmpty) {
+      try {
+        final file = File(result);
+        if (await file.exists()) {
+          final content = await file.readAsString();
+          await _parseAndAddQuestions(content);
+        } else {
+          // Treat as text content directly
+          await _parseAndAddQuestions(result);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error loading file: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _saveAnswer(String questionId, List<String> answers) async {
+    await _repository.saveAnswer(questionId, answers);
+    setState(() {
+      _userAnswers[questionId] = answers;
+      // Clear submission if answer is changed after submission
+      if (_submittedResults.containsKey(questionId)) {
+        _submittedResults.remove(questionId);
+        _isCorrect.remove(questionId);
+        _allQuestionsSubmitted = false;
+      }
+    });
+  }
+
+  Future<void> _clearAnswer(String questionId) async {
+    await _repository.clearAnswer(questionId);
+    setState(() {
+      _userAnswers.remove(questionId);
+      _submittedResults.remove(questionId);
+      _isCorrect.remove(questionId);
+      _allQuestionsSubmitted = false;
+    });
+  }
+
+  bool _areAllQuestionsAnswered() {
+    if (_questions.isEmpty) return false;
+    for (final question in _questions) {
+      final userAnswer = _userAnswers[question.id] ?? [];
+      if (userAnswer.isEmpty) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _checkAnswerForQuestion(PracticeQuestion question) {
+    final userAnswer = _userAnswers[question.id] ?? [];
+    
+    if (userAnswer.isEmpty) {
+      return false;
+    }
+    
+    bool isCorrect = false;
+    
+    switch (question.type) {
+      case QuestionType.fillToSentence:
+        // For fill-to-sentence, check if each blank is filled correctly
+        // The correct answer should match the first blank position
+        if (userAnswer.isNotEmpty && question.correctAnswers.isNotEmpty) {
+          // Check if the first answer matches (case-insensitive)
+          isCorrect = userAnswer[0].trim().toLowerCase() == 
+                     question.correctAnswers[0].trim().toLowerCase();
+          
+          // If there are multiple blanks, check all of them
+          if (question.correctAnswers.length > 1 && userAnswer.length > 1) {
+            isCorrect = true;
+            for (int i = 0; i < question.correctAnswers.length && i < userAnswer.length; i++) {
+              if (userAnswer[i].trim().toLowerCase() != 
+                  question.correctAnswers[i].trim().toLowerCase()) {
+                isCorrect = false;
+                break;
+              }
+            }
+            // Also check if the number of answers matches
+            if (userAnswer.length != question.correctAnswers.length) {
+              isCorrect = false;
+            }
+          }
+        }
+        break;
+        
+      case QuestionType.chooseOne:
+        // For single answer, check if user answer matches (case-insensitive)
+        if (userAnswer.length == 1 && question.correctAnswers.length == 1) {
+          isCorrect = userAnswer[0].trim().toLowerCase() == 
+                     question.correctAnswers[0].trim().toLowerCase();
+        }
+        break;
+        
+      case QuestionType.chooseMulti:
+        // For multiple answers, check if all correct answers are selected and no extra
+        final userAnswerSet = userAnswer.map((a) => a.trim().toLowerCase()).toSet();
+        final correctAnswerSet = question.correctAnswers.map((a) => a.trim().toLowerCase()).toSet();
+        isCorrect = userAnswerSet.length == correctAnswerSet.length &&
+                   userAnswerSet.every((ans) => correctAnswerSet.contains(ans));
+        break;
+        
+      case QuestionType.answerText:
+        // For text answers, do case-insensitive comparison
+        // Also check if the answer contains the correct answer (for partial matches)
+        final userText = userAnswer.first.trim().toLowerCase();
+        final correctText = question.correctAnswers.first.trim().toLowerCase();
+        
+        // Exact match or contains the key parts
+        isCorrect = userText == correctText || 
+                   userText.contains(correctText) ||
+                   correctText.contains(userText);
+        
+        // For text editor, we can also check if it matches the example pattern
+        // Remove example text if present (e.g., "(My name is ...) - Example: Alice")
+        final cleanCorrect = correctText.split('-')[0].split('(')[0].trim();
+        if (cleanCorrect.isNotEmpty) {
+          isCorrect = isCorrect || userText.contains(cleanCorrect);
+        }
+        break;
+    }
+    
+    return isCorrect;
+  }
+
+  Future<void> _submitAllQuestions() async {
+    // Check all answers
+    int correctCount = 0;
+    int totalCount = _questions.length;
+    
+    for (final question in _questions) {
+      final isCorrect = _checkAnswerForQuestion(question);
+      _submittedResults[question.id] = true;
+      _isCorrect[question.id] = isCorrect;
+      if (isCorrect) {
+        correctCount++;
+      }
+    }
+    
+    setState(() {
+      _allQuestionsSubmitted = true;
+    });
+    
+    // Show results dialog
+    if (mounted) {
+      await _showResultsDialog(correctCount, totalCount);
+    }
+  }
+
+  Future<void> _showResultsDialog(int correctCount, int totalCount) async {
+    final percentage = (correctCount / totalCount * 100).round();
+    final resultColor = percentage >= 70 ? Colors.green : percentage >= 50 ? Colors.orange : Colors.red;
+    
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Practice Results'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              percentage >= 70 ? Icons.celebration : 
+              percentage >= 50 ? Icons.sentiment_satisfied : 
+              Icons.sentiment_dissatisfied,
+              size: 64,
+              color: resultColor,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '$correctCount / $totalCount',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: resultColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '$percentage% Correct',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: resultColor,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              percentage >= 70 ? 'Excellent work! 🎉' :
+              percentage >= 50 ? 'Good job! Keep practicing!' :
+              'Keep practicing! You\'ll improve! 💪',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Reset to first question for review
+              setState(() {
+                _currentQuestionIndex = 0;
+              });
+            },
+            child: const Text('Review Answers'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Practice Exercises'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          TextButton(
+            child: const Text('+ Add Questions', style: TextStyle(color: Colors.white),),
+            onPressed: () => _showAddQuestionsDialog(context),
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _buildPracticeTab(),
+    );
+  }
+
+  Future<void> _showAddQuestionsDialog(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: const Text('Add Questions'),
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: Colors.white,
+            elevation: 0,
+          ),
+          body: _buildAddQuestionsTab(),
+        ),
+        fullscreenDialog: true,
+      ),
+    );
+  }
+
+  Widget _buildAddQuestionsTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Top section: List of questions (left) and Format (right)
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left: List of current questions
+                Expanded(
+                  flex: 1,
+                  child: Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Current Questions',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              if (_questions.isNotEmpty)
+                                TextButton.icon(
+                                  onPressed: () async {
+                                    await _repository.clearAllQuestions();
+                                    await _repository.clearAllAnswers();
+                                    await _loadData();
+                                  },
+                                  icon: const Icon(Icons.delete_outline, size: 18),
+                                  label: const Text('Clear All'),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: _questions.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.quiz_outlined, size: 48, color: Colors.grey[400]),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'No questions added yet',
+                                        style: TextStyle(color: Colors.grey[600]),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : ListView.builder(
+                                  itemCount: _questions.length,
+                                  itemBuilder: (context, index) {
+                                    final question = _questions[index];
+                                    return ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundColor: Theme.of(context).primaryColor,
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: const TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                      title: Text(
+                                        question.questionText.length > 50
+                                            ? '${question.questionText.substring(0, 50)}...'
+                                            : question.questionText,
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                      subtitle: Text(
+                                        question.type.name.toUpperCase(),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.delete_outline, size: 20),
+                                        color: Colors.red,
+                                        onPressed: () async {
+                                          final updatedQuestions = List<PracticeQuestion>.from(_questions);
+                                          updatedQuestions.removeAt(index);
+                                          await _repository.saveQuestions(updatedQuestions);
+                                          await _loadData();
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                        if (_questions.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(
+                              'Total: ${_questions.length} question(s)',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green[700],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Right: Question Format
+                Expanded(
+                  flex: 1,
+                  child: Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: const Text(
+                            'Question Format',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // 1. Fill to sentence
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('1. Fill to sentence:'),
+                                    IconButton(
+                                      icon: const Icon(Icons.copy, size: 18),
+                                      tooltip: 'Copy format',
+                                      onPressed: () {
+                                        Clipboard.setData(const ClipboardData(
+                                          text: '[q] sentence (1) content, sentence (2) ...\n[a][right-answer][item1, item2, ...]',
+                                        ));
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Format copied!'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                SelectableText(
+                                  '[q] sentence (1) content, sentence (2) ...\n[a][right-answer][item1, item2, ...]',
+                                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                                ),
+                                const SizedBox(height: 16),
+                                // 2. Choose 1 right answer
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('2. Choose 1 right answer:'),
+                                    IconButton(
+                                      icon: const Icon(Icons.copy, size: 18),
+                                      tooltip: 'Copy format',
+                                      onPressed: () {
+                                        Clipboard.setData(const ClipboardData(
+                                          text: '[q] question text\n[a][right-answer][item1, item2, ...]',
+                                        ));
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Format copied!'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                SelectableText(
+                                  '[q] question text\n[a][right-answer][item1, item2, ...]',
+                                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                                ),
+                                const SizedBox(height: 16),
+                                // 3. Choose multiple right answers
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('3. Choose multiple right answers:'),
+                                    IconButton(
+                                      icon: const Icon(Icons.copy, size: 18),
+                                      tooltip: 'Copy format',
+                                      onPressed: () {
+                                        Clipboard.setData(const ClipboardData(
+                                          text: '[q] question text\n[a][answer1,answer2][item1, item2, ...]',
+                                        ));
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Format copied!'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                SelectableText(
+                                  '[q] question text\n[a][answer1,answer2][item1, item2, ...]',
+                                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                                ),
+                                const SizedBox(height: 16),
+                                // 4. Answer text
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('4. Answer text:'),
+                                    IconButton(
+                                      icon: const Icon(Icons.copy, size: 18),
+                                      tooltip: 'Copy format',
+                                      onPressed: () {
+                                        Clipboard.setData(const ClipboardData(
+                                          text: '[q] question text\n[a][right-answer][(texteditor)]',
+                                        ));
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Format copied!'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                SelectableText(
+                                  '[q] question text\n[a][right-answer][(texteditor)]',
+                                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Load from file button (full width)
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _loadFromFile,
+              icon: const Icon(Icons.file_upload),
+              label: const Text('Load from File'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Text input (full width)
+          TextField(
+            controller: _questionInputController,
+            maxLines: 10,
+            decoration: const InputDecoration(
+              labelText: 'Enter questions (one per line)',
+              border: OutlineInputBorder(),
+              hintText: 'Paste your questions here following the format above',
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Import button (centered)
+          Center(
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final text = _questionInputController.text;
+                if (text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter questions')),
+                  );
+                  return;
+                }
+                await _parseAndAddQuestions(text);
+                // Close dialog after adding questions
+                if (mounted && Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Practice Questions'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPracticeTab() {
+    if (_questions.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.quiz_outlined, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            const Text(
+              'No questions available',
+              style: TextStyle(fontSize: 18, color: Colors.grey),
+            ),
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: () => _showAddQuestionsDialog(context),
+              icon: const Icon(Icons.add),
+              label: const Text('Add Questions'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final currentQuestion = _questions[_currentQuestionIndex];
+    final userAnswer = _userAnswers[currentQuestion.id] ?? [];
+
+    return Column(
+      children: [
+        // Progress indicator
+        Container(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Expanded(
+                child: LinearProgressIndicator(
+                  value: (_currentQuestionIndex + 1) / _questions.length,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text('${_currentQuestionIndex + 1}/${_questions.length}'),
+            ],
+          ),
+        ),
+        
+        // Question display
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Card(
+                  elevation: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Question ${_currentQuestionIndex + 1}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildQuestionWidget(currentQuestion, userAnswer, _allQuestionsSubmitted),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // User's answer display
+                if (userAnswer.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Card(
+                    color: Colors.blue[50],
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Your Answer:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          ...userAnswer.map((ans) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text('• $ans'),
+                          )),
+                          const SizedBox(height: 8),
+                          if (!_allQuestionsSubmitted)
+                            TextButton.icon(
+                              onPressed: () => _clearAnswer(currentQuestion.id),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Re-do'),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                
+                // Result display
+                if (_submittedResults.containsKey(currentQuestion.id)) ...[
+                  const SizedBox(height: 16),
+                  Card(
+                    color: _isCorrect[currentQuestion.id] == true 
+                        ? Colors.green[50] 
+                        : Colors.red[50],
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                _isCorrect[currentQuestion.id] == true 
+                                    ? Icons.check_circle 
+                                    : Icons.cancel,
+                                color: _isCorrect[currentQuestion.id] == true 
+                                    ? Colors.green 
+                                    : Colors.red,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                _isCorrect[currentQuestion.id] == true 
+                                    ? 'Correct!' 
+                                    : 'Incorrect',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: _isCorrect[currentQuestion.id] == true 
+                                      ? Colors.green 
+                                      : Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Correct Answer(s):',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          ...currentQuestion.correctAnswers.map((ans) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              '• $ans',
+                              style: const TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          )),
+                          if (_isCorrect[currentQuestion.id] != true) ...[
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Your Answer:',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            ...userAnswer.map((ans) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Text('• $ans'),
+                            )),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        
+        // Navigation buttons and Submit button
+        Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Submit All button (only show when all questions are answered and not yet submitted)
+              if (_areAllQuestionsAnswered() && !_allQuestionsSubmitted)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: ElevatedButton.icon(
+                    onPressed: () => _submitAllQuestions(),
+                    icon: const Icon(Icons.check_circle),
+                    label: const Text('Submit All Answers'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              
+              // Navigation buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _currentQuestionIndex > 0
+                        ? () {
+                            setState(() {
+                              _currentQuestionIndex--;
+                            });
+                          }
+                        : null,
+                    icon: const Icon(Icons.arrow_back),
+                    label: const Text('Previous'),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _currentQuestionIndex < _questions.length - 1
+                        ? () {
+                            setState(() {
+                              _currentQuestionIndex++;
+                            });
+                          }
+                        : null,
+                    icon: const Icon(Icons.arrow_forward),
+                    label: const Text('Next'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuestionWidget(PracticeQuestion question, List<String> userAnswer, bool isReadOnly) {
+    switch (question.type) {
+      case QuestionType.fillToSentence:
+        return _buildFillToSentenceWidget(question, userAnswer, isReadOnly);
+      case QuestionType.chooseOne:
+        return _buildChooseOneWidget(question, userAnswer, isReadOnly);
+      case QuestionType.chooseMulti:
+        return _buildChooseMultiWidget(question, userAnswer, isReadOnly);
+      case QuestionType.answerText:
+        return _buildAnswerTextWidget(question, userAnswer, isReadOnly);
+    }
+  }
+
+  Widget _buildFillToSentenceWidget(PracticeQuestion question, List<String> userAnswer, bool isReadOnly) {
+    // Parse sentence with blanks
+    String sentence = question.questionText;
+    final blankMatches = RegExp(r'\((\d+)\)').allMatches(sentence);
+    
+    // Get number of blanks
+    final numBlanks = blankMatches.length;
+    final blankPositions = question.blankPositions ?? List.generate(numBlanks, (i) => i + 1);
+    
+    // Map blank index to user answer
+    final blanks = <int, String>{};
+    for (int i = 0; i < blankPositions.length; i++) {
+      final blankNum = blankPositions[i];
+      final userAnswerForBlank = i < userAnswer.length ? userAnswer[i] : '';
+      blanks[blankNum] = userAnswerForBlank;
+    }
+    
+    // Replace (1), (2), etc. with blanks in display
+    String displaySentence = sentence;
+    final blankMatchesList = blankMatches.toList();
+    for (int i = blankMatchesList.length - 1; i >= 0; i--) {
+      final match = blankMatchesList[i];
+      displaySentence = displaySentence.replaceFirst(match.group(0)!, '___');
+    }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: _buildSentenceWithBlanks(displaySentence, blanks, blankPositions),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: question.options.map((option) {
+            final isSelected = userAnswer.contains(option);
+            
+            return FilterChip(
+              label: Text(option),
+              selected: isSelected,
+              onSelected: isReadOnly ? null : (selected) {
+                if (selected) {
+                  // Find which blank position to fill (next empty blank)
+                  final nextBlankIndex = _getNextBlankIndex(userAnswer, blankPositions.length);
+                  if (nextBlankIndex != null) {
+                    final newAnswer = List<String>.from(userAnswer);
+                    while (newAnswer.length <= nextBlankIndex) {
+                      newAnswer.add('');
+                    }
+                    newAnswer[nextBlankIndex] = option;
+                    _saveAnswer(question.id, newAnswer);
+                  }
+                } else {
+                  // Remove the option and shift remaining answers
+                  final newAnswer = List<String>.from(userAnswer);
+                  final indexToRemove = newAnswer.indexOf(option);
+                  if (indexToRemove != -1) {
+                    newAnswer.removeAt(indexToRemove);
+                    _saveAnswer(question.id, newAnswer);
+                  }
+                }
+              },
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  int? _getNextBlankIndex(List<String> userAnswer, int numBlanks) {
+    for (int i = 0; i < numBlanks; i++) {
+      if (userAnswer.length <= i || userAnswer[i].isEmpty) {
+        return i;
+      }
+    }
+    return null;
+  }
+
+  TextSpan _buildSentenceWithBlanks(String sentence, Map<int, String> blanks, List<int> blankPositions) {
+    final parts = sentence.split('___');
+    final spans = <TextSpan>[];
+    
+    for (int i = 0; i < parts.length; i++) {
+      spans.add(TextSpan(text: parts[i]));
+      if (i < parts.length - 1 && i < blankPositions.length) {
+        final blankNum = blankPositions[i];
+        final answer = blanks[blankNum] ?? '';
+        spans.add(TextSpan(
+          text: answer.isEmpty ? '___' : answer,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: answer.isEmpty ? Colors.red : Colors.green,
+            decoration: answer.isEmpty ? TextDecoration.underline : null,
+          ),
+        ));
+      }
+    }
+    
+    return TextSpan(children: spans);
+  }
+
+  Widget _buildChooseOneWidget(PracticeQuestion question, List<String> userAnswer, bool isReadOnly) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          question.questionText,
+          style: const TextStyle(fontSize: 16),
+        ),
+        const SizedBox(height: 16),
+        ...question.options.map((option) {
+          final isSelected = userAnswer.contains(option);
+          return RadioListTile<String>(
+            title: Text(option),
+            value: option,
+            groupValue: isSelected ? option : null,
+            onChanged: isReadOnly ? null : (value) {
+              if (value != null) {
+                _saveAnswer(question.id, [value]);
+              }
+            },
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  Widget _buildChooseMultiWidget(PracticeQuestion question, List<String> userAnswer, bool isReadOnly) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          question.questionText,
+          style: const TextStyle(fontSize: 16),
+        ),
+        const SizedBox(height: 16),
+        ...question.options.map((option) {
+          final isSelected = userAnswer.contains(option);
+          return CheckboxListTile(
+            title: Text(option),
+            value: isSelected,
+            onChanged: isReadOnly ? null : (selected) {
+              final newAnswer = List<String>.from(userAnswer);
+              if (selected == true) {
+                if (!newAnswer.contains(option)) {
+                  newAnswer.add(option);
+                }
+              } else {
+                newAnswer.remove(option);
+              }
+              _saveAnswer(question.id, newAnswer);
+            },
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  Widget _buildAnswerTextWidget(PracticeQuestion question, List<String> userAnswer, bool isReadOnly) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          question.questionText,
+          style: const TextStyle(fontSize: 16),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          key: ValueKey(question.id), // Force rebuild when question changes
+          controller: TextEditingController(
+            text: userAnswer.isNotEmpty ? userAnswer.first : '',
+          ),
+          maxLines: 5,
+          enabled: !isReadOnly,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: 'Enter your answer',
+          ),
+          onChanged: isReadOnly ? null : (value) {
+            _saveAnswer(question.id, [value]);
+          },
+        ),
+      ],
+    );
+  }
+}
+

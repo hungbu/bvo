@@ -8,6 +8,7 @@ import '../repository/user_progress_repository.dart';
 import '../widget/difficult_words_widget.dart';
 import 'help_support_screen.dart';
 import 'privacy_policy_screen.dart';
+import 'practice_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final Function(VoidCallback)? onRefreshCallback;
@@ -371,6 +372,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+
+                  _buildSettingsItem(
+                    icon: Icons.quiz,
+                    title: 'Practice Exercises',
+                    subtitle: 'Luyện tập với các câu hỏi tự tạo',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PracticeScreen(),
+                        ),
+                      );
+                    },
+                  ),
 
                   _buildSettingsItem(
                     icon: Icons.notifications,
