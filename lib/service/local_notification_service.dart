@@ -160,8 +160,6 @@ class LocalNotificationService {
       tz.TZDateTime.from(scheduledDate, tz.local),
       platformChannelSpecifics,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       payload: payload,
     );
   }
@@ -205,7 +203,7 @@ class LocalNotificationService {
       body,
       repeatInterval,
       platformChannelSpecifics,
-      payload: payload,
+      payload: payload, androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 

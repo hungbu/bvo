@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../model/practice_question.dart';
 import '../repository/practice_repository.dart';
+import '../repository/word_repository.dart';
+import '../repository/quiz_repository.dart';
+import '../model/word.dart';
 
 class PracticeScreen extends StatefulWidget {
   const PracticeScreen({Key? key}) : super(key: key);
@@ -13,6 +16,8 @@ class PracticeScreen extends StatefulWidget {
 
 class _PracticeScreenState extends State<PracticeScreen> {
   final PracticeRepository _repository = PracticeRepository();
+  final WordRepository _wordRepository = WordRepository();
+  final QuizRepository _quizRepository = QuizRepository();
   List<PracticeQuestion> _questions = [];
   Map<String, List<String>> _userAnswers = {};
   Map<String, bool> _submittedResults = {}; // Track if question has been submitted
@@ -784,13 +789,24 @@ class _PracticeScreenState extends State<PracticeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Question ${_currentQuestionIndex + 1}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepPurple,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Question ${_currentQuestionIndex + 1}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.deepPurple,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.bookmark_add),
+                              tooltip: 'Trích xuất từ vựng từ câu hỏi này',
+                              onPressed: () => _showExtractWordsFromQuestionDialog(context, currentQuestion),
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         _buildQuestionWidget(currentQuestion, userAnswer, _allQuestionsSubmitted),
@@ -844,27 +860,38 @@ class _PracticeScreenState extends State<PracticeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(
-                                _isCorrect[currentQuestion.id] == true 
-                                    ? Icons.check_circle 
-                                    : Icons.cancel,
-                                color: _isCorrect[currentQuestion.id] == true 
-                                    ? Colors.green 
-                                    : Colors.red,
+                              Row(
+                                children: [
+                                  Icon(
+                                    _isCorrect[currentQuestion.id] == true 
+                                        ? Icons.check_circle 
+                                        : Icons.cancel,
+                                    color: _isCorrect[currentQuestion.id] == true 
+                                        ? Colors.green 
+                                        : Colors.red,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _isCorrect[currentQuestion.id] == true 
+                                        ? 'Correct!' 
+                                        : 'Incorrect',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: _isCorrect[currentQuestion.id] == true 
+                                          ? Colors.green 
+                                          : Colors.red,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                _isCorrect[currentQuestion.id] == true 
-                                    ? 'Correct!' 
-                                    : 'Incorrect',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: _isCorrect[currentQuestion.id] == true 
-                                      ? Colors.green 
-                                      : Colors.red,
-                                ),
+                              IconButton(
+                                icon: const Icon(Icons.bookmark_add),
+                                tooltip: 'Thêm từ vựng vào Quiz',
+                                onPressed: () => _showExtractWordsFromQuestionDialog(context, currentQuestion),
+                                color: Theme.of(context).primaryColor,
                               ),
                             ],
                           ),
@@ -1077,6 +1104,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
   }
 
   Widget _buildChooseOneWidget(PracticeQuestion question, List<String> userAnswer, bool isReadOnly) {
+    // Get the currently selected value (first item if any)
+    final String? selectedValue = userAnswer.isNotEmpty ? userAnswer.first : null;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1085,13 +1115,16 @@ class _PracticeScreenState extends State<PracticeScreen> {
           style: const TextStyle(fontSize: 16),
         ),
         const SizedBox(height: 16),
+        // TODO: Migrate to RadioGroup when available in stable Flutter
+        // ignore: deprecated_member_use
         ...question.options.map((option) {
-          final isSelected = userAnswer.contains(option);
           return RadioListTile<String>(
             title: Text(option),
             value: option,
-            groupValue: isSelected ? option : null,
-            onChanged: isReadOnly ? null : (value) {
+            // ignore: deprecated_member_use
+            groupValue: selectedValue,
+            // ignore: deprecated_member_use
+            onChanged: isReadOnly ? null : (String? value) {
               if (value != null) {
                 _saveAnswer(question.id, [value]);
               }
@@ -1160,5 +1193,253 @@ class _PracticeScreenState extends State<PracticeScreen> {
       ],
     );
   }
+
+  /// Extract English words from text
+  List<String> _extractWordsFromText(String text) {
+    // Remove special characters and split by spaces
+    // Match English words (letters, apostrophes, hyphens)
+    final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
+    final matches = wordPattern.allMatches(text);
+    
+    final words = <String>{};
+    for (final match in matches) {
+      final word = match.group(0)!.toLowerCase();
+      // Filter out common short words (articles, prepositions, etc.)
+      if (word.length > 2 && !_isCommonWord(word)) {
+        words.add(word);
+      }
+    }
+    
+    return words.toList()..sort();
+  }
+
+  /// Check if word is a common English word (articles, prepositions, etc.)
+  bool _isCommonWord(String word) {
+    const commonWords = {
+      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+      'of', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during',
+      'including', 'against', 'among', 'throughout', 'despite', 'towards',
+      'upon', 'concerning',
+      'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
+      'do', 'does', 'did', 'will', 'would', 'should', 'could', 'may', 'might',
+      'can', 'must', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she',
+      'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his',
+      'its', 'our', 'their', 'what', 'which', 'who', 'whom', 'whose',
+      'where', 'when', 'why', 'how', 'all', 'each', 'every', 'both', 'few',
+      'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only',
+      'own', 'same', 'so', 'than', 'too', 'very', 'just', 'now'
+    };
+    return commonWords.contains(word);
+  }
+
+  /// Extract words from a practice question (questionText + options)
+  List<String> _extractWordsFromQuestion(PracticeQuestion question) {
+    final allText = <String>[];
+    
+    // Add question text
+    allText.add(question.questionText);
+    
+    // Add all options
+    allText.addAll(question.options);
+    
+    // Add correct answers
+    allText.addAll(question.correctAnswers);
+    
+    // Extract words from all text
+    final allWords = <String>{};
+    for (final text in allText) {
+      final words = _extractWordsFromText(text);
+      allWords.addAll(words);
+    }
+    
+    return allWords.toList()..sort();
+  }
+
+  /// Show dialog to extract words from current question and add to quiz
+  Future<void> _showExtractWordsFromQuestionDialog(BuildContext context, PracticeQuestion question) async {
+    // Show loading dialog first
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      // Extract words from question
+      final extractedWords = _extractWordsFromQuestion(question);
+      
+      if (extractedWords.isEmpty) {
+        Navigator.of(context).pop(); // Close loading dialog
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Không tìm thấy từ vựng nào trong câu hỏi này')),
+          );
+        }
+        return;
+      }
+
+      // Search for words in repository
+      final allWords = await _wordRepository.getAllWords();
+      final wordMap = <String, Word>{};
+      for (final word in allWords) {
+        final key = word.en.toLowerCase();
+        if (!wordMap.containsKey(key)) {
+          wordMap[key] = word;
+        }
+      }
+
+      final matchedWords = <Word>[];
+      for (final extractedWord in extractedWords) {
+        if (wordMap.containsKey(extractedWord)) {
+          matchedWords.add(wordMap[extractedWord]!);
+        }
+      }
+
+      Navigator.of(context).pop(); // Close loading dialog
+
+      if (matchedWords.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Đã trích xuất ${extractedWords.length} từ, nhưng không tìm thấy từ nào trong từ điển'),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
+
+      // Show selection dialog
+      Set<String> selectedWords = {};
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: const Text('Trích xuất từ vựng từ câu hỏi'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Đã tìm thấy ${matchedWords.length} từ trong câu hỏi:',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Chọn từ cần học:',
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            if (selectedWords.length == matchedWords.length) {
+                              selectedWords.clear();
+                            } else {
+                              selectedWords = matchedWords.map((w) => w.en.toLowerCase()).toSet();
+                            }
+                          });
+                        },
+                        child: Text(
+                          selectedWords.length == matchedWords.length
+                              ? 'Bỏ chọn tất cả'
+                              : 'Chọn tất cả',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 300,
+                    child: ListView.builder(
+                      itemCount: matchedWords.length,
+                      itemBuilder: (context, index) {
+                        final word = matchedWords[index];
+                        final wordKey = word.en.toLowerCase();
+                        final isSelected = selectedWords.contains(wordKey);
+                        
+                        return CheckboxListTile(
+                          title: Text(
+                            word.en,
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          subtitle: Text(word.vi),
+                          value: isSelected,
+                          onChanged: (checked) {
+                            setState(() {
+                              if (checked == true) {
+                                selectedWords.add(wordKey);
+                              } else {
+                                selectedWords.remove(wordKey);
+                              }
+                            });
+                          },
+                          dense: true,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                onPressed: selectedWords.isEmpty
+                    ? null
+                    : () async {
+                        final wordsToAdd = matchedWords.where(
+                          (w) => selectedWords.contains(w.en.toLowerCase()),
+                        ).toList();
+
+                        if (wordsToAdd.isEmpty) {
+                          Navigator.of(context).pop();
+                          return;
+                        }
+
+                        final addedCount = await _quizRepository.addWordsToQuiz(wordsToAdd);
+                        Navigator.of(context).pop();
+                        
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                addedCount > 0
+                                    ? 'Đã thêm $addedCount từ vào danh sách ôn tập'
+                                    : 'Không có từ nào được thêm (có thể đã tồn tại)',
+                              ),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      },
+                child: Text(
+                  selectedWords.isEmpty
+                      ? 'Chọn từ'
+                      : 'Thêm ${selectedWords.length} từ vào Quiz',
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } catch (e) {
+      Navigator.of(context).pop(); // Close loading dialog if still open
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: $e')),
+        );
+      }
+    }
+  }
+
 }
 
