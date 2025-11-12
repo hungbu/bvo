@@ -5,7 +5,7 @@ import 'home_screen.dart';
 import 'topic_level_screen.dart';
 //import 'quiz_screen.dart';
 import 'profile_screen.dart';
-import 'practice_screen.dart';
+import 'reading/reading_list_screen.dart';
 import 'pronunciation_screen.dart';
 import 'speak_screen.dart';
 import 'grammar_screen.dart';
@@ -123,7 +123,7 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const PracticeScreen(),
+                    builder: (context) => const ReadingListScreen(),
                   ),
                 );
               },
