@@ -6,6 +6,9 @@ import '../../repository/reading_repository.dart';
 import '../../repository/word_repository.dart';
 import '../../repository/quiz_repository.dart';
 import '../../repository/dictionary_words_repository.dart';
+import '../../repository/practice_history_repository.dart';
+import '../../model/practice_history.dart';
+import 'practice_history_screen.dart';
 import '../../model/word.dart';
 import '../../widget/selectable_text_with_word_lookup.dart';
 import '../../service/dialog_manager.dart';
@@ -29,6 +32,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
   final WordRepository _wordRepository = WordRepository();
   final QuizRepository _quizRepository = QuizRepository();
   final DictionaryWordsRepository _dictionaryRepository = DictionaryWordsRepository();
+  final PracticeHistoryRepository _historyRepository = PracticeHistoryRepository();
   List<PracticeQuestion> _questions = [];
   Map<String, List<String>> _userAnswers = {};
   Map<String, bool> _submittedResults = {}; // Track if question has been submitted
@@ -37,6 +41,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
   int _currentQuestionIndex = 0;
   bool _isLoading = true;
   Map<String, TextEditingController> _textControllers = {}; // Controllers for text answer questions
+  String? _readingTitle;
 
   @override
   void initState() {
@@ -60,6 +65,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
     });
 
     try {
+      // Load reading to get title
+      final reading = await _readingRepository.getReading(widget.readingId);
+      
       // Load questions for this specific reading
       final questions = await _readingRepository.loadQuestionsForReading(widget.readingId);
       
@@ -87,6 +95,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
       setState(() {
         _questions = questions;
         _userAnswers = answers;
+        _readingTitle = reading?.title ?? 'Practice';
         _isLoading = false;
       });
     } catch (e) {
@@ -123,6 +132,61 @@ class _PracticeScreenState extends State<PracticeScreen> {
       _isCorrect.remove(questionId);
       _allQuestionsSubmitted = false;
     });
+  }
+
+  Future<void> _resetPractice() async {
+    // Clear all answers for current reading
+    final questionIds = _questions.map((q) => q.id).toList();
+    await _repository.clearAnswersForQuestions(questionIds);
+    
+    // Clear text controllers
+    for (final controller in _textControllers.values) {
+      controller.clear();
+    }
+    
+    setState(() {
+      _userAnswers.clear();
+      _submittedResults.clear();
+      _isCorrect.clear();
+      _allQuestionsSubmitted = false;
+      _currentQuestionIndex = 0;
+    });
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã reset bài practice. Bạn có thể làm lại từ đầu.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _showResetConfirmation() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Làm lại bài practice?'),
+        content: const Text(
+          'Bạn có chắc chắn muốn xóa tất cả câu trả lời và làm lại từ đầu không?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Làm lại'),
+          ),
+        ],
+      ),
+    );
+    
+    if (confirmed == true) {
+      await _resetPractice();
+    }
   }
 
   bool _areAllQuestionsAnswered() {
@@ -215,11 +279,13 @@ class _PracticeScreenState extends State<PracticeScreen> {
     // Check all answers
     int correctCount = 0;
     int totalCount = _questions.length;
+    final Map<String, bool> questionResults = {};
     
     for (final question in _questions) {
       final isCorrect = _checkAnswerForQuestion(question);
       _submittedResults[question.id] = true;
       _isCorrect[question.id] = isCorrect;
+      questionResults[question.id] = isCorrect;
       if (isCorrect) {
         correctCount++;
       }
@@ -229,9 +295,36 @@ class _PracticeScreenState extends State<PracticeScreen> {
       _allQuestionsSubmitted = true;
     });
     
+    // Save to history
+    await _saveToHistory(correctCount, totalCount, questionResults);
+    
     // Show results dialog
     if (mounted) {
       await _showResultsDialog(correctCount, totalCount);
+    }
+  }
+
+  Future<void> _saveToHistory(
+    int correctCount,
+    int totalCount,
+    Map<String, bool> questionResults,
+  ) async {
+    try {
+      final history = PracticeHistory(
+        id: '${widget.readingId}_${DateTime.now().millisecondsSinceEpoch}',
+        readingId: widget.readingId,
+        completedAt: DateTime.now(),
+        totalQuestions: totalCount,
+        correctAnswers: correctCount,
+        accuracy: totalCount > 0 ? correctCount / totalCount : 0.0,
+        userAnswers: Map<String, List<String>>.from(_userAnswers),
+        questionResults: questionResults,
+      );
+      
+      await _historyRepository.saveHistory(history);
+      print('✅ Practice history saved: ${history.id}');
+    } catch (e) {
+      print('❌ Error saving practice history: $e');
     }
   }
 
@@ -306,6 +399,31 @@ class _PracticeScreenState extends State<PracticeScreen> {
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'Xem lịch sử',
+            onPressed: () async {
+              final title = _readingTitle ?? 'Practice';
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PracticeHistoryScreen(
+                    readingId: widget.readingId,
+                    readingTitle: title,
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Làm lại từ đầu',
+            onPressed: _userAnswers.isEmpty && !_allQuestionsSubmitted
+                ? null
+                : () => _showResetConfirmation(),
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

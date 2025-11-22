@@ -103,5 +103,14 @@ class PracticeRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_questionsKey);
   }
+  
+  /// Clear answers for specific question IDs (for a reading)
+  Future<void> clearAnswersForQuestions(List<String> questionIds) async {
+    final prefs = await SharedPreferences.getInstance();
+    for (final questionId in questionIds) {
+      final key = '$_answersKey$questionId';
+      await prefs.remove(key);
+    }
+  }
 }
 

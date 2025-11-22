@@ -11,6 +11,16 @@ class ReadingRepository {
   static const String _readingsKey = 'readings_list';
   static const String _readingQuestionsKey = 'reading_questions_';
   
+  /// Get a reading by ID
+  Future<Reading?> getReading(String readingId) async {
+    final readings = await loadAllReadings();
+    try {
+      return readings.firstWhere((r) => r.id == readingId);
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Load all readings
   Future<List<Reading>> loadAllReadings() async {
     final prefs = await SharedPreferences.getInstance();
