@@ -49,7 +49,12 @@
 	<string>This app uses speech recognition to help users learn languages.</string>
 	<key>NSSpeechSynthesizerDelegate</key>
 	<string>This app uses speech synthesis to pronounce words.</string>
-
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>We need access to the file system through the document picker to allow you to import custom question lists. No photos will be accessed or used.</string>
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
+    <key>UISupportsDocumentBrowser</key>
+    <true/>
 
 </dict>
 </plist>
