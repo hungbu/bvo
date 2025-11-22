@@ -1,10 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import '../model/word.dart';
 import '../repository/quiz_repository.dart';
 import '../repository/user_progress_repository.dart';
 import '../service/notification_service.dart';
+import '../service/audio_service.dart';
 
 enum QuizType {
   multipleChoice,    // Trắc nghiệm 4 đáp án (từ EN → nghĩa VI)
@@ -46,7 +46,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
   
   final TextEditingController _fillInController = TextEditingController();
   final Random _random = Random();
-  final FlutterTts _flutterTts = FlutterTts();
+  final AudioService _audioService = AudioService();
 
   @override
   void initState() {
@@ -78,7 +78,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
     _progressController.dispose();
     _resultController.dispose();
     _fillInController.dispose();
-    _flutterTts.stop();
+    // AudioService is singleton, no need to stop
     super.dispose();
   }
 
@@ -90,41 +90,55 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
   }
 
   Future<void> _speakEnglish(String text) async {
-    await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.setSpeechRate(0.5);
-    await _flutterTts.speak(text);
+    await _audioService.speakNormal(text);
   }
 
   void _generateQuestion() {
+    print('🟡 [QUIZ] _generateQuestion() called');
+    print('   - currentQuestionIndex: $currentQuestionIndex');
+    print('   - shuffledWords.length: ${shuffledWords.length}');
+    
     if (currentQuestionIndex >= shuffledWords.length) {
+      print('   ⚠️ All questions completed, showing final results');
       _showFinalResults();
       return;
     }
 
     final currentWord = shuffledWords[currentQuestionIndex];
+    print('   - currentWord: ${currentWord.en} (${currentWord.vi})');
     
     // Randomly select quiz type
     final quizTypes = QuizType.values;
     currentQuizType = quizTypes[_random.nextInt(quizTypes.length)];
+    print('   - Selected quiz type: ${currentQuizType.toString().split('.').last}');
     
+    // Clear controller first
+    _fillInController.clear();
+    print('   - TextField controller cleared');
+    
+    print('   🎨 Updating state...');
     setState(() {
       showResult = false;
       selectedAnswer = null;
-      _fillInController.clear();
+      isAnswerCorrect = false;
     });
+    print('   ✅ State updated: showResult=false, selectedAnswer=null, isAnswerCorrect=false');
 
     switch (currentQuizType) {
       case QuizType.multipleChoice:
+        print('   📝 Generating multiple choice question...');
         _generateMultipleChoiceQuestion(currentWord);
         break;
       case QuizType.fillInBlank:
+        print('   📝 Generating fill in blank question...');
         _generateFillInBlankQuestion(currentWord);
         break;
       case QuizType.reverseTranslation:
+        print('   📝 Generating reverse translation question...');
         _generateReverseTranslationQuestion(currentWord);
         break;
     }
+    print('   ✅ Question generated successfully');
   }
 
   void _generateMultipleChoiceQuestion(Word word) {
@@ -173,61 +187,118 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
   }
 
   void _submitAnswer() async {
+    print('🔵 [QUIZ] _submitAnswer() called');
+    print('   - showResult: $showResult');
+    print('   - currentQuestionIndex: $currentQuestionIndex');
+    print('   - totalQuestions: $totalQuestions');
+    
+    // Prevent double submission
+    if (showResult) {
+      print('   ❌ Already showing result, returning early');
+      return;
+    }
+    
     String userAnswer = '';
     
     switch (currentQuizType) {
       case QuizType.fillInBlank:
         userAnswer = _fillInController.text.toLowerCase().trim();
+        print('   - FillInBlank: userAnswer = "$userAnswer"');
         break;
       default:
         userAnswer = selectedAnswer ?? '';
+        print('   - MultipleChoice/ReverseTranslation: userAnswer = "$userAnswer"');
         break;
     }
 
+    // Check if answer is provided
+    if (userAnswer.isEmpty) {
+      print('   ❌ User answer is empty, returning early');
+      return;
+    }
+
+    print('   - correctAnswer: "$correctAnswer"');
     isAnswerCorrect = userAnswer == correctAnswer || 
                      (currentQuizType == QuizType.fillInBlank && 
                       userAnswer == correctAnswer.toLowerCase());
+    print('   - isAnswerCorrect: $isAnswerCorrect');
 
     final currentWord = shuffledWords[currentQuestionIndex];
+    print('   - currentWord: ${currentWord.en}');
     
+    // Don't wait for audio to complete - fire and forget
     if (isAnswerCorrect) {
       correctAnswers++;
-      // Phát âm từ đúng khi trả lời đúng
-      await _speakEnglish(currentWord.en);
+      print('   ✅ Correct! Total correct: $correctAnswers');
+      // Phát âm từ đúng khi trả lời đúng (fire and forget)
+      _speakEnglish(currentWord.en).catchError((e) {
+        print('   ⚠️ Error speaking: $e');
+      });
     } else {
-      // Phát âm từ đúng khi trả lời sai để người dùng học
-      await _speakEnglish(currentWord.en);
+      print('   ❌ Incorrect! Total correct: $correctAnswers');
+      // Phát âm từ đúng khi trả lời sai để người dùng học (fire and forget)
+      _speakEnglish(currentWord.en).catchError((e) {
+        print('   ⚠️ Error speaking: $e');
+      });
     }
 
-    // Update word progress in repository
-    await QuizRepository().updateWordProgress(currentWord, isAnswerCorrect);
-    
-    // Also update UserProgressRepository for comprehensive tracking
-    await UserProgressRepository().updateWordProgress(currentWord.topic, currentWord, isAnswerCorrect);
+    print('   📝 Updating word progress...');
+    try {
+      // Update word progress in repository
+      await QuizRepository().updateWordProgress(currentWord, isAnswerCorrect);
+      
+      // Also update UserProgressRepository for comprehensive tracking
+      await UserProgressRepository().updateWordProgress(currentWord.topic, currentWord, isAnswerCorrect);
+      print('   ✅ Word progress updated');
+    } catch (e) {
+      print('   ❌ Error updating progress: $e');
+    }
 
-    setState(() {
-      showResult = true;
-    });
+    print('   🎨 Setting showResult = true');
+    if (mounted) {
+      setState(() {
+        showResult = true;
+      });
+      print('   ✅ showResult set to true');
+    } else {
+      print('   ⚠️ Widget not mounted, cannot setState');
+    }
 
-    _resultController.reset();
-    _resultController.forward();
+    print('   🎬 Starting result animation');
+    if (mounted) {
+      _resultController.reset();
+      _resultController.forward();
+      print('   ✅ Result animation started');
+    } else {
+      print('   ⚠️ Widget not mounted, cannot start animation');
+    }
 
-    // Auto advance - thời gian khác nhau cho đúng và sai
-    int delaySeconds = isAnswerCorrect ? 2 : 3; // Đúng: 2s, Sai: 3s để ghi nhớ
-    Future.delayed(Duration(seconds: delaySeconds), () {
-      if (mounted) {
-        _nextQuestion();
-      }
-    });
+    print('   ✅ _submitAnswer() completed successfully');
   }
 
   void _nextQuestion() {
+    print('🟢 [QUIZ] _nextQuestion() called');
+    print('   - currentQuestionIndex before: $currentQuestionIndex');
+    print('   - shuffledWords.length: ${shuffledWords.length}');
+    print('   - totalQuestions: $totalQuestions');
+    
+    if (currentQuestionIndex >= shuffledWords.length - 1) {
+      print('   ⚠️ Last question reached, will show final results');
+    }
+    
     currentQuestionIndex++;
+    print('   - currentQuestionIndex after increment: $currentQuestionIndex');
+    
+    print('   📝 Generating next question...');
     _generateQuestion();
+    print('   ✅ Next question generated');
     
     // Update progress animation
+    print('   🎬 Resetting and starting progress animation');
     _progressController.reset();
     _progressController.forward();
+    print('   ✅ Progress animation started');
+    print('   ✅ _nextQuestion() completed successfully');
   }
 
   void _showFinalResults() async {
@@ -435,32 +506,68 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
                     ),
                   ),
                   
-                  // Fixed Submit Button at bottom
-                  if (!showResult)
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _canSubmit() ? _submitAnswer : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                  // Fixed Submit/Next Button at bottom
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: showResult
+                          ? ElevatedButton(
+                              onPressed: () {
+                                print('🟢 [QUIZ] Next button clicked');
+                                print('   - showResult: $showResult');
+                                print('   - currentQuestionIndex: $currentQuestionIndex');
+                                print('   - shuffledWords.length: ${shuffledWords.length}');
+                                _nextQuestion();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Text(
+                                    'Câu tiếp theo',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward, size: 20),
+                                ],
+                              ),
+                            )
+                          : ElevatedButton(
+                              onPressed: _canSubmit() ? () {
+                                print('🔵 [QUIZ] Submit button clicked');
+                                print('   - canSubmit: ${_canSubmit()}');
+                                print('   - showResult: $showResult');
+                                _submitAnswer();
+                              } : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'Trả lời',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
-                          child: const Text(
-                            'Trả lời',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
+                  ),
                 ],
               ),
             ),
@@ -706,6 +813,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
       children: [
         const SizedBox(height: 20),
         TextField(
+          key: ValueKey('fillIn_$currentQuestionIndex'), // Force rebuild when question changes
           controller: _fillInController,
           decoration: InputDecoration(
             hintText: 'Nhập từ tiếng Anh...',
@@ -721,6 +829,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
           ),
           style: const TextStyle(fontSize: 18),
           textAlign: TextAlign.center,
+          autofocus: false,
           onChanged: (value) {
             setState(() {}); // Trigger rebuild to update submit button state
           },
@@ -731,11 +840,17 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
   }
 
   bool _canSubmit() {
+    bool canSubmit = false;
     switch (currentQuizType) {
       case QuizType.fillInBlank:
-        return _fillInController.text.trim().isNotEmpty;
+        canSubmit = _fillInController.text.trim().isNotEmpty;
+        print('🔍 [QUIZ] _canSubmit() - FillInBlank: text="${_fillInController.text.trim()}", canSubmit=$canSubmit');
+        break;
       default:
-        return selectedAnswer != null;
+        canSubmit = selectedAnswer != null;
+        print('🔍 [QUIZ] _canSubmit() - MultipleChoice/ReverseTranslation: selectedAnswer="$selectedAnswer", canSubmit=$canSubmit');
+        break;
     }
+    return canSubmit;
   }
 }

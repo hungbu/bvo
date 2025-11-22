@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 
 import 'package:bvo/model/word.dart';
 import 'package:bvo/repository/word_repository.dart';
@@ -9,6 +8,7 @@ import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/screen/new_pair_flashcard_screen.dart';
 import 'package:bvo/main.dart';
 import 'package:bvo/repository/topic_repository.dart';
+import 'package:bvo/service/audio_service.dart';
 
 class TopicDetailScreen extends StatefulWidget {
   final String topic;
@@ -24,7 +24,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
   Map<String, dynamic> topicProgress = {};
   bool isLoading = true;
   bool hasProgressChanged = false; // Track if progress changed
-  final FlutterTts _flutterTts = FlutterTts();
+  final AudioService _audioService = AudioService();
   Set<String> _addedToQuizWords = {}; // Track words added to quiz
   String _topicTitle = '';
 
@@ -46,7 +46,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
   @override
   void dispose() {
     routeObserver.unsubscribe(this);
-    _flutterTts.stop();
+    // AudioService is singleton, no need to dispose
     super.dispose();
   }
 
@@ -1001,17 +1001,11 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
   }
 
   Future<void> _speakEnglish(String word) async {
-    await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.setSpeechRate(0.5);
-    await _flutterTts.speak(word);
+    await _audioService.speakNormal(word);
   }
 
   Future<void> _speakEnglishSlow(String word) async {
-    await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.setSpeechRate(0.2); // Very slow speed
-    await _flutterTts.speak(word);
+    await _audioService.speak(text: word, speechRate: 0.2);
   }
 
   void _addWordToQuiz(Word word) async {

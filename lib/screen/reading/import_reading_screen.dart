@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../repository/reading_repository.dart';
 
 class ImportReadingScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _ImportReadingScreenState extends State<ImportReadingScreen> {
   final TextEditingController _contentController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isImporting = false;
+  String? _loadedFileName;
 
   // 4 format câu hỏi
   final List<Map<String, String>> _questionFormats = [
@@ -52,63 +54,110 @@ class _ImportReadingScreenState extends State<ImportReadingScreen> {
   }
 
   Future<void> _loadFromFile() async {
-    final TextEditingController pathController = TextEditingController();
-    
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Load from File'),
-        content: TextField(
-          controller: pathController,
-          decoration: const InputDecoration(
-            hintText: 'Enter file path or paste content',
-            labelText: 'File Path',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, pathController.text),
-            child: const Text('Load'),
-          ),
-        ],
-      ),
-    );
-    
-    if (result != null && result.isNotEmpty) {
-      try {
-        final file = File(result);
+    try {
+      // Show file picker to select txt files
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['txt'],
+        dialogTitle: 'Chọn file txt để import',
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final filePath = result.files.single.path!;
+        final file = File(filePath);
+        
         if (await file.exists()) {
           final content = await file.readAsString();
-          _contentController.text = content;
+          setState(() {
+            _contentController.text = content;
+            _loadedFileName = result.files.single.name;
+          });
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Đã tải file: ${result.files.single.name}'),
+                duration: const Duration(seconds: 2),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
         } else {
-          // Treat as text content directly
-          _contentController.text = result;
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('File không tồn tại')),
+            );
+          }
         }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error loading file: $e')),
-          );
-        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi tải file: $e')),
+        );
       }
     }
   }
 
+  String? _validateFileContent(String content) {
+    if (content.trim().isEmpty) {
+      return 'Nội dung file không được để trống';
+    }
+
+    // Check if content has at least one question format [q]
+    if (!content.contains('[q]')) {
+      return 'File không chứa câu hỏi nào. Vui lòng kiểm tra format [q]';
+    }
+
+    // Check if content has at least one answer format [a]
+    if (!content.contains('[a]')) {
+      return 'File không chứa đáp án nào. Vui lòng kiểm tra format [a]';
+    }
+
+    // Try to parse questions to validate format
+    final tempReadingId = 'temp_validation';
+    final questions = _repository.parseQuestionsFromText(content, tempReadingId);
+    
+    if (questions.isEmpty) {
+      return 'Không thể parse câu hỏi từ file. Vui lòng kiểm tra lại format theo hướng dẫn bên dưới';
+    }
+
+    return null; // No error
+  }
+
   Future<void> _importReading() async {
+    // Validate title
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập tiêu đề bài reading')),
+        const SnackBar(
+          content: Text('Vui lòng nhập tiêu đề bài reading'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
-    if (_contentController.text.trim().isEmpty) {
+    // Validate content
+    final content = _contentController.text.trim();
+    if (content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập nội dung bài reading')),
+        const SnackBar(
+          content: Text('Vui lòng nhập nội dung bài reading'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validate file content format
+    final validationError = _validateFileContent(content);
+    if (validationError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(validationError),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
       );
       return;
     }
@@ -120,7 +169,7 @@ class _ImportReadingScreenState extends State<ImportReadingScreen> {
     try {
       await _repository.importReadingFromText(
         title: _titleController.text.trim(),
-        content: _contentController.text.trim(),
+        content: content,
         description: _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
@@ -128,14 +177,20 @@ class _ImportReadingScreenState extends State<ImportReadingScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Import bài reading thành công!')),
+          const SnackBar(
+            content: Text('Import bài reading thành công!'),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi import: $e')),
+          SnackBar(
+            content: Text('Lỗi import: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -187,20 +242,6 @@ class _ImportReadingScreenState extends State<ImportReadingScreen> {
                   ),
                   const SizedBox(height: 24),
                   
-                  // Question formats section
-                  const Text(
-                    'Các Format Câu Hỏi',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  ..._questionFormats.map((format) => _buildFormatCard(format)),
-                  
-                  const SizedBox(height: 24),
-                  
                   // Load from file button
                   SizedBox(
                     width: double.infinity,
@@ -215,34 +256,79 @@ class _ImportReadingScreenState extends State<ImportReadingScreen> {
                   ),
                   const SizedBox(height: 16),
                   
+                  // Show loaded file name
+                  if (_loadedFileName != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        border: Border.all(color: Colors.green.shade200),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green.shade700),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'File đã tải: $_loadedFileName',
+                              style: TextStyle(
+                                color: Colors.green.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  
                   // Content input
                   TextField(
                     controller: _contentController,
                     decoration: const InputDecoration(
                       labelText: 'Nội dung bài reading *',
-                      hintText: 'Paste nội dung bài reading theo format ở trên',
+                      hintText: 'Paste nội dung bài reading theo format ở dưới',
                       border: OutlineInputBorder(),
                     ),
                     maxLines: 15,
                   ),
                   const SizedBox(height: 24),
                   
-                  // Import button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _importReading,
-                      icon: const Icon(Icons.add),
-                      label: const Text('Import Reading'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        textStyle: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  // Import button - only show if file is loaded
+                  if (_loadedFileName != null) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _importReading,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Import Reading'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
+                    const SizedBox(height: 24),
+                  ],
+                  
+                  // Question formats section - moved to bottom
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Các Format Câu Hỏi',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                  const SizedBox(height: 12),
+                  
+                  ..._questionFormats.map((format) => _buildFormatCard(format)),
                 ],
               ),
             ),

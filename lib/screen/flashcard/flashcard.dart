@@ -3,8 +3,8 @@ import 'dart:math';
 
 import 'package:bvo/model/word.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
+import 'package:bvo/service/audio_service.dart';
 
 class Flashcard extends StatefulWidget {
   final Word word;
@@ -29,7 +29,7 @@ class Flashcard extends StatefulWidget {
 class _FlashcardState extends State<Flashcard> {
   bool _showEnglishText = true;
   bool _localIsFlipped = false; // Local flip state for manual flipping
-  final FlutterTts _flutterTts = FlutterTts();
+  final AudioService _audioService = AudioService();
   int _actualReviewCount = 0;
   final UserProgressRepository _progressRepository = UserProgressRepository();
 
@@ -79,7 +79,7 @@ class _FlashcardState extends State<Flashcard> {
 
   @override
   void dispose() {
-    _flutterTts.stop();
+    // AudioService is singleton, no need to dispose
     super.dispose();
   }
 
@@ -102,25 +102,15 @@ class _FlashcardState extends State<Flashcard> {
   }
 
   Future<void> _speakEnglish() async {
-    await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.setSpeechRate(0.5); // Normal speed
-    await _flutterTts.speak(widget.word.en);
+    await _audioService.speakNormal(widget.word.en);
   }
 
   Future<void> _speakEnglishSlow() async {
-    await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.setSpeechRate(0.1); // Slow speed
-    await _flutterTts.speak(widget.word.en);
-    await Future.delayed(const Duration(seconds: 1));
-    await _flutterTts.setSpeechRate(0.5);
+    await _audioService.speakSlowly(widget.word.en);
   }
 
   Future<void> _speakVietnamese() async {
-    await _flutterTts.setLanguage("vi-VN");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.speak(widget.word.vi);
+    await _audioService.speak(text: widget.word.vi, language: 'vi-VN');
   }
 
   Future<void> _markAsMastered(Word word) async {

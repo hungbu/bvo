@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import '../model/reading.dart';
 import '../model/practice_question.dart';
 
@@ -199,6 +201,11 @@ class ReadingRepository {
     }
   }
   
+  /// Parse questions from text content (public method for validation)
+  List<PracticeQuestion> parseQuestionsFromText(String content, String readingId) {
+    return _parseQuestionsFromText(content, readingId);
+  }
+
   /// Parse questions from text content
   List<PracticeQuestion> _parseQuestionsFromText(String content, String readingId) {
     final List<PracticeQuestion> questions = [];
@@ -258,6 +265,42 @@ class ReadingRepository {
     }
   }
   
+  /// Save reading content to file
+  Future<String> _saveReadingToFile(String title, String content) async {
+    try {
+      // Get documents directory
+      final directory = await getApplicationDocumentsDirectory();
+      
+      // Create assets/data/reading directory structure
+      final readingDir = Directory(path.join(directory.path, 'assets', 'data', 'reading'));
+      if (!await readingDir.exists()) {
+        await readingDir.create(recursive: true);
+      }
+      
+      // Generate filename from title (sanitize for filesystem)
+      final sanitizedTitle = title
+          .toLowerCase()
+          .replaceAll(RegExp(r'[^\w\s-]'), '') // Remove special chars
+          .replaceAll(RegExp(r'\s+'), '_') // Replace spaces with underscores
+          .replaceAll(RegExp(r'_+'), '_') // Replace multiple underscores with single
+          .trim();
+      
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = '${sanitizedTitle}_$timestamp.txt';
+      final filePath = path.join(readingDir.path, fileName);
+      
+      // Write content to file
+      final file = File(filePath);
+      await file.writeAsString(content, encoding: utf8);
+      
+      // Return the file path (relative to documents directory for storage)
+      return filePath;
+    } catch (e) {
+      print('Error saving reading to file: $e');
+      rethrow;
+    }
+  }
+  
   /// Import reading from text content
   Future<Reading> importReadingFromText({
     required String title,
@@ -266,6 +309,15 @@ class ReadingRepository {
   }) async {
     final readingId = 'import_${DateTime.now().millisecondsSinceEpoch}';
     final questions = _parseQuestionsFromText(content, readingId);
+    
+    // Save content to file
+    String? filePath;
+    try {
+      filePath = await _saveReadingToFile(title, content);
+    } catch (e) {
+      print('Warning: Could not save reading to file: $e');
+      // Continue without file path - reading will still be saved in SharedPreferences
+    }
     
     // Save questions
     final prefs = await SharedPreferences.getInstance();
@@ -278,6 +330,7 @@ class ReadingRepository {
       title: title,
       description: description,
       source: 'import',
+      filePath: filePath, // Set file path if saved successfully
       createdAt: DateTime.now(),
       questionCount: questions.length,
     );

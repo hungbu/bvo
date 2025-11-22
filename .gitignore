@@ -45,3 +45,12 @@ app.*.map.json
 /android/app/release
 /android/app/.cxx
 android/app/.cxx
+
+# FVM Version Cache
+.fvm/
+
+# Windows build artifacts and ephemeral files
+windows/flutter/ephemeral/
+windows/build/
+build/windows/
+debug/

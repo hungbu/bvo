@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:carousel_slider/carousel_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +9,7 @@ import 'package:bvo/screen/flashcard/flashcard.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/service/smart_notification_service.dart';
 import 'package:bvo/service/gamification_service.dart';
+import 'package:bvo/service/audio_service.dart';
 
 class FlashCardScreen extends StatefulWidget {
   final List<Word> words;
@@ -31,7 +31,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   int _currentIndex = 0;
   final TextEditingController _controller = TextEditingController();
   String _feedbackMessage = '';
-  final FlutterTts _flutterTts = FlutterTts();
+  final AudioService _audioService = AudioService();
   final CarouselSliderController _carouselController = CarouselSliderController();
   final FocusNode _inputFocusNode = FocusNode();
   late SharedPreferences _prefs;
@@ -228,16 +228,13 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   @override
   void dispose() {
     _controller.dispose();
-    _flutterTts.stop();
+    // AudioService is singleton, no need to stop
     _inputFocusNode.dispose();
     super.dispose();
   }
 
   Future<void> _speakEnglish(String text) async {
-    await _flutterTts.stop();
-    await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.speak(text);
+    await _audioService.speakNormal(text);
   }
 
   void _checkAnswerRealtime() {

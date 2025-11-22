@@ -5,7 +5,10 @@ import '../../repository/practice_repository.dart';
 import '../../repository/reading_repository.dart';
 import '../../repository/word_repository.dart';
 import '../../repository/quiz_repository.dart';
+import '../../repository/dictionary_words_repository.dart';
 import '../../model/word.dart';
+import '../../widget/selectable_text_with_word_lookup.dart';
+import '../dictionary/word_search_dialog.dart';
 
 class PracticeScreen extends StatefulWidget {
   final String readingId;
@@ -24,6 +27,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
   final ReadingRepository _readingRepository = ReadingRepository();
   final WordRepository _wordRepository = WordRepository();
   final QuizRepository _quizRepository = QuizRepository();
+  final DictionaryWordsRepository _dictionaryRepository = DictionaryWordsRepository();
   List<PracticeQuestion> _questions = [];
   Map<String, List<String>> _userAnswers = {};
   Map<String, bool> _submittedResults = {}; // Track if question has been submitted
@@ -31,11 +35,22 @@ class _PracticeScreenState extends State<PracticeScreen> {
   bool _allQuestionsSubmitted = false; // Track if all questions have been submitted
   int _currentQuestionIndex = 0;
   bool _isLoading = true;
+  Map<String, TextEditingController> _textControllers = {}; // Controllers for text answer questions
 
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    // Dispose all text controllers
+    for (final controller in _textControllers.values) {
+      controller.dispose();
+    }
+    _textControllers.clear();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -53,6 +68,18 @@ class _PracticeScreenState extends State<PracticeScreen> {
         final answer = await _repository.loadAnswer(question.id);
         if (answer.isNotEmpty) {
           answers[question.id] = answer;
+        }
+      }
+      
+      // Initialize text controllers for text answer questions
+      for (final question in questions) {
+        if (question.type == QuestionType.answerText) {
+          if (!_textControllers.containsKey(question.id)) {
+            final answer = answers[question.id] ?? [];
+            _textControllers[question.id] = TextEditingController(
+              text: answer.isNotEmpty ? answer.first : '',
+            );
+          }
         }
       }
       
@@ -353,12 +380,6 @@ class _PracticeScreenState extends State<PracticeScreen> {
                                 color: Colors.deepPurple,
                               ),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.bookmark_add),
-                              tooltip: 'Trích xuất từ vựng từ câu hỏi này',
-                              onPressed: () => _showExtractWordsFromQuestionDialog(context, currentQuestion),
-                              color: Theme.of(context).primaryColor,
-                            ),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -439,12 +460,6 @@ class _PracticeScreenState extends State<PracticeScreen> {
                                     ),
                                   ),
                                 ],
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.bookmark_add),
-                                tooltip: 'Thêm từ vựng vào Quiz',
-                                onPressed: () => _showExtractWordsFromQuestionDialog(context, currentQuestion),
-                                color: Theme.of(context).primaryColor,
                               ),
                             ],
                           ),
@@ -582,8 +597,13 @@ class _PracticeScreenState extends State<PracticeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        RichText(
-          text: _buildSentenceWithBlanks(displaySentence, blanks, blankPositions),
+        TextWithWordLookup(
+          text: displaySentence,
+          style: TextStyle(
+            color: Theme.of(context).primaryColor,
+            fontWeight: FontWeight.w500,
+          ),
+          onWordSelected: _showWordDetail,
         ),
         const SizedBox(height: 16),
         Wrap(
@@ -593,7 +613,11 @@ class _PracticeScreenState extends State<PracticeScreen> {
             final isSelected = userAnswer.contains(option);
             
             return FilterChip(
-              label: Text(option),
+              label: TextWithWordLookup(
+                text: option,
+                style: const TextStyle(),
+                onWordSelected: _showWordDetail,
+              ),
               selected: isSelected,
               onSelected: isReadOnly ? null : (selected) {
                 if (selected) {
@@ -638,7 +662,13 @@ class _PracticeScreenState extends State<PracticeScreen> {
     final spans = <TextSpan>[];
     
     for (int i = 0; i < parts.length; i++) {
-      spans.add(TextSpan(text: parts[i]));
+      spans.add(TextSpan(
+        text: parts[i],
+        style: TextStyle(
+          color: Theme.of(context).primaryColor,
+          fontWeight: FontWeight.w500,
+        ),
+      ));
       if (i < parts.length - 1 && i < blankPositions.length) {
         final blankNum = blankPositions[i];
         final answer = blanks[blankNum] ?? '';
@@ -663,16 +693,24 @@ class _PracticeScreenState extends State<PracticeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          question.questionText,
-          style: const TextStyle(fontSize: 16),
+        SelectableTextWithWordLookup(
+          text: question.questionText,
+          style: TextStyle(
+            fontSize: 16,
+            color: Theme.of(context).primaryColor,
+            fontWeight: FontWeight.w500,
+          ),
+          onWordSelected: _showWordDetail,
         ),
         const SizedBox(height: 16),
         // TODO: Migrate to RadioGroup when available in stable Flutter
         // ignore: deprecated_member_use
         ...question.options.map((option) {
           return RadioListTile<String>(
-            title: Text(option),
+            title: TextWithWordLookup(
+              text: option,
+              onWordSelected: _showWordDetail,
+            ),
             value: option,
             // ignore: deprecated_member_use
             groupValue: selectedValue,
@@ -692,15 +730,23 @@ class _PracticeScreenState extends State<PracticeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          question.questionText,
-          style: const TextStyle(fontSize: 16),
+        SelectableTextWithWordLookup(
+          text: question.questionText,
+          style: TextStyle(
+            fontSize: 16,
+            color: Theme.of(context).primaryColor,
+            fontWeight: FontWeight.w500,
+          ),
+          onWordSelected: _showWordDetail,
         ),
         const SizedBox(height: 16),
         ...question.options.map((option) {
           final isSelected = userAnswer.contains(option);
           return CheckboxListTile(
-            title: Text(option),
+            title: TextWithWordLookup(
+              text: option,
+              onWordSelected: _showWordDetail,
+            ),
             value: isSelected,
             onChanged: isReadOnly ? null : (selected) {
               final newAnswer = List<String>.from(userAnswer);
@@ -720,21 +766,44 @@ class _PracticeScreenState extends State<PracticeScreen> {
   }
 
   Widget _buildAnswerTextWidget(PracticeQuestion question, List<String> userAnswer, bool isReadOnly) {
+    // Get or create controller for this question
+    if (!_textControllers.containsKey(question.id)) {
+      _textControllers[question.id] = TextEditingController(
+        text: userAnswer.isNotEmpty ? userAnswer.first : '',
+      );
+    } else {
+      // Update controller text if it doesn't match current answer
+      final controller = _textControllers[question.id]!;
+      final currentText = userAnswer.isNotEmpty ? userAnswer.first : '';
+      if (controller.text != currentText) {
+        controller.text = currentText;
+        // Move cursor to end
+        controller.selection = TextSelection.fromPosition(
+          TextPosition(offset: currentText.length),
+        );
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          question.questionText,
-          style: const TextStyle(fontSize: 16),
+        SelectableTextWithWordLookup(
+          text: question.questionText,
+          style: TextStyle(
+            fontSize: 16,
+            color: Theme.of(context).primaryColor,
+            fontWeight: FontWeight.w500,
+          ),
+          onWordSelected: _showWordDetail,
         ),
         const SizedBox(height: 16),
         TextField(
           key: ValueKey(question.id), // Force rebuild when question changes
-          controller: TextEditingController(
-            text: userAnswer.isNotEmpty ? userAnswer.first : '',
-          ),
+          controller: _textControllers[question.id],
           maxLines: 5,
           enabled: !isReadOnly,
+          textDirection: TextDirection.ltr, // Ensure left-to-right text direction
+          textAlign: TextAlign.left, // Ensure left alignment
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
             hintText: 'Enter your answer',
@@ -808,7 +877,55 @@ class _PracticeScreenState extends State<PracticeScreen> {
     return allWords.toList()..sort();
   }
 
+  /// Show word detail dialog when a word is selected
+  Future<void> _showWordDetail(String selectedText) async {
+    // Extract the word from selected text (remove punctuation, get first word)
+    final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
+    final match = wordPattern.firstMatch(selectedText.trim());
+    if (match == null) return;
+    
+    final wordText = match.group(0)!.toLowerCase();
+    
+    try {
+      // Search for the word in dictionary
+      final words = await _dictionaryRepository.searchWord(wordText);
+      
+      if (words.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Không tìm thấy từ "$wordText" trong từ điển'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+      
+      // Show the first matching word (should be exact match due to ranking)
+      final word = words.first;
+      
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => WordDetailDialog(word: word),
+        );
+      }
+    } catch (e) {
+      print('Error showing word detail: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
   /// Show dialog to extract words from current question and add to quiz
+  @Deprecated('This feature has been removed. Use word selection instead.')
   Future<void> _showExtractWordsFromQuestionDialog(BuildContext context, PracticeQuestion question) async {
     // Show loading dialog first
     showDialog(

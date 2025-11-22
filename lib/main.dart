@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'theme/purple_theme.dart';
 import 'screen/main_layout.dart';
@@ -10,6 +12,7 @@ import 'screen/splash_screen.dart';
 // import 'service/auth_service.dart';
 import 'service/notification_manager.dart';
 import 'service/notification_fix_service.dart';
+import 'service/audio_service.dart';
 // import 'firebase_options.dart';
 
 // Global route observer for tracking navigation
@@ -20,8 +23,20 @@ final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Initialize sqflite_common_ffi for Windows/Linux/macOS desktop
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    // Initialize FFI
+    sqfliteFfiInit();
+    // Change the default factory
+    databaseFactory = databaseFactoryFfi;
+    print('✅ Initialized sqflite_common_ffi for desktop platform');
+  }
+  
   // Initialize timezone
   tz.initializeTimeZones();
+  
+  // Initialize AudioService
+  await AudioService().initialize();
   
   // Firebase removed (offline app)
   

@@ -10,6 +10,7 @@ import 'pronunciation_screen.dart';
 import 'speak_screen.dart';
 import 'grammar_screen.dart';
 import '../service/notification_manager.dart';
+import 'dictionary/word_search_dialog.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({Key? key}) : super(key: key);
@@ -257,7 +258,18 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
         foregroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false, // Không hiển thị back button
-        actions: _currentIndex == 3 ? [
+        actions: _currentIndex == 0 ? [
+          // Search button cho Home screen
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const WordSearchDialog(),
+              );
+            },
+          ),
+        ] : _currentIndex == 3 ? [
           // Refresh button cho Profile screen
           IconButton(
             icon: const Icon(Icons.refresh),

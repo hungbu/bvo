@@ -44,6 +44,11 @@ dependencies:
   shared_preferences: ^2.0.15
   timezone: ^0.10.1
   flutter_launcher_icons: ^0.14.4
+  file_picker: ^8.1.4
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  sqflite: ^2.3.3+2
+  sqflite_common_ffi: ^2.3.3+2
 
 flutter_launcher_icons:
   image_path: "assets/images/logo.png"
@@ -81,6 +86,8 @@ flutter:
     - assets/data/1000/
     - assets/data/reading/
     - assets/images/
+    - assets/data/dictionary/edict.db
+    - assets/data/dictionary/dictionary.db
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:bvo/model/word.dart';
 import 'package:bvo/service/vocabulary_data_loader.dart';
 import 'package:bvo/screen/flashcard_screen.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/repository/quiz_repository.dart';
+import 'package:bvo/service/audio_service.dart';
 
 class TopicLevelScreen extends StatefulWidget {
   const TopicLevelScreen({super.key});
@@ -17,7 +17,7 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
   late TabController _tabController;
   final VocabularyDataLoader _dataLoader = VocabularyDataLoader();
   final UserProgressRepository _progressRepository = UserProgressRepository();
-  final FlutterTts _flutterTts = FlutterTts();
+  final AudioService _audioService = AudioService();
   Set<String> _addedToQuizWords = {}; // Track words added to quiz
   Set<String> _masteredWords = {}; // Track words marked as mastered
   
@@ -45,7 +45,7 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
   @override
   void dispose() {
     _tabController.dispose();
-    _flutterTts.stop();
+    // AudioService is singleton, no need to stop
     super.dispose();
   }
 
@@ -944,17 +944,11 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
   }
 
   Future<void> _speakEnglish(String text) async {
-    await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.setSpeechRate(0.5);
-    await _flutterTts.speak(text);
+    await _audioService.speakNormal(text);
   }
 
   Future<void> _speakEnglishSlow(String text) async {
-    await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.setSpeechRate(0.2); // Very slow speed
-    await _flutterTts.speak(text);
+    await _audioService.speak(text: text, speechRate: 0.2);
   }
 
   Future<void> _addWordToQuiz(Word word) async {
