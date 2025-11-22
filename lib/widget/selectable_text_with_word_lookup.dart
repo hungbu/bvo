@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import '../service/dialog_manager.dart';
 
 /// A Text widget that allows word selection via long press or right click
-class SelectableTextWithWordLookup extends StatelessWidget {
+class SelectableTextWithWordLookup extends StatefulWidget {
   final String text;
   final TextStyle? style;
   final Function(String selectedText) onWordSelected;
@@ -14,19 +16,77 @@ class SelectableTextWithWordLookup extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<SelectableTextWithWordLookup> createState() => _SelectableTextWithWordLookupState();
+}
+
+class _SelectableTextWithWordLookupState extends State<SelectableTextWithWordLookup> {
+  final DialogManager _dialogManager = DialogManager();
+  Timer? _debounceTimer;
+  String? _lastSelectedWord;
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  void _handleWordSelection(String word) {
+    // Cancel previous timer if exists
+    _debounceTimer?.cancel();
+
+    // Check if dialog is already open
+    if (!_dialogManager.canOpenWordDetailDialog()) {
+      return;
+    }
+
+    // Check if same word is selected again
+    if (_lastSelectedWord == word) {
+      return; // Ignore duplicate selection
+    }
+
+    _lastSelectedWord = word;
+
+    // Debounce: wait a bit before processing
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (_dialogManager.canOpenWordDetailDialog()) {
+        widget.onWordSelected(word);
+      }
+      _lastSelectedWord = null; // Reset after processing
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SelectableText(
-      text,
-      style: style,
-      onTap: () {
-        // Allow text selection
+      widget.text,
+      style: widget.style,
+      onSelectionChanged: (selection, cause) {
+        // Only handle when exactly one word is selected
+        if (selection.isValid && !selection.isCollapsed) {
+          // Get selected text
+          final selectedText = widget.text.substring(
+            selection.start,
+            selection.end,
+          ).trim();
+          
+          // Extract all words from selection
+          final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
+          final matches = wordPattern.allMatches(selectedText);
+          final words = matches.map((m) => m.group(0)!).toList();
+          
+          // Only process if exactly one word is selected
+          if (words.length == 1) {
+            final word = words.first;
+            _handleWordSelection(word);
+          }
+        }
       },
     );
   }
 }
 
 /// A GestureDetector wrapper that detects word selection on long press or right click
-class TextWithWordLookup extends StatelessWidget {
+class TextWithWordLookup extends StatefulWidget {
   final String text;
   final TextStyle? style;
   final Function(String word) onWordSelected;
@@ -37,6 +97,46 @@ class TextWithWordLookup extends StatelessWidget {
     this.style,
     required this.onWordSelected,
   }) : super(key: key);
+
+  @override
+  State<TextWithWordLookup> createState() => _TextWithWordLookupState();
+}
+
+class _TextWithWordLookupState extends State<TextWithWordLookup> {
+  final DialogManager _dialogManager = DialogManager();
+  Timer? _debounceTimer;
+  String? _lastSelectedWord;
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  void _handleWordSelection(String word) {
+    // Cancel previous timer if exists
+    _debounceTimer?.cancel();
+
+    // Check if dialog is already open
+    if (!_dialogManager.canOpenWordDetailDialog()) {
+      return;
+    }
+
+    // Check if same word is selected again
+    if (_lastSelectedWord == word) {
+      return; // Ignore duplicate selection
+    }
+
+    _lastSelectedWord = word;
+
+    // Debounce: wait a bit before processing
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (_dialogManager.canOpenWordDetailDialog()) {
+        widget.onWordSelected(word);
+      }
+      _lastSelectedWord = null; // Reset after processing
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,26 +150,26 @@ class TextWithWordLookup extends StatelessWidget {
         _showWordSelectionMenu(context);
       },
       child: SelectableText(
-        text,
-        style: style,
+        widget.text,
+        style: widget.style,
         onSelectionChanged: (selection, cause) {
+          // Only handle when exactly one word is selected
           if (selection.isValid && !selection.isCollapsed) {
             // Get selected text
-            final selectedText = text.substring(
+            final selectedText = widget.text.substring(
               selection.start,
               selection.end,
-            );
+            ).trim();
             
-            // Extract word from selection (handle punctuation)
+            // Extract all words from selection
             final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
-            final match = wordPattern.firstMatch(selectedText.trim());
+            final matches = wordPattern.allMatches(selectedText);
+            final words = matches.map((m) => m.group(0)!).toList();
             
-            if (match != null) {
-              final word = match.group(0)!;
-              // Show word detail after a short delay to allow selection to complete
-              Future.delayed(const Duration(milliseconds: 300), () {
-                onWordSelected(word);
-              });
+            // Only process if exactly one word is selected
+            if (words.length == 1) {
+              final word = words.first;
+              _handleWordSelection(word);
             }
           }
         },
@@ -80,7 +180,7 @@ class TextWithWordLookup extends StatelessWidget {
   void _showWordSelectionMenu(BuildContext context) {
     // Extract all words from text
     final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
-    final matches = wordPattern.allMatches(text);
+    final matches = wordPattern.allMatches(widget.text);
     final words = matches.map((m) => m.group(0)!).toSet().toList()..sort();
     
     if (words.isEmpty) return;
@@ -96,7 +196,7 @@ class TextWithWordLookup extends StatelessWidget {
       }).toList(),
     ).then((selectedWord) {
       if (selectedWord != null) {
-        onWordSelected(selectedWord);
+        widget.onWordSelected(selectedWord);
       }
     });
   }

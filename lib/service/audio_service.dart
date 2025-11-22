@@ -42,7 +42,14 @@ class AudioService {
       
       // Listen for completion
       _flutterTts.setCompletionHandler(() {
+        print('📢 Completion handler called');
         _onSpeechComplete();
+      });
+      
+      // Also listen for errors
+      _flutterTts.setErrorHandler((msg) {
+        print('❌ TTS Error: $msg');
+        _onSpeechComplete(); // Continue queue even on error
       });
       
       _isInitialized = true;
@@ -116,40 +123,98 @@ class AudioService {
 
   /// Process queue
   Future<void> _processQueue() async {
-    if (_queue.isEmpty || _isPlaying) {
+    if (_queue.isEmpty) {
+      print('⏸️ Queue is empty, nothing to process');
+      return;
+    }
+    
+    if (_isPlaying) {
+      print('⏸️ Already playing, queue length: ${_queue.length}');
       return;
     }
 
     _isPlaying = true;
     final item = _queue.removeFirst();
+    print('🔄 Processing queue item: "${item.text}" (queue remaining: ${_queue.length})');
 
     try {
       await initialize();
+      
+      // Ensure completion handler is set (in case it was lost)
+      _flutterTts.setCompletionHandler(() {
+        print('📢 Completion handler called');
+        _onSpeechComplete();
+      });
+      
+      // Ensure error handler is set
+      _flutterTts.setErrorHandler((msg) {
+        print('❌ TTS Error: $msg');
+        _onSpeechComplete(); // Continue queue even on error
+      });
       
       // Set TTS parameters
       await _flutterTts.setLanguage(item.language);
       await _flutterTts.setPitch(item.pitch);
       await _flutterTts.setSpeechRate(item.speechRate);
       
-      print('🔊 Playing: "${item.text}" (rate: ${item.speechRate})');
+      print('🔊 Playing: "${item.text}" (rate: ${item.speechRate}, language: ${item.language})');
+      
+      // Store current item completer for completion handler
+      _currentItemCompleter = item.completer;
       
       // Speak
-      await _flutterTts.speak(item.text);
+      final result = await _flutterTts.speak(item.text);
+      
+      if (result != 1) {
+        // If speak returns error, complete immediately
+        print('⚠️ TTS speak returned error code: $result');
+        _onSpeechComplete();
+        return;
+      }
+      
+      // Set a timeout to ensure we don't get stuck if completion handler doesn't fire
+      // For very short words, use shorter timeout; for longer text, use longer timeout
+      final estimatedDuration = (item.text.length * 100 / item.speechRate).ceil();
+      final timeoutDuration = Duration(milliseconds: (estimatedDuration * 2).clamp(1000, 10000));
+      
+      _speechTimeoutTimer = Timer(timeoutDuration, () {
+        print('⏰ Speech timeout after ${timeoutDuration.inMilliseconds}ms, forcing completion');
+        _onSpeechComplete();
+      });
       
       // Wait for completion (handled by completion handler)
       // The completer will be completed in _onSpeechComplete
       
     } catch (e) {
       print('❌ Error playing audio: $e');
-      item.completer.completeError(e);
+      _speechTimeoutTimer?.cancel();
+      _speechTimeoutTimer = null;
+      if (item.completer.isCompleted == false) {
+        item.completer.completeError(e);
+      }
       _isPlaying = false;
-      _processQueue(); // Continue with next item
+      _currentItemCompleter = null;
+      // Continue with next item
+      _processQueue();
     }
   }
 
+  Completer<void>? _currentItemCompleter;
+  Timer? _speechTimeoutTimer;
+
   /// Called when speech completes
   void _onSpeechComplete() {
-    print('✅ Speech completed');
+    // Cancel timeout timer if exists
+    _speechTimeoutTimer?.cancel();
+    _speechTimeoutTimer = null;
+    print('✅ Speech completed (queue remaining: ${_queue.length}, isPlaying: $_isPlaying)');
+    
+    // Complete the current item's completer
+    if (_currentItemCompleter != null && !_currentItemCompleter!.isCompleted) {
+      _currentItemCompleter!.complete();
+      _currentItemCompleter = null;
+    }
+    
     _isPlaying = false;
     
     // Reset to normal speed after slow speech
@@ -164,9 +229,16 @@ class AudioService {
   /// Stop all audio and clear queue
   Future<void> stop() async {
     try {
+      _speechTimeoutTimer?.cancel();
+      _speechTimeoutTimer = null;
       await _flutterTts.stop();
       _queue.clear();
       _isPlaying = false;
+      // Complete current item if exists
+      if (_currentItemCompleter != null && !_currentItemCompleter!.isCompleted) {
+        _currentItemCompleter!.complete();
+        _currentItemCompleter = null;
+      }
       print('🛑 AudioService stopped and queue cleared');
     } catch (e) {
       print('❌ Error stopping audio: $e');

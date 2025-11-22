@@ -3,6 +3,7 @@ import '../../model/word.dart';
 import '../../repository/dictionary_words_repository.dart';
 import '../../repository/quiz_repository.dart';
 import '../../service/audio_service.dart';
+import '../../service/dialog_manager.dart';
 
 class WordSearchDialog extends StatefulWidget {
   const WordSearchDialog({Key? key}) : super(key: key);
@@ -92,10 +93,16 @@ class _WordSearchDialogState extends State<WordSearchDialog> {
   }
 
   Future<void> _showWordDetail(Word word) async {
+    final dialogManager = DialogManager();
+    if (!dialogManager.canOpenWordDetailDialog()) {
+      return; // Dialog is already open, ignore this request
+    }
+
     await showDialog(
       context: context,
       builder: (context) => WordDetailDialog(word: word),
     );
+    // Dialog closed, flag is reset in dispose()
   }
 
   @override
@@ -237,13 +244,22 @@ class WordDetailDialog extends StatefulWidget {
 class _WordDetailDialogState extends State<WordDetailDialog> {
   final AudioService _audioService = AudioService();
   final QuizRepository _quizRepository = QuizRepository();
+  final DialogManager _dialogManager = DialogManager();
   bool _isInQuiz = false;
   bool _isChecking = true;
 
   @override
   void initState() {
     super.initState();
+    _dialogManager.setWordDetailDialogOpen(true);
     _checkIfInQuiz();
+  }
+
+  @override
+  void dispose() {
+    _dialogManager.setWordDetailDialogOpen(false);
+    // AudioService is singleton, no need to dispose
+    super.dispose();
   }
 
   Future<void> _speakNormal() async {
@@ -328,12 +344,6 @@ class _WordDetailDialogState extends State<WordDetailDialog> {
         );
       }
     }
-  }
-
-  @override
-  void dispose() {
-    // AudioService is singleton, no need to dispose
-    super.dispose();
   }
 
   @override

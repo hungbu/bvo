@@ -1,0 +1,20 @@
+[q] Oneday, a lamb was eating (1) grass away from her flock
+of sheep. She didn’t (2) a wolf walking nearer to her.
+When she saw the wolf, she said (3), “Please, don’t eat me.
+My stomach is (4). of grass.
+You can wait a while to make my meat (5) much better.
+The grass in my stomach will be digested quickly if you let me dance.” The
+wolf (6) While the lamb was dancing, she had a new idea. She said, “I can dance
+faster if you take my bell and ring it so (7)” The wolf took
+the bell and started to ring. The shepherd (8) the sound and
+ran quickly to save the lamb’s life
+[a][sweet,notice,lightly,full,taste,agreed,hard,heard][heard, hear, bitter, notice, lightly, full, agreed, sweet, hard, taste]
+
+[q] Chú cừu đã đang ăn cỏ ngọt ở đâu?
+[a][She was eating sweet grass away from her flock
+of sheep][(texteditor)]
+
+[q] Cô ấy đã làm và nói gì khi cô ấy nhìn thấy con sói?
+[a][she said lightly "Please,don’t eat me.
+My stomach is full of grass"][(texteditor)]
+

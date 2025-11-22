@@ -8,6 +8,7 @@ import '../../repository/quiz_repository.dart';
 import '../../repository/dictionary_words_repository.dart';
 import '../../model/word.dart';
 import '../../widget/selectable_text_with_word_lookup.dart';
+import '../../service/dialog_manager.dart';
 import '../dictionary/word_search_dialog.dart';
 
 class PracticeScreen extends StatefulWidget {
@@ -578,7 +579,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
     final numBlanks = blankMatches.length;
     final blankPositions = question.blankPositions ?? List.generate(numBlanks, (i) => i + 1);
     
-    // Map blank index to user answer
+    // Map blank position number to user answer index
+    // blankPositions contains the position numbers (1, 2, 3...)
+    // userAnswer is indexed by order (0, 1, 2...)
     final blanks = <int, String>{};
     for (int i = 0; i < blankPositions.length; i++) {
       final blankNum = blankPositions[i];
@@ -586,12 +589,17 @@ class _PracticeScreenState extends State<PracticeScreen> {
       blanks[blankNum] = userAnswerForBlank;
     }
     
-    // Replace (1), (2), etc. with blanks in display
+    // Replace (1), (2), etc. with filled words or ___ in display
     String displaySentence = sentence;
     final blankMatchesList = blankMatches.toList();
+    // Process from end to start to preserve positions
     for (int i = blankMatchesList.length - 1; i >= 0; i--) {
       final match = blankMatchesList[i];
-      displaySentence = displaySentence.replaceFirst(match.group(0)!, '___');
+      final blankNum = int.parse(match.group(1)!);
+      final filledWord = blanks[blankNum] ?? '';
+      // Replace with filled word if available, otherwise ___
+      final replacement = filledWord.isEmpty ? '___' : filledWord;
+      displaySentence = displaySentence.replaceFirst(match.group(0)!, replacement);
     }
     
     return Column(
@@ -613,11 +621,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
             final isSelected = userAnswer.contains(option);
             
             return FilterChip(
-              label: TextWithWordLookup(
-                text: option,
-                style: const TextStyle(),
-                onWordSelected: _showWordDetail,
-              ),
+              label: Text(option),
               selected: isSelected,
               onSelected: isReadOnly ? null : (selected) {
                 if (selected) {
@@ -879,6 +883,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
   /// Show word detail dialog when a word is selected
   Future<void> _showWordDetail(String selectedText) async {
+    // Check if dialog is already open
+    final dialogManager = DialogManager();
+    if (!dialogManager.canOpenWordDetailDialog()) {
+      return; // Dialog is already open, ignore this request
+    }
+
     // Extract the word from selected text (remove punctuation, get first word)
     final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
     final match = wordPattern.firstMatch(selectedText.trim());
@@ -905,14 +915,16 @@ class _PracticeScreenState extends State<PracticeScreen> {
       // Show the first matching word (should be exact match due to ranking)
       final word = words.first;
       
-      if (mounted) {
-        showDialog(
+      if (mounted && dialogManager.canOpenWordDetailDialog()) {
+        await showDialog(
           context: context,
           builder: (context) => WordDetailDialog(word: word),
         );
+        // Dialog closed, flag is reset in dispose()
       }
     } catch (e) {
       print('Error showing word detail: $e');
+      dialogManager.setWordDetailDialogOpen(false); // Reset on error
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

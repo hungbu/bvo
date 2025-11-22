@@ -338,5 +338,88 @@ class ReadingRepository {
     await addReading(reading);
     return reading;
   }
+
+  /// Export questions to text format
+  String exportQuestionsToText(List<PracticeQuestion> questions) {
+    final buffer = StringBuffer();
+    for (var question in questions) {
+      buffer.writeln('[q] ${question.questionText}');
+      
+      if (question.type == QuestionType.answerText) {
+        buffer.writeln('[a][${question.correctAnswers.join(',')}][(texteditor)]');
+      } else if (question.type == QuestionType.fillToSentence) {
+        buffer.writeln('[a][${question.correctAnswers.join(',')}][${question.options.join(', ')}]');
+      } else if (question.type == QuestionType.chooseMulti) {
+        buffer.writeln('[a][${question.correctAnswers.join(',')}][${question.options.join(', ')}]');
+      } else {
+        buffer.writeln('[a][${question.correctAnswers.first}][${question.options.join(', ')}]');
+      }
+      buffer.writeln();
+    }
+    return buffer.toString();
+  }
+
+  /// Get reading content in text format
+  Future<String> getReadingContentText(String readingId) async {
+    final questions = await loadQuestionsForReading(readingId);
+    return exportQuestionsToText(questions);
+  }
+
+  /// Download reading to file
+  Future<String> downloadReading(String readingId, String title) async {
+    try {
+      final content = await getReadingContentText(readingId);
+      final filePath = await _saveReadingToFile(title, content);
+      return filePath;
+    } catch (e) {
+      print('Error downloading reading: $e');
+      rethrow;
+    }
+  }
+
+  /// Update reading with new questions
+  Future<void> updateReadingQuestions(String readingId, List<PracticeQuestion> questions) async {
+    // Save questions
+    await _saveQuestionsForReading(readingId, questions);
+    
+    // Update reading metadata
+    final readings = await loadAllReadings();
+    final readingIndex = readings.indexWhere((r) => r.id == readingId);
+    if (readingIndex != -1) {
+      final reading = readings[readingIndex];
+      
+      // Update file if exists
+      String? filePath = reading.filePath;
+      if (reading.source == 'import' && filePath != null) {
+        try {
+          final content = exportQuestionsToText(questions);
+          final file = File(filePath);
+          await file.writeAsString(content, encoding: utf8);
+        } catch (e) {
+          print('Warning: Could not update reading file: $e');
+        }
+      }
+      
+      readings[readingIndex] = reading.copyWith(
+        questionCount: questions.length,
+        updatedAt: DateTime.now(),
+      );
+      await saveAllReadings(readings);
+    }
+  }
+
+  /// Update reading title and description
+  Future<void> updateReadingMetadata(String readingId, String title, String? description) async {
+    final readings = await loadAllReadings();
+    final readingIndex = readings.indexWhere((r) => r.id == readingId);
+    if (readingIndex != -1) {
+      readings[readingIndex] = readings[readingIndex].copyWith(
+        title: title,
+        description: description,
+        updatedAt: DateTime.now(),
+      );
+      await saveAllReadings(readings);
+    }
+  }
 }
 

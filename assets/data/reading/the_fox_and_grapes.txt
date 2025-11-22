@@ -1,0 +1,26 @@
+[q] One day, a fox (1) very hungry as he went to search for some food. He searched high and low, but couldn’t find anything eatable. Finally, as his stomach (2) out, he fell on a farmer’s wall. At the top of the wall, he saw the biggest, juiciest grapes he’d ever seen. They had a rich, purple color, telling the fox they were (3) to be eaten. To reach the grapes, the fox had to jump high in the air. As he (4), he opened his mouth to catch the grapes, but he missed. The fox tried but missed again and again. He tried a few more times but kept (5). Finally, the fox (6) it was time to give up and go home. While he walked away, he (7), “I’m sure the grapes were sour anyway.”
+[a][really,complained,ready,approached,failing,decided,became][became, really, ready, approached, failing, decided, complained, shouted, sweet, bitter]
+
+[q] Những quả nho màu gì?
+[a][They had a rich, purple color][(texteditor)]
+
+[q] Con cáo đã cố gắng nhưng thất bại bao nhiêu lần?
+[a][He tried again and again, and a few more times but kept failing][(texteditor)]
+
+[q] Khi bỏ đi, anh ấy đã phàn nàn điều gì?
+[a][He complained, “I’m sure the grapes were sour anyway.”][(texteditor)]
+
+[q] Tại sao anh ấy không thể ăn những quả nho?
+[a][Because he couldn’t reach them—he kept failing to jump high enough][(texteditor)]
+
+[q] Hương vị (taste) của những quả nho như thế nào?
+[a][He claimed they were sour, but they looked sweet and juicy][(texteditor)]
+
+[q] Anh ấy nhìn thấy những quả nho to nhất ở đâu?
+[a][At the top of the farmer’s wall][(texteditor)]
+
+[q] Tại sao con cáo phải nhảy lên cao?
+[a][Because the grapes were at the top of the wall, out of his reach][(texteditor)]
+
+[q] Tại sao anh ấy tìm kiếm khắp nơi?
+[a][Because he was very hungry and couldn’t find anything to eat][(texteditor)]

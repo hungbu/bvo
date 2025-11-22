@@ -1,0 +1,41 @@
+[q] A lion was (1) in the sun. A little mouse came out to (2).
+The little mouse ran up the lion’s neck and (3) down his back.  
+The lion caught him with a great big (4)!  
+‘I’m gonna eat you!’ the lion (5), his mouth open wide.  
+‘No, please don’t!’ the tiny mouse (6). ‘Be kind to me and one day I’ll (7) you.’  
+The lion laughed, very (8), and let the mouse ran away.  
+One day, when the mouse was (9) behind a pile of leaves, he saw the king of the jungle (10) to a tree.  
+But the mouse had a plan to set him (11).  
+The mouse worked quickly and (12) through the rope.  
+The lion said, ‘Oh little mouse, I had no hope. Thank you, I’m free. You’re the best friend there ever could be!’  
+[a][asleep, play, surfed, slap, roared, cried, assist, hard, hiding, tied, free, chewed][play, hard, jumped, tied, cried, run, surfed, free, hiding, help, slap, asleep, assist, chewed, roared, big, fast, shout, loud, sleep]
+
+[q] Con sư tử đang làm gì khi chú chuột xuất hiện?
+[a][The lion was sleeping in the sun][(texteditor)]
+
+[q] Chú chuột đã làm gì trên lưng sư tử?
+[a][The mouse ran up the lion's neck and slid down his back][(texteditor)]
+
+[q] Sư tử bắt chuột bằng cách nào?
+[a][He caught the mouse with a big slap!][(texteditor)]
+
+[q] Sư tử nói gì khi tỉnh dậy?
+[a][I'm going to eat you!][(texteditor)]
+
+[q] Chú chuột đã van xin sư tử thế nào?
+[a][Please don't! If you let me go, I will help you one day.][(texteditor)]
+
+[q] Sư tử phản ứng ra sao trước lời van xin?
+[a][The lion laughed][(texteditor)]
+
+[q] Sau đó sư tử làm gì?
+[a][He let the mouse run away][(texteditor)]
+
+[q] Điều gì xảy ra với sư tử sau này?
+[a][He got tied to a tree with a rope][(texteditor)]
+
+[q] Chú chuột đã cứu sư tử bằng cách nào?
+[a][He chewed the rope with his teeth][(texteditor)]
+
+[q] Sư tử gọi chú chuột là gì khi được cứu?
+[a][You are my friend][(texteditor)]

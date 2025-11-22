@@ -1,8 +1,15 @@
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import '../../model/reading.dart';
 import '../../repository/reading_repository.dart';
 import 'practice_screen.dart';
 import 'import_reading_screen.dart';
+import 'form_import_reading_screen.dart';
+import 'edit_reading_screen.dart';
+import 'listen_reading_dialog.dart';
 
 class ReadingListScreen extends StatefulWidget {
   const ReadingListScreen({Key? key}) : super(key: key);
@@ -76,6 +83,113 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
     }
   }
 
+  Future<void> _listenReading(Reading reading) async {
+    try {
+      // Load questions for the reading
+      final questions = await _repository.loadQuestionsForReading(reading.id);
+      
+      if (questions.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Không có câu hỏi nào trong bài reading này'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Show listen dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => ListenReadingDialog(questions: questions),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải câu hỏi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _downloadReading(Reading reading) async {
+    try {
+      // Show loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đang tải file...')),
+        );
+      }
+
+      // Get download directory
+      Directory? downloadDir;
+      if (Platform.isAndroid) {
+        // For Android, use external storage downloads
+        downloadDir = Directory('/storage/emulated/0/Download');
+        if (!await downloadDir.exists()) {
+          // Fallback to app documents directory
+          downloadDir = await getApplicationDocumentsDirectory();
+        }
+      } else if (Platform.isWindows) {
+        // For Windows, use Downloads folder
+        final userProfile = Platform.environment['USERPROFILE'];
+        if (userProfile != null) {
+          downloadDir = Directory(path.join(userProfile, 'Downloads'));
+          if (!await downloadDir.exists()) {
+            downloadDir = await getApplicationDocumentsDirectory();
+          }
+        } else {
+          downloadDir = await getApplicationDocumentsDirectory();
+        }
+      } else {
+        // For iOS/Mac, use documents directory
+        downloadDir = await getApplicationDocumentsDirectory();
+      }
+
+      // Sanitize filename
+      final sanitizedTitle = reading.title
+          .toLowerCase()
+          .replaceAll(RegExp(r'[^\w\s-]'), '')
+          .replaceAll(RegExp(r'\s+'), '_')
+          .replaceAll(RegExp(r'_+'), '_')
+          .trim();
+
+      final fileName = '${sanitizedTitle}.txt';
+      final filePath = path.join(downloadDir.path, fileName);
+
+      // Get content and save
+      final content = await _repository.getReadingContentText(reading.id);
+      final file = File(filePath);
+      await file.writeAsString(content, encoding: utf8);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã tải file thành công!\n$filePath'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải file: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,20 +199,49 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(Icons.file_upload),
             tooltip: 'Import Reading',
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ImportReadingScreen(),
-                ),
-              );
-              if (result == true) {
-                await _loadReadings();
+            onSelected: (value) async {
+              Widget? screen;
+              if (value == 'form') {
+                screen = const FormImportReadingScreen();
+              } else if (value == 'text') {
+                screen = const ImportReadingScreen();
+              }
+              
+              if (screen != null) {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => screen!),
+                );
+                if (result == true) {
+                  await _loadReadings();
+                }
               }
             },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'form',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit, size: 20),
+                    SizedBox(width: 8),
+                    Text('Nhập bằng Form'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'text',
+                child: Row(
+                  children: [
+                    Icon(Icons.code, size: 20),
+                    SizedBox(width: 8),
+                    Text('Nhập bằng Text'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -240,22 +383,67 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                   ],
                 ),
               ),
-              PopupMenuButton(
+              PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert),
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  const PopupMenuItem<String>(
+                    value: 'listen',
+                    child: Row(
+                      children: [
+                        Icon(Icons.headphones, size: 20),
+                        SizedBox(width: 8),
+                        Text('Nghe'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit, size: 20),
+                        SizedBox(width: 8),
+                        Text('Chỉnh sửa'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'download',
+                    child: Row(
+                      children: [
+                        Icon(Icons.download, size: 20),
+                        SizedBox(width: 8),
+                        Text('Download'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  const PopupMenuItem<String>(
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete, color: Colors.red),
+                        Icon(Icons.delete, color: Colors.red, size: 20),
                         SizedBox(width: 8),
                         Text('Xóa'),
                       ],
                     ),
                   ),
                 ],
-                onSelected: (value) {
-                  if (value == 'delete') {
+                onSelected: (value) async {
+                  if (value == 'listen') {
+                    await _listenReading(reading);
+                  } else if (value == 'edit') {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditReadingScreen(reading: reading),
+                      ),
+                    );
+                    if (result == true) {
+                      await _loadReadings();
+                    }
+                  } else if (value == 'download') {
+                    await _downloadReading(reading);
+                  } else if (value == 'delete') {
                     _deleteReading(reading);
                   }
                 },

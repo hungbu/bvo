@@ -86,7 +86,6 @@ flutter:
     - assets/data/1000/
     - assets/data/reading/
     - assets/images/
-    - assets/data/dictionary/edict.db
     - assets/data/dictionary/dictionary.db
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
