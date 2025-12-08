@@ -726,6 +726,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
         TextWithWordLookup(
           text: displaySentence,
           style: TextStyle(
+            fontSize: 18,
             color: Theme.of(context).primaryColor,
             fontWeight: FontWeight.w500,
           ),
@@ -818,7 +819,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
         SelectableTextWithWordLookup(
           text: question.questionText,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             color: Theme.of(context).primaryColor,
             fontWeight: FontWeight.w500,
           ),
@@ -855,7 +856,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
         SelectableTextWithWordLookup(
           text: question.questionText,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             color: Theme.of(context).primaryColor,
             fontWeight: FontWeight.w500,
           ),
@@ -912,7 +913,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
         SelectableTextWithWordLookup(
           text: question.questionText,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             color: Theme.of(context).primaryColor,
             fontWeight: FontWeight.w500,
           ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'home_screen.dart';
-// import 'topic_screen.dart'; // Will be used later when switching back to topic-based learning
 import 'topic_level_screen.dart';
 //import 'quiz_screen.dart';
 import 'profile_screen.dart';
@@ -28,8 +27,7 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   // Note: Index 2 is Apps (no screen, shows bottom sheet)
   List<Widget> get _screens => [
     HomeScreen(onTabChange: (index) => setState(() => _currentIndex = index)), // Home - Dashboard & Overview
-    const TopicLevelScreen(), // Topics - Learning by Level (temporarily replacing TopicScreen)
-    // const TopicScreen(), // Topics - All topics list (will be used later)
+    const TopicLevelScreen(), // Topics - Learning by Level
     //const QuizScreen(), // Quiz - Review & Testing unlearned words
     ProfileScreen(onRefreshCallback: (callback) => _profileRefreshCallback = callback), // Profile - Stats & Settings
   ];

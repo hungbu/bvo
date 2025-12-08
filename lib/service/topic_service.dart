@@ -4,11 +4,34 @@ import '../repository/topic_repository.dart';
 /// Service class to handle topic business logic
 class TopicService {
   final TopicRepository _repository = TopicRepository();
+  
+  // Cache for topics to avoid reloading
+  List<Topic>? _cachedTopics;
+  DateTime? _cacheTimestamp;
+  static const Duration _cacheValidity = Duration(minutes: 5);
 
-  /// Get all topics sorted by difficulty and progress
+  /// Get all topics sorted by difficulty and progress (cached)
   Future<List<Topic>> getTopicsForDisplay() async {
-    // Preserve the original order as defined in topics.json
-    return await _repository.getAllTopics();
+    // Return cached topics if still valid
+    if (_cachedTopics != null && 
+        _cacheTimestamp != null && 
+        DateTime.now().difference(_cacheTimestamp!) < _cacheValidity) {
+      return _cachedTopics!;
+    }
+    
+    // Load fresh topics
+    final topics = await _repository.getAllTopics();
+    _cachedTopics = topics;
+    _cacheTimestamp = DateTime.now();
+    
+    return topics;
+  }
+  
+  /// Clear topics cache (call after learning/updating progress)
+  void clearCache() {
+    _cachedTopics = null;
+    _cacheTimestamp = null;
+    _repository.clearCache();
   }
 
   /// Get recommended topics for user

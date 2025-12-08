@@ -1,12 +1,13 @@
-import 'dart:convert';
-import 'package:flutter/services.dart';
 import '../model/word.dart';
+import 'level_vocabulary_loader.dart';
 
-/// Service to load vocabulary data directly from data files
+/// Service to load vocabulary data from level txt files and map with database
 class VocabularyDataLoader {
   static final VocabularyDataLoader _instance = VocabularyDataLoader._internal();
   factory VocabularyDataLoader() => _instance;
   VocabularyDataLoader._internal();
+
+  final LevelVocabularyLoader _levelLoader = LevelVocabularyLoader();
 
   // Cache for loaded data
   List<dWord>? _allWords;
@@ -21,18 +22,9 @@ class VocabularyDataLoader {
       return _allWords!;
     }
 
-    // Load all topic word files under assets/data/1000
-    print('getAllWords: loading from AssetManifest.json and assets/data/1000/*.json');
-    final words = await _loadAllTopicWordsFromAssets();
-
-    // Sort by difficulty (ascending), then by English word (alphabetical)
-    words.sort((a, b) {
-      int difficultyComparison = a.difficulty.compareTo(b.difficulty);
-      if (difficultyComparison != 0) {
-        return difficultyComparison;
-      }
-      return a.en.toLowerCase().compareTo(b.en.toLowerCase());
-    });
+    // Load from level txt files and map with database
+    print('getAllWords: loading from level txt files (1.1-1.5, 2.0) and mapping with database');
+    final words = await _levelLoader.getAllWords();
 
     print('getAllWords: loaded total \'${words.length}\' words (before caching)');
     _allWords = words;
@@ -45,17 +37,9 @@ class VocabularyDataLoader {
       print('getBasicWords: returning cached list of \'${_basicWords!.length}\' words');
       return _basicWords!;
     }
-    final all = await getAllWords();
-    final filtered = all.where((w) => w.level == WordLevel.BASIC).toList();
-    filtered.sort((a, b) {
-      int difficultyComparison = a.difficulty.compareTo(b.difficulty);
-      if (difficultyComparison != 0) {
-        return difficultyComparison;
-      }
-      return a.en.toLowerCase().compareTo(b.en.toLowerCase());
-    });
-    _basicWords = filtered;
-    print('getBasicWords: computed \'${_basicWords!.length}\' words');
+    final words = await _levelLoader.getBasicWords();
+    _basicWords = words;
+    print('getBasicWords: loaded \'${_basicWords!.length}\' words from level 1.1-1.5');
     return _basicWords!;
   }
 
@@ -65,17 +49,9 @@ class VocabularyDataLoader {
       print('getIntermediateWords: returning cached list of \'${_intermediateWords!.length}\' words');
       return _intermediateWords!;
     }
-    final all = await getAllWords();
-    final filtered = all.where((w) => w.level == WordLevel.INTERMEDIATE).toList();
-    filtered.sort((a, b) {
-      int difficultyComparison = a.difficulty.compareTo(b.difficulty);
-      if (difficultyComparison != 0) {
-        return difficultyComparison;
-      }
-      return a.en.toLowerCase().compareTo(b.en.toLowerCase());
-    });
-    _intermediateWords = filtered;
-    print('getIntermediateWords: computed \'${_intermediateWords!.length}\' words');
+    final words = await _levelLoader.getIntermediateWords();
+    _intermediateWords = words;
+    print('getIntermediateWords: loaded \'${_intermediateWords!.length}\' words from level 2.0');
     return _intermediateWords!;
   }
 
@@ -85,17 +61,9 @@ class VocabularyDataLoader {
       print('getAdvancedWords: returning cached list of \'${_advancedWords!.length}\' words');
       return _advancedWords!;
     }
-    final all = await getAllWords();
-    final filtered = all.where((w) => w.level == WordLevel.ADVANCED).toList();
-    filtered.sort((a, b) {
-      int difficultyComparison = a.difficulty.compareTo(b.difficulty);
-      if (difficultyComparison != 0) {
-        return difficultyComparison;
-      }
-      return a.en.toLowerCase().compareTo(b.en.toLowerCase());
-    });
-    _advancedWords = filtered;
-    print('getAdvancedWords: computed \'${_advancedWords!.length}\' words');
+    final words = await _levelLoader.getAdvancedWords();
+    _advancedWords = words;
+    print('getAdvancedWords: loaded \'${_advancedWords!.length}\' words');
     return _advancedWords!;
   }
 
@@ -111,12 +79,9 @@ class VocabularyDataLoader {
     }
   }
 
-  /// Get words by topic
+  /// Get words by topic (topic is the level like "1.1", "1.2", etc.)
   Future<List<dWord>> getWordsByTopic(String topic) async {
-    final allWords = await getAllWords();
-    final list = allWords.where((word) => word.topic == topic).toList();
-    print('getWordsByTopic(\'$topic\'): found \'${list.length}\' words');
-    return list;
+    return await _levelLoader.getWordsByTopic(topic);
   }
 
   /// Get words by difficulty
@@ -125,25 +90,14 @@ class VocabularyDataLoader {
     return allWords.where((word) => word.difficulty == difficulty).toList();
   }
 
-  /// Get all available topics
+  /// Get all available topics (levels)
   Future<List<String>> getAllTopics() async {
-    final allWords = await getAllWords();
-    return allWords.map((word) => word.topic).toSet().toList()..sort();
+    return await _levelLoader.getAllTopics();
   }
 
   /// Get statistics
   Future<Map<String, dynamic>> getStatistics() async {
-    final basic = await getBasicWords();
-    final intermediate = await getIntermediateWords();
-    final advanced = await getAdvancedWords();
-    
-    return {
-      'total': basic.length + intermediate.length + advanced.length,
-      'basic': basic.length,
-      'intermediate': intermediate.length,
-      'advanced': advanced.length,
-      'topics': (await getAllTopics()).length,
-    };
+    return await _levelLoader.getStatistics();
   }
 
   /// Clear cache (useful for hot reload or data updates)
@@ -152,74 +106,7 @@ class VocabularyDataLoader {
     _basicWords = null;
     _intermediateWords = null;
     _advancedWords = null;
+    _levelLoader.clearCache();
     print('VocabularyDataLoader: caches cleared');
-  }
-
-  /// Load words from JSON asset file and sort by difficulty
-  Future<List<dWord>> _loadWordsFromAsset(String assetPath) async {
-    try {
-      final String jsonString = await rootBundle.loadString(assetPath);
-      final List<dynamic> jsonList = json.decode(jsonString);
-      
-      final words = jsonList.map((json) => dWord.fromJson(json as Map<String, dynamic>)).toList();
-      
-      // Sort by difficulty (ascending), then by English word (alphabetical)
-      words.sort((a, b) {
-        int difficultyComparison = a.difficulty.compareTo(b.difficulty);
-        if (difficultyComparison != 0) {
-          return difficultyComparison;
-        }
-        return a.en.toLowerCase().compareTo(b.en.toLowerCase());
-      });
-      
-      return words;
-    } catch (e) {
-      print('Error loading words from $assetPath: $e');
-      return [];
-    }
-  }
-
-  /// Load all topic word files from the asset manifest
-  Future<List<dWord>> _loadAllTopicWordsFromAssets() async {
-    try {
-      final String manifestContent = await rootBundle.loadString('AssetManifest.json');
-      final Map<String, dynamic> manifestMap = json.decode(manifestContent) as Map<String, dynamic>;
-      print('AssetManifest: top-level keys = ${manifestMap.keys.join(', ')}');
-
-      // Support both legacy and new formats of AssetManifest
-      Iterable<String> candidateKeys;
-      if (manifestMap.containsKey('files') && manifestMap['files'] is Map<String, dynamic>) {
-        final Map<String, dynamic> filesMap = manifestMap['files'] as Map<String, dynamic>;
-        print('AssetManifest: detected new format with files=${filesMap.length}');
-        candidateKeys = filesMap.keys;
-      } else {
-        print('AssetManifest: detected legacy format with entries=${manifestMap.length}');
-        candidateKeys = manifestMap.keys;
-      }
-
-      final assetPaths = candidateKeys
-          .where((key) => key.startsWith('assets/data/1000/') && key.endsWith('.json'))
-          .toList()
-            ..sort();
-
-      if (assetPaths.isEmpty) {
-        print('No topic word JSON files found under assets/data/1000/.');
-        return [];
-      }
-      print('Found \'${assetPaths.length}\' topic word files. First few: ' + (assetPaths.isNotEmpty ? assetPaths.take(5).join(', ') : '<none>'));
-
-      // Load sequentially to emit per-file logs
-      final all = <dWord>[];
-      for (final path in assetPaths) {
-        final list = await _loadWordsFromAsset(path);
-        print('Loaded \'${list.length}\' words from $path');
-        all.addAll(list);
-      }
-      print('Total words aggregated from topic files: \'${all.length}\'');
-      return all;
-    } catch (e) {
-      print('Error loading AssetManifest.json or topic word assets: $e');
-      return [];
-    }
   }
 }

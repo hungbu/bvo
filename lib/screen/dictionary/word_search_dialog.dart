@@ -35,17 +35,21 @@ class _WordSearchDialogState extends State<WordSearchDialog> {
 
   Future<void> _performSearch(String query) async {
     if (query.trim().isEmpty) {
-      setState(() {
-        _searchResults = [];
-        _searchQuery = '';
-      });
+      if (mounted) {
+        setState(() {
+          _searchResults = [];
+          _searchQuery = '';
+        });
+      }
       return;
     }
 
-    setState(() {
-      _isSearching = true;
-      _searchQuery = query;
-    });
+    if (mounted) {
+      setState(() {
+        _isSearching = true;
+        _searchQuery = query;
+      });
+    }
 
     try {
       print('🔍 Searching for: "$query"');
@@ -54,17 +58,23 @@ class _WordSearchDialogState extends State<WordSearchDialog> {
       final wordCount = await _repository.getWordCount();
       print('📊 Database word count: $wordCount');
       
+      if (!mounted) return; // Widget disposed, exit early
+      
       if (wordCount == 0) {
         print('⚠️ Database is empty!');
-        setState(() {
-          _searchResults = [];
-          _isSearching = false;
-        });
+        if (mounted) {
+          setState(() {
+            _searchResults = [];
+            _isSearching = false;
+          });
+        }
         return;
       }
       
       final results = await _repository.searchWord(query);
       print('✅ Found ${results.length} results');
+      
+      if (!mounted) return; // Widget disposed, exit early
       
       if (results.isEmpty) {
         print('⚠️ No results found. Trying fuzzy search...');
@@ -72,23 +82,29 @@ class _WordSearchDialogState extends State<WordSearchDialog> {
         final fuzzyResults = await _repository.fuzzySearch(query);
         print('🔍 Fuzzy search found ${fuzzyResults.length} results');
         
-        setState(() {
-          _searchResults = fuzzyResults;
-          _isSearching = false;
-        });
+        if (mounted) {
+          setState(() {
+            _searchResults = fuzzyResults;
+            _isSearching = false;
+          });
+        }
       } else {
-        setState(() {
-          _searchResults = results;
-          _isSearching = false;
-        });
+        if (mounted) {
+          setState(() {
+            _searchResults = results;
+            _isSearching = false;
+          });
+        }
       }
     } catch (e, stackTrace) {
       print('❌ Error searching: $e');
       print('Stack trace: $stackTrace');
-      setState(() {
-        _searchResults = [];
-        _isSearching = false;
-      });
+      if (mounted) {
+        setState(() {
+          _searchResults = [];
+          _isSearching = false;
+        });
+      }
     }
   }
 
@@ -273,17 +289,21 @@ class _WordDetailDialogState extends State<WordDetailDialog> {
   Future<void> _checkIfInQuiz() async {
     try {
       final quizWords = await _quizRepository.getQuizWords();
-      setState(() {
-        _isInQuiz = quizWords.any(
-          (w) => w.en == widget.word.en && w.topic == widget.word.topic,
-        );
-        _isChecking = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isInQuiz = quizWords.any(
+            (w) => w.en == widget.word.en && w.topic == widget.word.topic,
+          );
+          _isChecking = false;
+        });
+      }
     } catch (e) {
       print('Error checking quiz: $e');
-      setState(() {
-        _isChecking = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isChecking = false;
+        });
+      }
     }
   }
 

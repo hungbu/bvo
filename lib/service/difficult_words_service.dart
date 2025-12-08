@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../repository/user_progress_repository.dart';
 
 class DifficultWordsService {
   static const String _reminderSettingsKey = 'reminder_settings';
@@ -17,7 +16,11 @@ class DifficultWordsService {
       key.startsWith('word_progress_${topic}_')
     ).toList();
     
-    print('🔍 Checking topic "$topic": found ${topicKeys.length} word progress keys');
+    // Only log for target topics to avoid spam
+    const targetTopics = ['1.1', '1.2', '1.3', '1.4', '1.5', '2.0'];
+    if (targetTopics.contains(topic)) {
+      print('🔍 Checking topic "$topic": found ${topicKeys.length} word progress keys');
+    }
     
     for (String key in topicKeys) {
       final progressJson = prefs.getString(key);
@@ -51,7 +54,10 @@ class DifficultWordsService {
                 lastAttempt: lastAttempt,
               ));
               
-              print('  - Word "$wordEn": $incorrectCount/$totalAttempts errors (${(errorRate * 100).toStringAsFixed(1)}%)');
+              // Only log for target topics
+              if (targetTopics.contains(topic)) {
+                print('  - Word "$wordEn": $incorrectCount/$totalAttempts errors (${(errorRate * 100).toStringAsFixed(1)}%)');
+              }
             }
           }
         } catch (e) {
@@ -63,33 +69,22 @@ class DifficultWordsService {
     // Sắp xếp theo tỷ lệ sai giảm dần
     difficultWords.sort((a, b) => b.errorRate.compareTo(a.errorRate));
     
-    print('📊 Topic "$topic": ${difficultWords.length} difficult words found');
+    // Only log for target topics
+    if (targetTopics.contains(topic)) {
+      print('📊 Topic "$topic": ${difficultWords.length} difficult words found');
+    }
     return difficultWords;
   }
   
-  /// Lấy tất cả từ khó (tất cả topics) từ UserProgressRepository
+  /// Lấy tất cả từ khó (chỉ topics 1.1-1.5, 2.0) từ UserProgressRepository
   Future<List<DifficultWordData>> getAllDifficultWords() async {
-    final prefs = await SharedPreferences.getInstance();
     List<DifficultWordData> allDifficultWords = [];
     
-    // Lấy tất cả topics từ word progress keys
-    final allKeys = prefs.getKeys();
-    Set<String> topics = {};
+    // Chỉ load topics cần thiết: 1.1, 1.2, 1.3, 1.4, 1.5, 2.0
+    const targetTopics = ['1.1', '1.2', '1.3', '1.4', '1.5', '2.0'];
     
-    for (String key in allKeys) {
-      if (key.startsWith('word_progress_')) {
-        final keyParts = key.split('_');
-        if (keyParts.length >= 3) {
-          final topic = keyParts[2]; // word_progress_TOPIC_word
-          topics.add(topic);
-        }
-      }
-    }
-    
-    print('🔍 Found topics with word progress: $topics');
-    
-    // Lấy từ khó từ tất cả topics
-    for (String topic in topics) {
+    // Lấy từ khó từ các topics cần thiết
+    for (String topic in targetTopics) {
       final topicDifficultWords = await getDifficultWordsByTopic(topic);
       allDifficultWords.addAll(topicDifficultWords);
     }
@@ -97,7 +92,6 @@ class DifficultWordsService {
     // Sắp xếp theo tỷ lệ sai giảm dần
     allDifficultWords.sort((a, b) => b.errorRate.compareTo(a.errorRate));
     
-    print('📊 Total difficult words found: ${allDifficultWords.length}');
     return allDifficultWords;
   }
   
@@ -113,28 +107,14 @@ class DifficultWordsService {
     return allDifficultWords.where((word) => word.errorRate > threshold).toList();
   }
   
-  /// Lấy thống kê từ khó theo topic từ UserProgressRepository
+  /// Lấy thống kê từ khó theo topic (chỉ topics 1.1-1.5, 2.0)
   Future<Map<String, TopicDifficultStats>> getDifficultStatsByTopic() async {
-    final prefs = await SharedPreferences.getInstance();
     Map<String, TopicDifficultStats> stats = {};
     
-    // Lấy tất cả topics từ word progress keys
-    final allKeys = prefs.getKeys();
-    Set<String> topics = {};
+    // Chỉ load topics cần thiết: 1.1, 1.2, 1.3, 1.4, 1.5, 2.0
+    const targetTopics = ['1.1', '1.2', '1.3', '1.4', '1.5', '2.0'];
     
-    for (String key in allKeys) {
-      if (key.startsWith('word_progress_')) {
-        final keyParts = key.split('_');
-        if (keyParts.length >= 3) {
-          final topic = keyParts[2]; // word_progress_TOPIC_word
-          topics.add(topic);
-        }
-      }
-    }
-    
-    print('🔍 Calculating difficult stats for topics: $topics');
-    
-    for (String topic in topics) {
+    for (String topic in targetTopics) {
       final difficultWords = await getDifficultWordsByTopic(topic);
       final totalWords = difficultWords.length;
       final highErrorWords = difficultWords.where((w) => w.errorRate > 0.5).length;
@@ -153,8 +133,6 @@ class DifficultWordsService {
         averageErrorRate: avgErrorRate,
         topDifficultWords: difficultWords.take(5).toList(),
       );
-      
-      print('📊 Topic "$topic" stats: ${totalWords} difficult, avg error: ${(avgErrorRate * 100).toStringAsFixed(1)}%');
     }
     
     return stats;

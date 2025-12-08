@@ -1,7 +1,18 @@
-# PowerShell wrapper script to run Flutter Windows with Visual Studio 2026
+# PowerShell wrapper script to run Flutter Windows with Visual Studio 2022
 # Usage: .\run_windows.ps1
+# This script automatically prepares the build environment and fixes common issues
 
 $ErrorActionPreference = "Stop"
+
+# Check if we need to prepare build (if switching from Android)
+$needsPrep = $false
+if (Test-Path "build\app" -ErrorAction SilentlyContinue) {
+    $needsPrep = $true
+    Write-Host "Detected Android build artifacts. Preparing for Windows build..." -ForegroundColor Yellow
+    if (Test-Path ".\prepare_build.ps1") {
+        & ".\prepare_build.ps1" -Platform windows
+    }
+}
 
 # Find Visual Studio 2022
 $VS2022Paths = @(
@@ -57,12 +68,6 @@ Write-Host "CMake Generator: $env:CMAKE_GENERATOR" -ForegroundColor Green
 Write-Host "Platform: $env:CMAKE_GENERATOR_PLATFORM" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
-
-# Fix flutter_tts CMakeLists.txt if needed
-Write-Host "Checking flutter_tts plugin configuration..." -ForegroundColor Cyan
-if (Test-Path ".\fix_flutter_tts.ps1") {
-    & ".\fix_flutter_tts.ps1"
-}
 
 # Fix flutter_tts CMakeLists.txt if needed
 Write-Host "Checking flutter_tts plugin configuration..." -ForegroundColor Cyan

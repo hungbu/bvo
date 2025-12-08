@@ -99,6 +99,7 @@ class NotificationService {
   // PHASE 1 NOTIFICATIONS
 
   /// 1. Daily Learning Reminders
+  /// OPTIMIZED: Use timeout for word fetching to avoid blocking
   Future<void> scheduleDailyReminders() async {
     if (!_isNotificationSupported) return;
     
@@ -117,14 +118,23 @@ class NotificationService {
     final eveningHour = prefs.getInt('evening_reminder_hour') ?? 19;
     final eveningMinute = prefs.getInt('evening_reminder_minute') ?? 0;
 
+    // OPTIMIZED: Schedule notifications with timeout for word fetching
+    // If word fetching takes too long (>500ms), use default message
     if (morningEnabled) {
-      // Lấy từ vựng cho buổi sáng
-      final morningWord = await _vocabularyService.getMorningWord();
       String morningBody = 'Sẵn sàng học 10 từ mới hôm nay chưa?';
       
-      if (morningWord != null) {
-        final wordText = _vocabularyService.formatWordForNotification(morningWord);
-        morningBody = 'Từ vựng hôm nay: $wordText\nSẵn sàng học thêm không? 📚';
+      // Try to get word with timeout (non-blocking)
+      try {
+        final morningWord = await _vocabularyService.getMorningWord()
+            .timeout(const Duration(milliseconds: 500), onTimeout: () => null);
+        
+        if (morningWord != null) {
+          final wordText = _vocabularyService.formatWordForNotification(morningWord);
+          morningBody = 'Từ vựng hôm nay: $wordText\nSẵn sàng học thêm không? 📚';
+        }
+      } catch (e) {
+        // Use default message if word fetching fails
+        print('⚠️ Could not get morning word (using default): $e');
       }
       
       await _scheduleDailyNotification(
@@ -138,13 +148,20 @@ class NotificationService {
     }
 
     if (noonEnabled) {
-      // Lấy từ vựng cho buổi trưa
-      final noonWord = await _vocabularyService.getNoonWord();
       String noonBody = 'Thời gian hoàn hảo để học vài từ mới trong giờ nghỉ!';
       
-      if (noonWord != null) {
-        final wordText = _vocabularyService.formatWordForNotification(noonWord);
-        noonBody = 'Từ vựng: $wordText\nGiờ nghỉ trưa học từ nào! ☕';
+      // Try to get word with timeout (non-blocking)
+      try {
+        final noonWord = await _vocabularyService.getNoonWord()
+            .timeout(const Duration(milliseconds: 500), onTimeout: () => null);
+        
+        if (noonWord != null) {
+          final wordText = _vocabularyService.formatWordForNotification(noonWord);
+          noonBody = 'Từ vựng: $wordText\nGiờ nghỉ trưa học từ nào! ☕';
+        }
+      } catch (e) {
+        // Use default message if word fetching fails
+        print('⚠️ Could not get noon word (using default): $e');
       }
       
       await _scheduleDailyNotification(
@@ -158,13 +175,20 @@ class NotificationService {
     }
 
     if (eveningEnabled) {
-      // Lấy từ vựng cho buổi tối (ôn tập)
-      final eveningWord = await _vocabularyService.getEveningWord();
       String eveningBody = 'Đã đến lúc ôn lại những từ hôm nay!';
       
-      if (eveningWord != null) {
-        final wordText = _vocabularyService.formatWordForNotification(eveningWord);
-        eveningBody = 'Ôn tập: $wordText\nKết thúc ngày với việc ôn từ vựng! 🌙';
+      // Try to get word with timeout (non-blocking)
+      try {
+        final eveningWord = await _vocabularyService.getEveningWord()
+            .timeout(const Duration(milliseconds: 500), onTimeout: () => null);
+        
+        if (eveningWord != null) {
+          final wordText = _vocabularyService.formatWordForNotification(eveningWord);
+          eveningBody = 'Ôn tập: $wordText\nKết thúc ngày với việc ôn từ vựng! 🌙';
+        }
+      } catch (e) {
+        // Use default message if word fetching fails
+        print('⚠️ Could not get evening word (using default): $e');
       }
       
       await _scheduleDailyNotification(

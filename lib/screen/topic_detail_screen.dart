@@ -591,13 +591,33 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> with RouteAware {
                                     fontFamily: 'monospace',
                                   ),
                                 ),
-                              Text(
-                                word.type.toString().split('.').last.toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.blue[700],
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.purple.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      'Level ${word.topic}',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.purple[700],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    word.type.toString().split('.').last.toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.blue[700],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

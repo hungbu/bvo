@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import '../service/dialog_manager.dart';
 
 /// A Text widget that allows word selection via long press or right click
@@ -55,31 +56,69 @@ class _SelectableTextWithWordLookupState extends State<SelectableTextWithWordLoo
     });
   }
 
+  String? _getWordAtPosition(Offset position, BuildContext context, double maxWidth) {
+    final textStyle = widget.style ?? DefaultTextStyle.of(context).style;
+    final textPainter = TextPainter(
+      text: TextSpan(text: widget.text, style: textStyle),
+      textDirection: TextDirection.ltr,
+      maxLines: null,
+    );
+    textPainter.layout(maxWidth: maxWidth);
+    
+    final textPosition = textPainter.getPositionForOffset(position);
+    final textOffset = textPosition.offset;
+    
+    // Find word boundaries around the tap position
+    final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
+    final matches = wordPattern.allMatches(widget.text);
+    
+    for (final match in matches) {
+      if (textOffset >= match.start && textOffset <= match.end) {
+        return match.group(0)!.toLowerCase();
+      }
+    }
+    
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SelectableText(
-      widget.text,
-      style: widget.style,
-      onSelectionChanged: (selection, cause) {
-        // Only handle when exactly one word is selected
-        if (selection.isValid && !selection.isCollapsed) {
-          // Get selected text
-          final selectedText = widget.text.substring(
-            selection.start,
-            selection.end,
-          ).trim();
-          
-          // Extract all words from selection
-          final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
-          final matches = wordPattern.allMatches(selectedText);
-          final words = matches.map((m) => m.group(0)!).toList();
-          
-          // Only process if exactly one word is selected
-          if (words.length == 1) {
-            final word = words.first;
-            _handleWordSelection(word);
-          }
-        }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GestureDetector(
+          onDoubleTapDown: (details) {
+            // On double tap, find word at tap position
+            final word = _getWordAtPosition(details.localPosition, context, constraints.maxWidth);
+            if (word != null) {
+              _handleWordSelection(word);
+            }
+          },
+          child: SelectableText(
+            widget.text,
+            style: widget.style,
+            onSelectionChanged: (selection, cause) {
+              // Only handle when exactly one word is selected
+              if (selection.isValid && !selection.isCollapsed) {
+                // Get selected text
+                final selectedText = widget.text.substring(
+                  selection.start,
+                  selection.end,
+                ).trim();
+                
+                // Extract all words from selection
+                final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
+                final matches = wordPattern.allMatches(selectedText);
+                final words = matches.map((m) => m.group(0)!).toList();
+                
+                // Only process if exactly one word is selected
+                if (words.length == 1) {
+                  final word = words.first;
+                  _handleWordSelection(word);
+                }
+              }
+            },
+          ),
+        );
       },
     );
   }
@@ -138,42 +177,78 @@ class _TextWithWordLookupState extends State<TextWithWordLookup> {
     });
   }
 
+  String? _getWordAtPosition(Offset position, BuildContext context, double maxWidth) {
+    final textStyle = widget.style ?? DefaultTextStyle.of(context).style;
+    final textPainter = TextPainter(
+      text: TextSpan(text: widget.text, style: textStyle),
+      textDirection: TextDirection.ltr,
+      maxLines: null,
+    );
+    textPainter.layout(maxWidth: maxWidth);
+    
+    final textPosition = textPainter.getPositionForOffset(position);
+    final textOffset = textPosition.offset;
+    
+    // Find word boundaries around the tap position
+    final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
+    final matches = wordPattern.allMatches(widget.text);
+    
+    for (final match in matches) {
+      if (textOffset >= match.start && textOffset <= match.end) {
+        return match.group(0)!.toLowerCase();
+      }
+    }
+    
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: () {
-        // On long press, show word selection menu
-        _showWordSelectionMenu(context);
-      },
-      onSecondaryTap: () {
-        // On right click (secondary tap), show word selection menu
-        _showWordSelectionMenu(context);
-      },
-      child: SelectableText(
-        widget.text,
-        style: widget.style,
-        onSelectionChanged: (selection, cause) {
-          // Only handle when exactly one word is selected
-          if (selection.isValid && !selection.isCollapsed) {
-            // Get selected text
-            final selectedText = widget.text.substring(
-              selection.start,
-              selection.end,
-            ).trim();
-            
-            // Extract all words from selection
-            final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
-            final matches = wordPattern.allMatches(selectedText);
-            final words = matches.map((m) => m.group(0)!).toList();
-            
-            // Only process if exactly one word is selected
-            if (words.length == 1) {
-              final word = words.first;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GestureDetector(
+          onLongPress: () {
+            // On long press, show word selection menu
+            _showWordSelectionMenu(context);
+          },
+          onSecondaryTap: () {
+            // On right click (secondary tap), show word selection menu
+            _showWordSelectionMenu(context);
+          },
+          onDoubleTapDown: (details) {
+            // On double tap, find word at tap position
+            final word = _getWordAtPosition(details.localPosition, context, constraints.maxWidth);
+            if (word != null) {
               _handleWordSelection(word);
             }
-          }
-        },
-      ),
+          },
+          child: SelectableText(
+            widget.text,
+            style: widget.style,
+            onSelectionChanged: (selection, cause) {
+              // Only handle when exactly one word is selected
+              if (selection.isValid && !selection.isCollapsed) {
+                // Get selected text
+                final selectedText = widget.text.substring(
+                  selection.start,
+                  selection.end,
+                ).trim();
+                
+                // Extract all words from selection
+                final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
+                final matches = wordPattern.allMatches(selectedText);
+                final words = matches.map((m) => m.group(0)!).toList();
+                
+                // Only process if exactly one word is selected
+                if (words.length == 1) {
+                  final word = words.first;
+                  _handleWordSelection(word);
+                }
+              }
+            },
+          ),
+        );
+      },
     );
   }
 

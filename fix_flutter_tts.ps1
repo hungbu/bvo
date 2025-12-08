@@ -93,15 +93,46 @@ message(STATUS "Microsoft.Windows.CppWinRT package installed successfully")
 ################ NuGet install end ################
 '@
 
-# Find and replace the NuGet section
-$pattern = '(?s)################ NuGet intall begin ################.*?################ NuGet install end ################'
-if ($content -match $pattern) {
-    $content = $content -replace $pattern, $nugetFix
+# Find and replace the NuGet section - handle both "intall" typo and "install" correct spelling
+$patterns = @(
+    '(?s)################ NuGet intall begin ################.*?################ NuGet install end ################',
+    '(?s)################ NuGet install begin ################.*?################ NuGet install end ################'
+)
+
+$found = $false
+foreach ($pattern in $patterns) {
+    if ($content -match $pattern) {
+        $content = $content -replace $pattern, $nugetFix
+        $found = $true
+        break
+    }
+}
+
+# Also check for corrupted execute_process with ARGS (syntax error)
+if (-not $found -and $content -match 'ARGS install') {
+    Write-Host "Detected corrupted NuGet section with syntax errors, fixing..." -ForegroundColor Yellow
+    # Try to find and replace from "NuGet" to the next "NuGet" or end of problematic section
+    $corruptedPattern = '(?s)################ NuGet.*?ARGS install.*?################ NuGet install end ################'
+    if ($content -match $corruptedPattern) {
+        $content = $content -replace $corruptedPattern, $nugetFix
+        $found = $true
+    } else {
+        # More aggressive: find any section with "NuGet" and "ARGS" or malformed execute_process
+        $corruptedPattern2 = '(?s)################ NuGet.*?execute_process.*?ARGS.*?################ NuGet install end ################'
+        if ($content -match $corruptedPattern2) {
+            $content = $content -replace $corruptedPattern2, $nugetFix
+            $found = $true
+        }
+    }
+}
+
+if ($found) {
     Set-Content $flutterTtsPath $content -NoNewline
     Write-Host "Fixed flutter_tts CMakeLists.txt successfully!" -ForegroundColor Green
 } else {
     Write-Host "Warning: Could not find NuGet section to replace. File may have different structure." -ForegroundColor Yellow
     Write-Host "The file may already be fixed or have a different format." -ForegroundColor Yellow
+    Write-Host "You may need to manually check the file for syntax errors." -ForegroundColor Yellow
 }
 
 Write-Host "`nYou can now try building again: flutter run -d windows" -ForegroundColor Cyan

@@ -15,6 +15,7 @@ import 'package:bvo/service/difficult_words_service.dart';
 import 'package:bvo/screen/flashcard_screen.dart';
 import 'package:bvo/screen/quiz_game_screen.dart';
 import 'package:bvo/screen/smart_review_screen.dart';
+import 'package:bvo/service/performance_monitor.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int)? onTabChange;
@@ -52,61 +53,185 @@ class _HomeScreenState extends State<HomeScreen> {
   
   // Recent words
   List<Word> recentWords = [];
+  
+  // Cache for all words to avoid redundant queries
+  List<Word>? _cachedAllWords;
+  
+  // Cache for topic words to avoid redundant queries
+  Map<String, List<Word>>? _cachedTopicWords;
 
   @override
   void initState() {
     super.initState();
-    _loadDashboardData();
+    PerformanceMonitor.trackMemoryUsage('HomeScreen.initState');
+    
+    // PHASE 1: Load critical sync data (blocking - <100ms)
+    _loadCriticalSyncData();
+    
+    // PHASE 2: Load high priority async data (non-blocking, immediate)
+    _loadHighPriorityAsyncData();
+    
+    // PHASE 3: Load medium priority async data (deferred)
+    _loadMediumPriorityAsyncData();
+  }
+  
+  /// PHASE 1: Load critical sync data that MUST be available before UI renders
+  /// This data is essential for initial UI display (userName, dailyGoal, lastTopic)
+  void _loadCriticalSyncData() {
+    final prefs = SharedPreferences.getInstance();
+    prefs.then((p) {
+      // Load basic user data (instant from SharedPreferences)
+      userName = p.getString('user_name') ?? "Bạn";
+      dailyGoal = p.getInt('daily_goal') ?? 10;
+      
+      // Load last topic (instant from SharedPreferences)
+      UserProgressRepository().getLastTopic().then((topic) {
+        if (mounted) {
+          setState(() {
+            lastTopic = topic ?? '';
+            // Show UI immediately with basic data
+            isDashboardLoading = false;
+          });
+        }
+      });
+    });
+  }
+  
+  /// PHASE 2: Load high priority async data (load immediately but don't block UI)
+  /// These are important but can show loading states
+  void _loadHighPriorityAsyncData() {
+    // Load topics list (essential for navigation)
     _loadTopics();
-    _loadReviewedWords();
-    _loadRecentWords();
+    
+    // Load dashboard statistics and word of day (important but can show loading)
+    _loadDashboardDataAsync();
+  }
+  
+  /// PHASE 3: Load medium priority async data (deferred - load after UI renders)
+  /// These are nice-to-have and can load in background
+  void _loadMediumPriorityAsyncData() {
+    // Defer loading recent words and reviewed words
+    // Load after a short delay to prioritize critical data
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        _loadReviewedWords();
+        _loadRecentWords();
+      }
+    });
+  }
+  
+  /// Get all words with caching to avoid redundant queries
+  Future<List<Word>> _getAllWordsCached() async {
+    if (_cachedAllWords != null) {
+      return _cachedAllWords!;
+    }
+    _cachedAllWords = await _wordRepository.getAllWords();
+    return _cachedAllWords!;
+  }
+  
+  /// Get topic words with caching to avoid redundant queries
+  Future<List<Word>> _getTopicWordsCached(String topic) async {
+    _cachedTopicWords ??= {};
+    if (!_cachedTopicWords!.containsKey(topic)) {
+      _cachedTopicWords![topic] = await _wordRepository.getWordsByTopic(topic);
+    }
+    return _cachedTopicWords![topic]!;
+  }
+  
+  /// Clear cache when needed (e.g., after word progress updates)
+  void _clearWordsCache() {
+    _cachedAllWords = null;
+    _cachedTopicWords = null;
   }
 
-  Future<void> _loadDashboardData() async {
-    final prefs = await SharedPreferences.getInstance();
+
+  /// Load dashboard data asynchronously (high priority but non-blocking)
+  /// Statistics and word of day can load after UI renders
+  Future<void> _loadDashboardDataAsync() async {
+    final stopwatch = Stopwatch()..start();
+    PerformanceMonitor.trackMemoryUsage('HomeScreen._loadDashboardDataAsync.start');
     
-    // Load basic user data
-    userName = prefs.getString('user_name') ?? "Bạn";
-    dailyGoal = prefs.getInt('daily_goal') ?? 10;
-    
-    // Load last topic from UserProgressRepository
-    final progressRepo = UserProgressRepository();
-    lastTopic = await progressRepo.getLastTopic() ?? (await _getFirstTopicId()) ?? '';
-    print('📍 Loaded last_topic from prefs (fallback first topic if empty): $lastTopic');
-    await _resolveLastTopicName();
-    
-    // Calculate real statistics
-    await _calculateRealStatistics();
-    
-    // Topic groups will be initialized in _loadTopics
-    
-    // Load word of the day
-    await _loadWordOfTheDay();
-    
-    setState(() {
-      isDashboardLoading = false;
-    });
+    try {
+      // Load last topic name (if not already loaded)
+      if (lastTopic.isNotEmpty) {
+        await _resolveLastTopicName();
+      } else {
+        // Fallback: get first topic ID if lastTopic is empty
+        final progressRepo = UserProgressRepository();
+        lastTopic = await progressRepo.getLastTopic() ?? (await _getFirstTopicId()) ?? '';
+        if (lastTopic.isNotEmpty) {
+          await _resolveLastTopicName();
+        }
+      }
+      
+      // Load statistics and word of day in parallel (both are high priority)
+      await Future.wait([
+        _calculateRealStatistics(),
+        _loadWordOfTheDay(),
+      ]);
+      
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadDashboardDataAsync', stopwatch.elapsed, metadata: {
+        'userName': userName,
+        'dailyGoal': dailyGoal,
+        'lastTopic': lastTopic,
+      });
+      PerformanceMonitor.trackMemoryUsage('HomeScreen._loadDashboardDataAsync.end');
+    } catch (e) {
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadDashboardDataAsync', stopwatch.elapsed, metadata: {
+        'error': e.toString(),
+      });
+      print('Error loading dashboard data async: $e');
+    }
   }
 
   Future<String?> _getFirstTopicId() async {
+    final stopwatch = Stopwatch()..start();
     try {
       final all = await _topicService.getTopicsForDisplay();
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._getFirstTopicId', stopwatch.elapsed, metadata: {
+        'found': all.isNotEmpty,
+        'topicId': all.isNotEmpty ? all.first.id : null,
+      });
       if (all.isNotEmpty) return all.first.id;
-    } catch (_) {}
+    } catch (e) {
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._getFirstTopicId', stopwatch.elapsed, metadata: {
+        'error': e.toString(),
+      });
+    }
     return null;
   }
 
   Future<void> _resolveLastTopicName() async {
+    final stopwatch = Stopwatch()..start();
     try {
       if (lastTopic.isEmpty) {
         lastTopicName = '';
+        stopwatch.stop();
+        PerformanceMonitor.trackAsyncOperation('HomeScreen._resolveLastTopicName', stopwatch.elapsed, metadata: {
+          'empty': true,
+        });
         return;
       }
       final topic = await _topicService.getTopicDetail(lastTopic);
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._resolveLastTopicName', stopwatch.elapsed, metadata: {
+        'topic': lastTopic,
+        'found': topic != null,
+        'topicName': topic?.name ?? lastTopic,
+      });
       setState(() {
         lastTopicName = topic?.name ?? lastTopic;
       });
-    } catch (_) {
+    } catch (e) {
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._resolveLastTopicName', stopwatch.elapsed, metadata: {
+        'topic': lastTopic,
+        'error': e.toString(),
+      });
       setState(() {
         lastTopicName = lastTopic;
       });
@@ -114,26 +239,44 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _calculateRealStatistics() async {
+    final stopwatch = Stopwatch()..start();
+    PerformanceMonitor.trackMemoryUsage('HomeScreen._calculateRealStatistics.start');
+    
     try {
       final prefs = await SharedPreferences.getInstance();
       final progressRepo = UserProgressRepository();
       
       // Calculate total words learned by counting ALL words with reviewCount >= 5
       // (Same approach as TopicLevelScreen)
-      final allWords = await _wordRepository.getAllWords();
+      // OPTIMIZED: Use cached words to avoid redundant queries
+      final allWordsStopwatch = Stopwatch()..start();
+      final allWords = await _getAllWordsCached();
+      allWordsStopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._calculateRealStatistics.getAllWords', allWordsStopwatch.elapsed, metadata: {
+        'wordCount': allWords.length,
+      });
+      
       int learnedCount = 0;
       
       print('📊 HomeScreen: Counting learned words from ${allWords.length} total words...');
       
+      final loopStopwatch = Stopwatch()..start();
+      // OPTIMIZED: Use word.reviewCount directly from loaded Word objects
+      // No need to query database again - data is already in memory!
       for (final word in allWords) {
-        final progress = await progressRepo.getWordProgress(word.topic, word.en);
-        final reviewCount = progress['reviewCount'] ?? 0;
-        if (reviewCount >= 5) {
+        if (word.reviewCount >= 5) {
           learnedCount++;
         }
       }
+      loopStopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._calculateRealStatistics.wordLoop', loopStopwatch.elapsed, metadata: {
+        'wordCount': allWords.length,
+        'learnedCount': learnedCount,
+        'optimized': true,
+      });
       
       print('📊 HomeScreen: Found $learnedCount words with reviewCount >= 5');
+      print('✅ OPTIMIZED: Using word.reviewCount directly - no database queries needed!');
       
       // Get streak data from UserProgressRepository
       final userStats = await progressRepo.getUserStatistics();
@@ -179,7 +322,22 @@ class _HomeScreenState extends State<HomeScreen> {
       print('  - Today Words Learned: $todayWordsLearned');
       print('  - Total Target Words: $totalTargetWords');
       
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._calculateRealStatistics', stopwatch.elapsed, metadata: {
+        'totalWords': allWords.length,
+        'learnedCount': learnedCount,
+        'queryCount': 0, // OPTIMIZED: No queries needed!
+        'streakDays': streakDays,
+        'todayWordsLearned': todayWordsLearned,
+        'optimized': true,
+      });
+      PerformanceMonitor.trackMemoryUsage('HomeScreen._calculateRealStatistics.end');
+      
     } catch (e) {
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._calculateRealStatistics', stopwatch.elapsed, metadata: {
+        'error': e.toString(),
+      });
       print('Error calculating statistics: $e');
       // Fallback to saved values or defaults
       final prefs = await SharedPreferences.getInstance();
@@ -200,8 +358,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   
   Future<void> _loadRecentWords() async {
+    final stopwatch = Stopwatch()..start();
+    PerformanceMonitor.trackMemoryUsage('HomeScreen._loadRecentWords.start');
+    
     try {
-      final allWords = await _wordRepository.getAllWords();
+      // OPTIMIZED: Use cached words to avoid redundant queries
+      final allWordsStopwatch = Stopwatch()..start();
+      final allWords = await _getAllWordsCached();
+      allWordsStopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadRecentWords.getAllWords', allWordsStopwatch.elapsed, metadata: {
+        'wordCount': allWords.length,
+        'cached': _cachedAllWords != null,
+      });
+      
       final prefs = await SharedPreferences.getInstance();
       
       // Get all word progress keys
@@ -212,6 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
       
       // Get words with lastReviewed data
       final wordsWithReview = <Map<String, dynamic>>[];
+      final processStopwatch = Stopwatch()..start();
       for (final key in wordKeys) {
         final progressJson = prefs.getString(key);
         if (progressJson != null) {
@@ -235,6 +405,11 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         }
       }
+      processStopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadRecentWords.processKeys', processStopwatch.elapsed, metadata: {
+        'keyCount': wordKeys.length,
+        'wordsWithReview': wordsWithReview.length,
+      });
       
       // Sort by lastReviewed descending (most recent first)
       wordsWithReview.sort((a, b) => 
@@ -245,7 +420,19 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         recentWords = wordsWithReview.take(3).map((item) => item['word'] as Word).toList();
       });
+      
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadRecentWords', stopwatch.elapsed, metadata: {
+        'allWordsCount': allWords.length,
+        'wordKeysCount': wordKeys.length,
+        'recentWordsCount': recentWords.length,
+      });
+      PerformanceMonitor.trackMemoryUsage('HomeScreen._loadRecentWords.end');
     } catch (e) {
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadRecentWords', stopwatch.elapsed, metadata: {
+        'error': e.toString(),
+      });
       print('Error loading recent words: $e');
     }
   }
@@ -259,13 +446,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadWordOfTheDay() async {
+    final stopwatch = Stopwatch()..start();
+    PerformanceMonitor.trackMemoryUsage('HomeScreen._loadWordOfTheDay.start');
+    
     try {
       // 0) Prefer words that are due for review today (prioritize current topic)
       Word? selectedWord;
       String? selectedTopic;
       String? selectedSource;
       final progressRepo = UserProgressRepository();
+      final reviewStopwatch = Stopwatch()..start();
       final dueWordProgress = await progressRepo.getWordsForReview();
+      reviewStopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadWordOfTheDay.getWordsForReview', reviewStopwatch.elapsed, metadata: {
+        'dueWordCount': dueWordProgress.length,
+      });
       if (dueWordProgress.isNotEmpty) {
         // Sort by nextReview ascending (most overdue first)
         dueWordProgress.sort((a, b) {
@@ -281,7 +476,8 @@ class _HomeScreenState extends State<HomeScreen> {
         final topic = (candidate['topic'] ?? '').toString();
         final wordEn = (candidate['word'] ?? '').toString();
         if (topic.isNotEmpty && wordEn.isNotEmpty) {
-          final topicWords = await _wordRepository.getWordsByTopic(topic);
+          // OPTIMIZED: Use cached topic words
+          final topicWords = await _getTopicWordsCached(topic);
           for (final w in topicWords) {
             if (w.en.toLowerCase() == wordEn.toLowerCase()) {
               selectedWord = w;
@@ -298,7 +494,8 @@ class _HomeScreenState extends State<HomeScreen> {
         if (difficultInTopic.isNotEmpty) {
           // Pick the most difficult (highest error rate)
           final hardest = difficultInTopic.first;
-          final topicWords = await _wordRepository.getWordsByTopic(hardest.topic);
+          // OPTIMIZED: Use cached topic words
+          final topicWords = await _getTopicWordsCached(hardest.topic);
           Word? match;
           for (final w in topicWords) {
             if (w.en.toLowerCase() == hardest.word.toLowerCase()) {
@@ -319,7 +516,8 @@ class _HomeScreenState extends State<HomeScreen> {
         final allDifficult = await _difficultWordsService.getAllDifficultWords();
         if (allDifficult.isNotEmpty) {
           final hardest = allDifficult.first;
-          final topicWords = await _wordRepository.getWordsByTopic(hardest.topic);
+          // OPTIMIZED: Use cached topic words
+          final topicWords = await _getTopicWordsCached(hardest.topic);
           Word? match;
           for (final w in topicWords) {
             if (w.en.toLowerCase() == hardest.word.toLowerCase()) {
@@ -338,7 +536,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // 3) If still none, pick a word from the current/last topic
       if (selectedWord == null && lastTopic.isNotEmpty) {
-        final topicWords = await _wordRepository.getWordsByTopic(lastTopic);
+        // OPTIMIZED: Use cached topic words
+        final topicWords = await _getTopicWordsCached(lastTopic);
         if (topicWords.isNotEmpty) {
           topicWords.shuffle();
           selectedWord = topicWords.first;
@@ -352,7 +551,8 @@ class _HomeScreenState extends State<HomeScreen> {
         final allTopics = await _topicService.getTopicsForDisplay();
         if (allTopics.isNotEmpty) {
           final firstTopicId = allTopics.first.essentials.id;
-          final firstTopicWords = await _wordRepository.getWordsByTopic(firstTopicId);
+          // OPTIMIZED: Use cached topic words
+          final firstTopicWords = await _getTopicWordsCached(firstTopicId);
           if (firstTopicWords.isNotEmpty) {
             firstTopicWords.shuffle();
             selectedWord = firstTopicWords.first;
@@ -381,7 +581,19 @@ class _HomeScreenState extends State<HomeScreen> {
         'topic': selectedTopic ?? selectedWord.topic,
         'source': selectedSource ?? 'topic',
       };
+      
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadWordOfTheDay', stopwatch.elapsed, metadata: {
+        'source': selectedSource ?? 'unknown',
+        'topic': selectedTopic ?? selectedWord.topic,
+        'word': selectedWord.en,
+      });
+      PerformanceMonitor.trackMemoryUsage('HomeScreen._loadWordOfTheDay.end');
     } catch (e) {
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadWordOfTheDay', stopwatch.elapsed, metadata: {
+        'error': e.toString(),
+      });
       print('Error loading word of the day: $e');
       // Fallback word
       wordOfTheDay = {
@@ -464,13 +676,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadTopics() async {
+    final stopwatch = Stopwatch()..start();
+    PerformanceMonitor.trackMemoryUsage('HomeScreen._loadTopics.start');
+    
     try {
-      print("Starting to load topics...");
+      final topicsStopwatch = Stopwatch()..start();
       final loadedTopics = await _topicService.getTopicsForDisplay();
-      print("Loaded ${loadedTopics.length} topics: ${loadedTopics.map((t) => t.id).toList()}");
+      topicsStopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadTopics.getTopicsForDisplay', topicsStopwatch.elapsed, metadata: {
+        'topicCount': loadedTopics.length,
+      });
       
       // Tạo topicGroups từ vocabulary data
+      final groupsStopwatch = Stopwatch()..start();
       await _createTopicGroupsFromVocabulary();
+      groupsStopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadTopics.createTopicGroups', groupsStopwatch.elapsed, metadata: {
+        'groupCount': topicGroups.length,
+      });
       
       if (mounted) {
         setState(() {
@@ -478,7 +701,18 @@ class _HomeScreenState extends State<HomeScreen> {
           isLoadingTopics = false;
         });
       }
+      
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadTopics', stopwatch.elapsed, metadata: {
+        'topicCount': loadedTopics.length,
+        'groupCount': topicGroups.length,
+      });
+      PerformanceMonitor.trackMemoryUsage('HomeScreen._loadTopics.end');
     } catch (e) {
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadTopics', stopwatch.elapsed, metadata: {
+        'error': e.toString(),
+      });
       print("Error loading topics: $e");
       if (mounted) {
         setState(() {
@@ -591,10 +825,18 @@ class _HomeScreenState extends State<HomeScreen> {
   // Removed helper methods - no longer needed with simplified 3-level structure
 
   Future<void> _loadReviewedWords() async {
+    final stopwatch = Stopwatch()..start();
+    PerformanceMonitor.trackMemoryUsage('HomeScreen._loadReviewedWords.start');
+    
     try {
       print("Loading reviewed words...");
       final progressRepo = UserProgressRepository();
+      final progressStopwatch = Stopwatch()..start();
       final allTopicsProgress = await progressRepo.getAllTopicsProgress();
+      progressStopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadReviewedWords.getAllTopicsProgress', progressStopwatch.elapsed, metadata: {
+        'topicCount': allTopicsProgress.length,
+      });
       
       // Convert progress data to reviewed words format
       final loadedReviewedWords = <String, List<Word>>{};
@@ -627,7 +869,18 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         reviewedWordsByTopic = loadedReviewedWords;
       });
+      
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadReviewedWords', stopwatch.elapsed, metadata: {
+        'topicCount': allTopicsProgress.length,
+        'reviewedWordsTopics': loadedReviewedWords.keys.length,
+      });
+      PerformanceMonitor.trackMemoryUsage('HomeScreen._loadReviewedWords.end');
     } catch (e) {
+      stopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('HomeScreen._loadReviewedWords', stopwatch.elapsed, metadata: {
+        'error': e.toString(),
+      });
       print("Error loading reviewed words: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1476,7 +1729,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (wordOfTheDay.isEmpty) return;
       
       // Find the word in repository and mark as reviewed
-      final allWords = await _wordRepository.getAllWords();
+      // OPTIMIZED: Use cached words
+      final allWords = await _getAllWordsCached();
       final wordToAdd = allWords.firstWhere(
         (word) => word.en.toLowerCase() == wordOfTheDay['word'].toString().toLowerCase(),
         orElse: () => allWords.first, // Fallback
@@ -1573,7 +1827,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     
     // Refresh dashboard data
-    await _loadDashboardData();
+    await _loadDashboardDataAsync();
   }
 
   Future<void> _checkAndTriggerAchievements(int totalWords, int todayWords) async {
@@ -1635,7 +1889,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Method to refresh dashboard when returning from other screens
   Future<void> refreshDashboard() async {
     print('🔄 HomeScreen: Refreshing dashboard after flashcard session...');
-    await _loadDashboardData();
+    await _loadDashboardDataAsync();
     await _loadReviewedWords();
     await _loadRecentWords();
     
@@ -2022,8 +2276,8 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Get next 10 words for flashcard (sorted by ID/index, excluding mastered words)
   Future<List<Word>> _getNextFlashcardWords() async {
     try {
-      final allWords = await _wordRepository.getAllWords();
-      final progressRepo = UserProgressRepository();
+      // OPTIMIZED: Use cached words
+      final allWords = await _getAllWordsCached();
       
       print('🎯 HomeScreen: Total words in repository: ${allWords.length}');
       
@@ -2037,11 +2291,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final nonMasteredWords = <Word>[];
       final masteredWords = <String>[];
       
+      // OPTIMIZED: Use word.reviewCount directly from loaded Word objects
       for (final word in allWords) {
-        final progress = await progressRepo.getWordProgress(word.topic, word.en);
-        final reviewCount = progress['reviewCount'] ?? 0;
-        
-        if (reviewCount < 5) {
+        if (word.reviewCount < 5) {
           nonMasteredWords.add(word);
         } else {
           masteredWords.add(word.en);
@@ -2078,20 +2330,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<List<Word>> _getQuizWords() async {
     try {
       final quizRepo = QuizRepository();
-      final progressRepo = UserProgressRepository();
       
       // Lấy từ đã add vào quiz (từ QuizRepository)
       final quizWords = await quizRepo.getQuizWords();
       
       // Lấy từ đang học (từ UserProgressRepository)
-      final allWords = await _wordRepository.getAllWords();
+      // OPTIMIZED: Use cached words
+      final allWords = await _getAllWordsCached();
       final learningWords = <Word>[];
+      // OPTIMIZED: Use word.reviewCount directly from loaded Word objects
       for (final word in allWords) {
-        final progress = await progressRepo.getWordProgress(word.topic, word.en);
-        final reviewCount = progress['reviewCount'] ?? 0;
-        
         // Include words that have been reviewed at least once but not mastered (< 5)
-        if (reviewCount > 0 && reviewCount < 5) {
+        if (word.reviewCount > 0 && word.reviewCount < 5) {
           learningWords.add(word);
         }
       }

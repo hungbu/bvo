@@ -10,20 +10,27 @@
 
 ### Cách 1: Sử dụng Script Tự động (Khuyến nghị)
 
+**Khi chuyển từ Android sang Windows:**
+```powershell
+.\prepare_build.ps1 windows
+.\run_windows.ps1
+```
+
+**Hoặc chỉ chạy run_windows.ps1** (tự động detect và prepare):
 ```powershell
 .\run_windows.ps1
 ```
 
-Hoặc:
-
+**Batch file:**
 ```cmd
 run_windows.bat
 ```
 
 Script này sẽ:
-1. Tự động tìm và cấu hình Visual Studio 2022
-2. Sửa lỗi CMake của plugin `flutter_tts` (nếu cần)
-3. Chạy Flutter build với môi trường đã cấu hình
+1. Tự động detect và cleanup build artifacts từ platform khác
+2. Tự động tìm và cấu hình Visual Studio 2022
+3. Sửa lỗi CMake của plugin `flutter_tts` (nếu cần)
+4. Chạy Flutter build với môi trường đã cấu hình
 
 ### Cách 2: Build Thủ công
 
@@ -39,20 +46,28 @@ $env:CMAKE_GENERATOR_PLATFORM = "x64"
 flutter run -d windows
 ```
 
-## Sau khi Clean Build
+## Chuyển đổi giữa Android và Windows
 
-Sau khi chạy `flutter clean`, bạn cần:
+### Từ Android sang Windows:
+```powershell
+.\prepare_build.ps1 windows
+.\run_windows.ps1
+```
 
-1. **Chạy lại script fix** (nếu dùng flutter_tts):
-   ```powershell
-   .\fix_flutter_tts.ps1
-   ```
+### Từ Windows sang Android:
+```powershell
+.\prepare_build.ps1 android
+flutter run -d android
+```
 
-2. **Hoặc dùng script tự động**:
-   ```powershell
-   .\run_windows.ps1
-   ```
-   (Script này tự động fix trước khi build)
+### Script `prepare_build.ps1` tự động:
+- Clean Flutter cache
+- Xóa build artifacts của platform cũ
+- Xóa CMake cache (cho Windows)
+- Lấy lại dependencies
+- Fix flutter_tts plugin (cho Windows)
+
+**Lưu ý**: Script `run_windows.ps1` tự động detect và gọi `prepare_build.ps1` nếu cần.
 
 ## Lưu ý Quan Trọng
 
@@ -63,12 +78,12 @@ Sau khi chạy `flutter clean`, bạn cần:
 - `.fvmrc` - Đã xóa, không dùng FVM nữa
 
 ### File NÊN commit:
-- `run_windows.ps1` - Script build tự động
-- `run_windows.bat` - Script build tự động (batch)
+- `prepare_build.ps1` - Script chuẩn bị build (tự động detect platform)
+- `run_windows.ps1` - Script build Windows tự động
+- `run_windows.bat` - Script build Windows tự động (batch)
+- `clean_windows_build.ps1` - Script cleanup Windows build
 - `fix_flutter_tts.ps1` - Script fix plugin flutter_tts
-- `fix_flutter_cmake.ps1` - Script fix CMake (nếu cần)
 - `windows/CMakeLists.txt` - CMake configuration
-- `.vscode/settings.json` - VS Code settings (đã xóa FVM path)
 
 ## Troubleshooting
 
@@ -81,8 +96,18 @@ Sau khi chạy `flutter clean`, bạn cần:
 - Hoặc chạy `.\run_windows.ps1` (tự động fix)
 
 ### Lỗi: "MSB3073: cmake_install.cmake exited with code 1"
-- Chạy `flutter clean` để xóa cache cũ
-- Build lại với `.\run_windows.ps1`
+- **Nguyên nhân**: Thường xảy ra sau khi chuyển giữa các platform (Android/Windows) hoặc cache bị lỗi
+- **Giải pháp**:
+  1. **Cách đơn giản nhất**: Chạy `.\prepare_build.ps1 windows` rồi `.\run_windows.ps1`
+  2. Hoặc chạy script cleanup: `.\clean_windows_build.ps1`
+  3. Hoặc thủ công:
+     ```powershell
+     flutter clean
+     Remove-Item -Recurse -Force build\windows, windows\build, windows\flutter\ephemeral -ErrorAction SilentlyContinue
+     flutter pub get
+     .\fix_flutter_tts.ps1
+     ```
+  4. Build lại: `.\run_windows.ps1`
 
 ## Kiểm tra Môi trường
 

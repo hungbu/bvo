@@ -50,6 +50,7 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
   }
 
   Future<void> _loadWords() async {
+    final stopwatch = Stopwatch()..start();
     setState(() {
       _isLoading = true;
     });
@@ -60,10 +61,12 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
       _intermediateWords = await _dataLoader.getIntermediateWords();
       _advancedWords = await _dataLoader.getAdvancedWords();
 
-      // Calculate learned count for each level
-      await _calculateLearnedCount();
+      // Calculate learned count for each level (now uses word.reviewCount directly)
+      _calculateLearnedCount();
 
+      stopwatch.stop();
       print('📚 Loaded Basic: ${_basicWords.length}, Intermediate: ${_intermediateWords.length}, Advanced: ${_advancedWords.length}');
+      print('⏱️ _loadWords() took ${stopwatch.elapsedMilliseconds}ms (0 database queries - using cached word data)');
     } catch (e) {
       print('❌ Error loading words: $e');
     } finally {
@@ -73,35 +76,30 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
     }
   }
 
-  Future<void> _calculateLearnedCount() async {
+  /// Calculate learned count directly from loaded Word objects (no database queries)
+  void _calculateLearnedCount() {
     try {
       int basicLearned = 0;
       int intermediateLearned = 0;
       int advancedLearned = 0;
 
-      // Check progress for basic words
+      // Check progress for basic words - use reviewCount directly from Word object
       for (final word in _basicWords) {
-        final progress = await _progressRepository.getWordProgress(word.topic, word.en);
-        final reviewCount = progress['reviewCount'] ?? 0;
-        if (reviewCount >= 5) {
+        if (word.reviewCount >= 5) {
           basicLearned++;
         }
       }
 
-      // Check progress for intermediate words
+      // Check progress for intermediate words - use reviewCount directly from Word object
       for (final word in _intermediateWords) {
-        final progress = await _progressRepository.getWordProgress(word.topic, word.en);
-        final reviewCount = progress['reviewCount'] ?? 0;
-        if (reviewCount >= 5) {
+        if (word.reviewCount >= 5) {
           intermediateLearned++;
         }
       }
 
-      // Check progress for advanced words
+      // Check progress for advanced words - use reviewCount directly from Word object
       for (final word in _advancedWords) {
-        final progress = await _progressRepository.getWordProgress(word.topic, word.en);
-        final reviewCount = progress['reviewCount'] ?? 0;
-        if (reviewCount >= 5) {
+        if (word.reviewCount >= 5) {
           advancedLearned++;
         }
       }
@@ -119,13 +117,13 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
   }
 
   /// Refresh data after returning from flashcard session
-  Future<void> _refreshData() async {
+  void _refreshData() {
     print('🔄 Refreshing TopicLevelScreen data...');
     
-    // Recalculate learned count
-    await _calculateLearnedCount();
+    // Recalculate learned count (now synchronous, no database queries)
+    _calculateLearnedCount();
     
-    // Increment refresh key to force FutureBuilder rebuild
+    // Increment refresh key to force widget rebuild
     setState(() {
       _refreshKey++;
     });
@@ -172,34 +170,21 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
     print('🎯 TopicLevelScreen: Total words in level: ${allWords.length}');
     
     // Filter out mastered words (reviewCount >= 5 = đã thuộc)
+    // Use reviewCount directly from Word objects (no database queries)
     final List<Word> wordsToLearn = [];
     final List<String> masteredWords = [];
     
     for (final word in allWords) {
-      final progress = await _progressRepository.getWordProgress(word.topic, word.en);
-      final reviewCount = progress['reviewCount'] ?? 0;
-      
-      if (reviewCount < 5) {
+      // Use reviewCount directly from Word object
+      if (word.reviewCount < 5) {
         wordsToLearn.add(word);
       } else {
         masteredWords.add('${word.en} (${word.topic})');
-        print('  ✅ MASTERED (filtered out): "${word.en}" from topic "${word.topic}" - reviewCount=$reviewCount');
       }
     }
 
     print('🎯 TopicLevelScreen: Words to learn: ${wordsToLearn.length}');
     print('🎯 TopicLevelScreen: Mastered words (filtered out): ${masteredWords.length}');
-    
-    // Debug: Check first 10 words in wordsToLearn to see if any mastered word slipped through
-    if (wordsToLearn.isNotEmpty) {
-      print('🎯 First 10 words going to FlashCard:');
-      for (int i = 0; i < wordsToLearn.length && i < 10; i++) {
-        final word = wordsToLearn[i];
-        final progress = await _progressRepository.getWordProgress(word.topic, word.en);
-        final rc = progress['reviewCount'] ?? 0;
-        print('  [$i] "${word.en}" (${word.topic}) - reviewCount=$rc ${rc >= 5 ? "⚠️ SHOULD BE FILTERED!" : "✓"}');
-      }
-    }
 
     if (wordsToLearn.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -412,157 +397,143 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
   }
 
   Widget _buildWordCard(Word word, int index) {
-    return FutureBuilder<Map<String, dynamic>>(
-      key: ValueKey('word_${word.en}_${word.topic}_$_refreshKey'), // Force rebuild when refreshKey changes
-      future: _progressRepository.getWordProgress(word.topic, word.en),
-      builder: (context, snapshot) {
-        final progress = snapshot.data;
-        final reviewCount = progress?['reviewCount'] ?? 0;
-        final isLearned = reviewCount >= 5;
+    // Use reviewCount directly from Word object (no database query needed)
+    final reviewCount = word.reviewCount;
+    final isLearned = reviewCount >= 5;
 
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          elevation: 1,
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            leading: CircleAvatar(
-              backgroundColor: isLearned 
-                  ? Colors.green[400] 
-                  : Theme.of(context).primaryColor.withOpacity(0.2),
-              child: isLearned
-                  ? const Icon(Icons.check, color: Colors.white, size: 20)
-                  : Text(
-                      '${index + 1}',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-            ),
-            title: Text(
-              word.en,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+    return Card(
+      key: ValueKey('word_${word.en}_${word.topic}_$_refreshKey'), // Force rebuild when refreshKey changes
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      elevation: 1,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: CircleAvatar(
+          backgroundColor: isLearned 
+              ? Colors.green[400] 
+              : Theme.of(context).primaryColor.withOpacity(0.2),
+          child: isLearned
+              ? const Icon(Icons.check, color: Colors.white, size: 20)
+              : Text(
+                  '${index + 1}',
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+        ),
+        title: Text(
+          word.en,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              word.vi,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[700],
               ),
             ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                Text(
-                  word.vi,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
+            if (word.pronunciation.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(
+                '/${word.pronunciation}/',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[500],
+                  fontStyle: FontStyle.italic,
                 ),
-                if (word.pronunciation.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    '/${word.pronunciation}/',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
-              ],
+              ),
+            ],
+          ],
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.remove_red_eye_outlined,
+              size: 16,
+              color: Colors.grey[600],
             ),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.remove_red_eye_outlined,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '$reviewCount',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
+            const SizedBox(height: 2),
+            Text(
+              '$reviewCount',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
             ),
-            onTap: () => _showWordDetails(word),
-          ),
-        );
-      },
+          ],
+        ),
+        onTap: () => _showWordDetails(word),
+      ),
     );
   }
 
   Widget _buildFlashcardButton() {
     final allWords = _getCurrentLevelWords();
+    // Calculate non-mastered count directly (no async, no database queries)
+    final nonMasteredCount = _getNonMasteredWordCount(allWords);
     
-    return FutureBuilder<int>(
+    return Container(
       key: ValueKey('flashcard_button_$_refreshKey'), // Force rebuild when refreshKey changes
-      future: _getNonMasteredWordCount(allWords),
-      builder: (context, snapshot) {
-        final nonMasteredCount = snapshot.data ?? 0;
-        final isLoading = snapshot.connectionState == ConnectionState.waiting;
-        
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, -2),
-              ),
-            ],
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
           ),
-          child: SafeArea(
-            top: false,
-            child: SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton.icon(
-                onPressed: (nonMasteredCount == 0 || isLoading) ? null : _startFlashcard,
-                icon: const Icon(Icons.style, size: 24),
-                label: Text(
-                  isLoading 
-                    ? 'Đang tải...'
-                    : nonMasteredCount == 0
-                      ? 'Tất cả từ đã thuộc! 🎉'
-                      : 'Bắt đầu Flashcard ($nonMasteredCount từ)',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey[300],
-                  disabledForegroundColor: Colors.grey[600],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton.icon(
+            onPressed: nonMasteredCount == 0 ? null : _startFlashcard,
+            icon: const Icon(Icons.style, size: 24),
+            label: Text(
+              nonMasteredCount == 0
+                ? 'Tất cả từ đã thuộc! 🎉'
+                : 'Bắt đầu Flashcard ($nonMasteredCount từ)',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: Colors.grey[300],
+              disabledForegroundColor: Colors.grey[600],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   /// Count words that are not mastered (reviewCount < 5) for flashcard button
-  Future<int> _getNonMasteredWordCount(List<Word> words) async {
+  /// Uses reviewCount directly from Word objects (no database queries)
+  int _getNonMasteredWordCount(List<Word> words) {
     if (words.isEmpty) return 0;
     
     int count = 0;
     for (final word in words) {
-      final progress = await _progressRepository.getWordProgress(word.topic, word.en);
-      final reviewCount = progress['reviewCount'] ?? 0;
-      if (reviewCount < 5) {
+      if (word.reviewCount < 5) {
         count++;
       }
     }
@@ -571,12 +542,11 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
 
   // ==================== WORD DETAIL DIALOG ====================
   
-  void _showWordDetails(Word word) async {
-    // Get progress data for this word
-    final progress = await _progressRepository.getWordProgress(word.topic, word.en);
-    final reviewCount = progress['reviewCount'] ?? 0;
-    final correctAnswers = progress['correctAnswers'] ?? 0;
-    final totalAttempts = progress['totalAttempts'] ?? 0;
+  void _showWordDetails(Word word) {
+    // Use progress data directly from Word object (no database query needed)
+    final reviewCount = word.reviewCount;
+    final correctAnswers = word.correctAnswers;
+    final totalAttempts = word.totalAttempts;
     final isLearned = reviewCount >= 5; // Đã thuộc khi reviewCount >= 5
     final accuracy = totalAttempts > 0 ? (correctAnswers / totalAttempts * 100).toStringAsFixed(1) : '0.0';
     
@@ -647,13 +617,33 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
                                     fontFamily: 'monospace',
                                   ),
                                 ),
-                              Text(
-                                word.type.toString().split('.').last.toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.blue[700],
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.purple.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      'Level ${word.topic}',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.purple[700],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    word.type.toString().split('.').last.toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.blue[700],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -1001,7 +991,7 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
       });
       
       // Reload statistics to update the learned count
-      await _calculateLearnedCount();
+      _calculateLearnedCount();
       
       // Increment refresh key to force FutureBuilder rebuild
       setState(() {
