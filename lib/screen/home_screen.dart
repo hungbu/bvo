@@ -1889,6 +1889,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Method to refresh dashboard when returning from other screens
   Future<void> refreshDashboard() async {
     print('🔄 HomeScreen: Refreshing dashboard after flashcard session...');
+    _clearWordsCache(); // Ensure latest reviewCount is loaded next time
     await _loadDashboardDataAsync();
     await _loadReviewedWords();
     await _loadRecentWords();

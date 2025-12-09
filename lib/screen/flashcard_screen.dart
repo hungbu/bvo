@@ -714,11 +714,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
             _checkAnswer();
           },
           onMastered: () {
-            // Enable Next button when word is marked as mastered
-            setState(() {
-              _isCardFlipped = true;
-            });
-            print('✅ Word marked as mastered - Next button enabled');
+            _removeWordFromList(_currentWords[index]);
           },
         );
       },
@@ -767,5 +763,47 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _removeWordFromList(Word word) async {
+    final removeIndex = _currentWords.indexWhere(
+      (w) => w.en == word.en && w.topic == word.topic,
+    );
+
+    if (removeIndex == -1) return;
+
+    setState(() {
+      _currentWords.removeAt(removeIndex);
+
+      // Adjust current index if needed
+      if (_currentIndex > removeIndex) {
+        _currentIndex--;
+      }
+      if (_currentIndex >= _currentWords.length) {
+        _currentIndex = _currentWords.isEmpty ? 0 : _currentWords.length - 1;
+      }
+
+      // Reset states for next card
+      _isCardFlipped = false;
+      _feedbackMessage = '';
+      _controller.clear();
+    });
+
+    // If no words remain, show completion dialog
+    if (_currentWords.isEmpty) {
+      _showCompletionDialog();
+      return;
+    }
+
+    // Jump carousel to the adjusted index and focus input
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _carouselController.animateToPage(
+        _currentIndex,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.linear,
+      );
+      _speakEnglish(_currentWords[_currentIndex].en);
+      _inputFocusNode.requestFocus();
+    });
   }
 }
