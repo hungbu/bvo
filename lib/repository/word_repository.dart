@@ -1,5 +1,6 @@
 import '../model/word.dart';
 import '../service/vocabulary_data_loader.dart';
+import 'dictionary_words_repository.dart';
 
 /// Repository for word-related operations using direct data loading
 class WordRepository {
@@ -51,14 +52,13 @@ class WordRepository {
   }
 
   /// Search words by English or Vietnamese text
+  /// Query database directly (not from JSON) for search functionality
   Future<List<dWord>> searchWords(String query) async {
-    final allWords = await getAllWords();
-    final lowercaseQuery = query.toLowerCase();
-    
-    return allWords.where((word) {
-      return word.en.toLowerCase().contains(lowercaseQuery) ||
-             word.vi.toLowerCase().contains(lowercaseQuery);
-    }).toList();
+    // Query database directly for search (not from JSON)
+    final dbRepo = DictionaryWordsRepository();
+    final words = await dbRepo.searchWord(query);
+    // Convert Word to dWord (they are the same type, just return as-is)
+    return words;
   }
 
   /// Get words sorted by difficulty (ascending)
@@ -118,7 +118,7 @@ class WordRepository {
   Future<Map<String, List<dWord>>> getReviewedWordsGroupedByTopic() async {
     final allWords = await getAllWords();
     final reviewedWords = allWords.where((word) => 
-      word.nextReview != null && word.nextReview!.isBefore(DateTime.now())
+      word.nextReview.isBefore(DateTime.now())
     ).toList();
     
     final grouped = <String, List<dWord>>{};
@@ -150,6 +150,7 @@ class WordRepository {
     print('Note: saveWords called for topic $topic with ${words.length} words');
     print('In JSON-based system, consider implementing local storage for user modifications');
   }
+
 
   /// Clear cache (useful for data updates)
   void clearCache() {

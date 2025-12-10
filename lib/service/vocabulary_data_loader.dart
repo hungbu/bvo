@@ -100,6 +100,7 @@ class VocabularyDataLoader {
     return await _levelLoader.getStatistics();
   }
 
+
   /// Clear cache (useful for hot reload or data updates)
   void clearCache() {
     _allWords = null;

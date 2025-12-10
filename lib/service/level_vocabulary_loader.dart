@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import '../model/word.dart';
 import '../repository/dictionary_words_repository.dart';
 import '../service/performance_monitor.dart';
+import '../service/word_progress_cache_service.dart';
 
 /// Service to load vocabulary data from level txt files and map with database
 /// Levels: 1.1, 1.2, 1.3, 1.4, 1.5, 2.0
@@ -24,6 +26,16 @@ class LevelVocabularyLoader {
     '1.4': 'assets/data/1000/1.4.txt',
     '1.5': 'assets/data/1000/1.5.txt',
     '2.0': 'assets/data/1000/2.0.txt',
+  };
+
+  /// JSON file mapping for topics
+  static const Map<String, String> _levelJsonFiles = {
+    '1.1': 'assets/data/1000/1.1.json',
+    '1.2': 'assets/data/1000/1.2.json',
+    '1.3': 'assets/data/1000/1.3.json',
+    '1.4': 'assets/data/1000/1.4.json',
+    '1.5': 'assets/data/1000/1.5.json',
+    '2.0': 'assets/data/1000/2.0.json',
   };
 
   /// Get all words from all levels
@@ -81,7 +93,7 @@ class LevelVocabularyLoader {
   }
 
   /// Get words by level (1.1, 1.2, 1.3, 1.4, 1.5, 2.0)
-  /// Now loads directly from database using topic column
+  /// Now loads from JSON files first (fast), then syncs learning progress from database
   Future<List<Word>> getWordsByLevel(String level) async {
     final stopwatch = Stopwatch()..start();
     
@@ -96,60 +108,128 @@ class LevelVocabularyLoader {
       return _levelWordsCache![level]!;
     }
 
-    print('LevelVocabularyLoader.getWordsByLevel($level): loading from database (topic = $level)');
+    print('LevelVocabularyLoader.getWordsByLevel($level): loading from JSON file');
     
     try {
-      // Load words directly from database by topic/level
-      final dbStopwatch = Stopwatch()..start();
-      final words = await _dbRepository.getWordsByTopic(level);
-      dbStopwatch.stop();
-      PerformanceMonitor.trackAsyncOperation('LevelVocabularyLoader.getWordsByLevel.dbQuery', dbStopwatch.elapsed, metadata: {
+      // Try loading from JSON file first (fast)
+      final jsonStopwatch = Stopwatch()..start();
+      final words = await _loadWordsFromJson(level);
+      jsonStopwatch.stop();
+      PerformanceMonitor.trackAsyncOperation('LevelVocabularyLoader.getWordsByLevel.jsonLoad', jsonStopwatch.elapsed, metadata: {
         'level': level,
         'wordCount': words.length,
-        'source': 'database',
+        'source': 'json',
       });
       
-      // If no words found in database, fallback to file-based loading (backward compatibility)
+      // If no words found in JSON, fallback to database
       if (words.isEmpty) {
-        print('⚠️ No words found in database for level $level, trying file fallback...');
-        final fileResult = await _loadWordsFromFile(level);
+        print('⚠️ No words found in JSON for level $level, trying database fallback...');
+        final dbResult = await _loadWordsFromDatabase(level);
         stopwatch.stop();
         PerformanceMonitor.trackAsyncOperation('LevelVocabularyLoader.getWordsByLevel', stopwatch.elapsed, metadata: {
           'level': level,
           'cached': false,
-          'source': 'file_fallback',
-          'wordCount': fileResult.length,
+          'source': 'database_fallback',
+          'wordCount': dbResult.length,
         });
-        return fileResult;
+        return dbResult;
       }
 
       // Initialize cache if needed
       _levelWordsCache ??= {};
       _levelWordsCache![level] = words;
 
-      print('LevelVocabularyLoader.getWordsByLevel($level): loaded ${words.length} words from database');
+      print('LevelVocabularyLoader.getWordsByLevel($level): loaded ${words.length} words from JSON');
       
       stopwatch.stop();
       PerformanceMonitor.trackAsyncOperation('LevelVocabularyLoader.getWordsByLevel', stopwatch.elapsed, metadata: {
         'level': level,
         'cached': false,
-        'source': 'database',
+        'source': 'json',
         'wordCount': words.length,
       });
       
+      // Learning progress is injected from SharedPreferences in _loadWordsFromJson()
       return words;
     } catch (e) {
-      print('LevelVocabularyLoader.getWordsByLevel($level): error loading from database: $e');
-      // Fallback to file-based loading
-      final fileResult = await _loadWordsFromFile(level);
+      print('LevelVocabularyLoader.getWordsByLevel($level): error loading from JSON: $e');
+      // Fallback to database loading
+      final dbResult = await _loadWordsFromDatabase(level);
       stopwatch.stop();
       PerformanceMonitor.trackAsyncOperation('LevelVocabularyLoader.getWordsByLevel', stopwatch.elapsed, metadata: {
         'level': level,
         'error': e.toString(),
-        'source': 'file_fallback_error',
-        'wordCount': fileResult.length,
+        'source': 'database_fallback_error',
+        'wordCount': dbResult.length,
       });
-      return fileResult;
+      return dbResult;
+    }
+  }
+
+  /// Load words from JSON file
+  Future<List<Word>> _loadWordsFromJson(String level) async {
+    final jsonPath = _levelJsonFiles[level];
+    if (jsonPath == null) {
+      print('LevelVocabularyLoader._loadWordsFromJson($level): JSON file path not found');
+      return [];
+    }
+
+    try {
+      // Load words from JSON
+      final String jsonString = await rootBundle.loadString(jsonPath);
+      final List<dynamic> jsonList = json.decode(jsonString) as List<dynamic>;
+      
+      final words = jsonList.map((json) {
+        try {
+          return Word.fromJson(json as Map<String, dynamic>);
+        } catch (e) {
+          print('⚠️ Error parsing word from JSON: $e');
+          return null;
+        }
+      }).whereType<Word>().toList();
+      
+      // Inject cached progress from SharedPreferences
+      final cacheService = WordProgressCacheService();
+      final wordEnList = words.map((w) => w.en).toList();
+      final progressMap = await cacheService.getBatchWordProgress(level, wordEnList);
+      
+      // Update words with cached progress
+      final updatedWords = words.map((word) {
+        final progress = progressMap[word.en];
+        if (progress != null) {
+          return word.copyWith(
+            reviewCount: progress['reviewCount'] ?? word.reviewCount,
+            correctAnswers: progress['correctAnswers'] ?? word.correctAnswers,
+            totalAttempts: progress['totalAttempts'] ?? word.totalAttempts,
+            lastReviewed: progress['lastReviewed'] != null 
+              ? DateTime.parse(progress['lastReviewed']) 
+              : word.lastReviewed,
+            nextReview: progress['nextReview'] != null
+              ? DateTime.parse(progress['nextReview'])
+              : word.nextReview,
+            masteryLevel: (progress['masteryLevel'] ?? word.masteryLevel).toDouble(),
+          );
+        }
+        return word;
+      }).toList();
+      
+      print('LevelVocabularyLoader._loadWordsFromJson($level): loaded ${updatedWords.length} words from JSON with cached progress');
+      return updatedWords;
+    } catch (e) {
+      print('LevelVocabularyLoader._loadWordsFromJson($level): error loading JSON: $e');
+      return [];
+    }
+  }
+
+  /// Load words from database (fallback)
+  Future<List<Word>> _loadWordsFromDatabase(String level) async {
+    try {
+      final words = await _dbRepository.getWordsByTopic(level);
+      print('LevelVocabularyLoader._loadWordsFromDatabase($level): loaded ${words.length} words from database');
+      return words;
+    } catch (e) {
+      print('LevelVocabularyLoader._loadWordsFromDatabase($level): error: $e');
+      return [];
     }
   }
 
@@ -327,6 +407,7 @@ class LevelVocabularyLoader {
       'topics': (await getAllTopics()).length,
     };
   }
+
 
   /// Clear cache
   void clearCache() {

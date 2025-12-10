@@ -972,6 +972,29 @@ class DictionaryWordsRepository {
     return count;
   }
 
+  /// Get learned words count (reviewCount >= 5) - optimized SQL COUNT
+  Future<int> getLearnedWordsCount() async {
+    final methodStopwatch = Stopwatch()..start();
+    final db = await _initDatabase();
+    final queryStopwatch = Stopwatch()..start();
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM $_tableName WHERE reviewCount >= 5'
+    );
+    queryStopwatch.stop();
+    PerformanceMonitor.trackDatabaseQuery(
+      'SELECT COUNT(*) as count FROM $_tableName WHERE reviewCount >= 5',
+      queryStopwatch.elapsed,
+      method: 'getLearnedWordsCount',
+    );
+    
+    methodStopwatch.stop();
+    final count = Sqflite.firstIntValue(result) ?? 0;
+    PerformanceMonitor.trackAsyncOperation('getLearnedWordsCount', methodStopwatch.elapsed, metadata: {
+      'count': count,
+    });
+    return count;
+  }
+
   /// Get words by topic/level with multiple search strategies
   /// Handles case-insensitive matching and special characters (e.g., "1.1", "1.2")
   Future<List<Word>> getWordsByTopic(String topic) async {
@@ -1267,6 +1290,54 @@ class DictionaryWordsRepository {
     } catch (e) {
       print('❌ Error updating word progress for "$wordEn": $e');
       return false;
+    }
+  }
+
+  /// Get learning progress for multiple words (batch query)
+  /// Returns a map of word (lowercase) -> progress data
+  Future<Map<String, Map<String, dynamic>>> getWordsProgressBatch(List<String> wordEnList) async {
+    if (wordEnList.isEmpty) return {};
+    
+    try {
+      final db = await _initDatabase();
+      final placeholders = wordEnList.map((_) => '?').join(',');
+      
+      final List<Map<String, dynamic>> rows = await db.query(
+        _tableName,
+        columns: [
+          'en',
+          'reviewCount',
+          'correctAnswers',
+          'totalAttempts',
+          'masteryLevel',
+          'nextReview',
+          'lastReviewed',
+          'currentInterval',
+          'easeFactor',
+        ],
+        where: 'LOWER(en) IN ($placeholders)',
+        whereArgs: wordEnList.map((w) => w.toLowerCase()).toList(),
+      );
+      
+      final progressMap = <String, Map<String, dynamic>>{};
+      for (final row in rows) {
+        final en = (row['en'] as String? ?? '').toLowerCase();
+        progressMap[en] = {
+          'reviewCount': row['reviewCount'] as int? ?? 0,
+          'correctAnswers': row['correctAnswers'] as int? ?? 0,
+          'totalAttempts': row['totalAttempts'] as int? ?? 0,
+          'masteryLevel': (row['masteryLevel'] as num?)?.toDouble() ?? 0.0,
+          'nextReview': row['nextReview'] as String?,
+          'lastReviewed': row['lastReviewed'] as String?,
+          'currentInterval': row['currentInterval'] as int? ?? 1,
+          'easeFactor': (row['easeFactor'] as num?)?.toDouble() ?? 2.5,
+        };
+      }
+      
+      return progressMap;
+    } catch (e) {
+      print('❌ Error getting words progress batch: $e');
+      return {};
     }
   }
 

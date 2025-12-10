@@ -15,6 +15,7 @@ import 'package:bvo/service/difficult_words_service.dart';
 import 'package:bvo/screen/quiz_game_screen.dart';
 import 'package:bvo/screen/smart_review_screen.dart';
 import 'package:bvo/service/performance_monitor.dart';
+import 'package:bvo/service/word_progress_cache_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int)? onTabChange;
@@ -118,6 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
   }
+
   
   /// Get all words with caching to avoid redundant queries
   Future<List<Word>> _getAllWordsCached() async {
@@ -244,38 +246,16 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final progressRepo = UserProgressRepository();
+      final cacheService = WordProgressCacheService();
       
-      // Calculate total words learned by counting ALL words with reviewCount >= 5
-      // (Same approach as TopicLevelScreen)
-      // OPTIMIZED: Use cached words to avoid redundant queries
-      final allWordsStopwatch = Stopwatch()..start();
-      final allWords = await _getAllWordsCached();
-      allWordsStopwatch.stop();
-      PerformanceMonitor.trackAsyncOperation('HomeScreen._calculateRealStatistics.getAllWords', allWordsStopwatch.elapsed, metadata: {
-        'wordCount': allWords.length,
-      });
-      
+      // Count learned words from SharedPreferences cache (fast)
       int learnedCount = 0;
+      final topics = ['1.1', '1.2', '1.3', '1.4', '1.5', '2.0'];
       
-      print('📊 HomeScreen: Counting learned words from ${allWords.length} total words...');
-      
-      final loopStopwatch = Stopwatch()..start();
-      // OPTIMIZED: Use word.reviewCount directly from loaded Word objects
-      // No need to query database again - data is already in memory!
-      for (final word in allWords) {
-        if (word.reviewCount >= 5) {
-          learnedCount++;
-        }
+      for (final topic in topics) {
+        final topicProgress = await cacheService.getAllTopicProgress(topic);
+        learnedCount += topicProgress.values.where((p) => (p['reviewCount'] ?? 0) >= 5).length;
       }
-      loopStopwatch.stop();
-      PerformanceMonitor.trackAsyncOperation('HomeScreen._calculateRealStatistics.wordLoop', loopStopwatch.elapsed, metadata: {
-        'wordCount': allWords.length,
-        'learnedCount': learnedCount,
-        'optimized': true,
-      });
-      
-      print('📊 HomeScreen: Found $learnedCount words with reviewCount >= 5');
-      print('✅ OPTIMIZED: Using word.reviewCount directly - no database queries needed!');
       
       // Get streak data from UserProgressRepository
       final userStats = await progressRepo.getUserStatistics();
@@ -289,17 +269,16 @@ class _HomeScreenState extends State<HomeScreen> {
         targetWords = topicGroups.fold<int>(0, (sum, group) => sum + (group['targetWords'] as int));
       }
       
-      // Update values and trigger UI refresh
+      // Update UI immediately
       if (mounted) {
         setState(() {
-          totalWordsLearned = learnedCount; // Use directly counted value
+          totalWordsLearned = learnedCount;
           streakDays = userStats['streakDays'] ?? 0;
           longestStreak = userStats['longestStreak'] ?? 0;
           todayWordsLearned = todayWords;
           totalTargetWords = targetWords;
         });
       } else {
-        // If widget is not mounted, just update values without setState
         totalWordsLearned = learnedCount;
         streakDays = userStats['streakDays'] ?? 0;
         longestStreak = userStats['longestStreak'] ?? 0;
@@ -314,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await prefs.setInt('today_words_learned', todayWordsLearned);
       
       // Debug info
-      print('📊 HomePage Stats (Updated - Direct Count):');
+      print('📊 HomePage Stats (Updated - From SharedPreferences Cache):');
       print('  - Current Streak: $streakDays days');
       print('  - Longest Streak: $longestStreak days');
       print('  - Total Words Learned (reviewCount >= 5): $totalWordsLearned');
@@ -323,12 +302,12 @@ class _HomeScreenState extends State<HomeScreen> {
       
       stopwatch.stop();
       PerformanceMonitor.trackAsyncOperation('HomeScreen._calculateRealStatistics', stopwatch.elapsed, metadata: {
-        'totalWords': allWords.length,
         'learnedCount': learnedCount,
-        'queryCount': 0, // OPTIMIZED: No queries needed!
+        'queryCount': 0, // OPTIMIZED: No database queries needed!
         'streakDays': streakDays,
         'todayWordsLearned': todayWordsLearned,
         'optimized': true,
+        'source': 'SharedPreferences',
       });
       PerformanceMonitor.trackMemoryUsage('HomeScreen._calculateRealStatistics.end');
       

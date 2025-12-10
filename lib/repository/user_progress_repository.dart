@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/word.dart';
 import 'dictionary_words_repository.dart';
+import '../service/word_progress_cache_service.dart';
+import '../service/level_vocabulary_loader.dart';
 
 /// Repository for managing user progress and learned words
 /// Now syncs progress to database for single source of truth
@@ -12,40 +14,67 @@ class UserProgressRepository {
   
   final DictionaryWordsRepository _dbRepository = DictionaryWordsRepository();
 
-  /// Get user progress for a specific topic (calculated from database)
+  /// Get user progress for a specific topic (from JSON and SharedPreferences - NO DATABASE)
+  /// First load: Only load from JSON files, no database queries
   Future<Map<String, dynamic>> getTopicProgress(String topic) async {
     try {
-      // Calculate from database (single source of truth)
-      final topicWords = await _dbRepository.getWordsByTopic(topic);
+      // Load words from JSON (fast, no database)
+      final levelLoader = LevelVocabularyLoader();
+      final topicWords = await levelLoader.getWordsByLevel(topic);
       
       int totalWords = topicWords.length;
-      int learnedWords = 0; // reviewCount >= 5
+      
+      // Get progress from SharedPreferences cache (fast)
+      final cacheService = WordProgressCacheService();
+      final topicProgressMap = await cacheService.getAllTopicProgress(topic);
+      
+      int learnedWords = 0;
       int totalCorrect = 0;
       int totalAttempts = 0;
       DateTime? lastStudied;
       double bestAccuracy = 0.0;
       
-      for (final word in topicWords) {
-        if (word.reviewCount >= 5) {
+      // Calculate from cached progress in SharedPreferences
+      for (final progressEntry in topicProgressMap.entries) {
+        final progress = progressEntry.value;
+        final reviewCount = (progress['reviewCount'] ?? 0) as int;
+        final correctAnswers = (progress['correctAnswers'] ?? 0) as int;
+        final attempts = (progress['totalAttempts'] ?? 0) as int;
+        final masteryLevel = (progress['masteryLevel'] ?? 0.0).toDouble();
+        final lastReviewedStr = progress['lastReviewed'];
+        
+        if (reviewCount >= 5) {
           learnedWords++;
         }
-        totalCorrect += word.correctAnswers;
-        totalAttempts += word.totalAttempts;
+        totalCorrect += correctAnswers;
+        totalAttempts += attempts;
         
-        // Track last studied date
-        if (word.lastReviewed != null) {
-          if (lastStudied == null || word.lastReviewed!.isAfter(lastStudied)) {
-            lastStudied = word.lastReviewed;
-          }
+        if (lastReviewedStr != null) {
+          try {
+            final lastReviewed = DateTime.parse(lastReviewedStr);
+            if (lastStudied == null || lastReviewed.isAfter(lastStudied)) {
+              lastStudied = lastReviewed;
+            }
+          } catch (_) {}
         }
         
-        // Calculate best accuracy from word mastery
-        if (word.masteryLevel > bestAccuracy) {
-          bestAccuracy = word.masteryLevel * 100;
+        if (masteryLevel > bestAccuracy) {
+          bestAccuracy = masteryLevel * 100;
         }
       }
       
       final avgAccuracy = totalAttempts > 0 ? (totalCorrect / totalAttempts) * 100 : 0.0;
+      
+      // Get sessions from SharedPreferences (if still needed)
+      final prefs = await SharedPreferences.getInstance();
+      final progressJson = prefs.getString('$_topicProgressPrefix$topic');
+      int sessions = 0;
+      if (progressJson != null) {
+        try {
+          final oldProgress = Map<String, dynamic>.from(jsonDecode(progressJson));
+          sessions = oldProgress['sessions'] ?? 0;
+        } catch (_) {}
+      }
       
       return {
         'topic': topic,
@@ -53,14 +82,14 @@ class UserProgressRepository {
         'learnedWords': learnedWords,
         'correctAnswers': totalCorrect,
         'totalAttempts': totalAttempts,
-        'sessions': 0, // Can be calculated separately if needed
+        'sessions': sessions,
         'lastStudied': lastStudied?.toIso8601String(),
         'bestAccuracy': bestAccuracy,
         'avgAccuracy': avgAccuracy,
-        'totalStudyTime': 0, // Can be tracked separately if needed
+        'totalStudyTime': 0,
       };
     } catch (e) {
-      print('❌ Error calculating topic progress from database: $e');
+      print('❌ Error calculating topic progress: $e');
       // Return default
       return {
         'topic': topic,
@@ -85,12 +114,20 @@ class UserProgressRepository {
     // Keep for backward compatibility
   }
 
-  /// Get progress for a specific word (from database or Word object)
-  /// If word object is provided, use it directly to avoid database query
+  /// Get progress for a specific word (from SharedPreferences only - fast)
+  /// If word object is provided, use it and cache to SharedPreferences
   Future<Map<String, dynamic>> getWordProgress(String topic, String wordEn, {Word? word}) async {
-    // OPTIMIZED: If word object provided, use it directly (no database query needed)
+    final cacheService = WordProgressCacheService();
+    
+    // Load from SharedPreferences only (fast)
+    final cachedProgress = await cacheService.getWordProgress(topic, wordEn);
+    if (cachedProgress != null) {
+      return cachedProgress;
+    }
+    
+    // If word object provided, use it and cache
     if (word != null) {
-      return {
+      final progress = {
         'word': wordEn,
         'topic': topic,
         'reviewCount': word.reviewCount,
@@ -98,42 +135,17 @@ class UserProgressRepository {
         'totalAttempts': word.totalAttempts,
         'lastReviewed': word.lastReviewed?.toIso8601String(),
         'nextReview': word.nextReview.toIso8601String(),
-        'isLearned': word.reviewCount >= 5, // Consider learned if reviewed 5+ times
+        'isLearned': word.reviewCount >= 5,
         'difficulty': word.difficulty,
         'masteryLevel': word.masteryLevel,
       };
+      
+      // Cache to SharedPreferences
+      await cacheService.saveWordProgress(topic, wordEn, progress);
+      return progress;
     }
     
-    // Try to get from database first (single source of truth)
-    try {
-      final dbWord = await _dbRepository.getWord(wordEn);
-      if (dbWord != null) {
-        return {
-          'word': wordEn,
-          'topic': topic,
-          'reviewCount': dbWord.reviewCount,
-          'correctAnswers': dbWord.correctAnswers,
-          'totalAttempts': dbWord.totalAttempts,
-          'lastReviewed': dbWord.lastReviewed?.toIso8601String(),
-          'nextReview': dbWord.nextReview.toIso8601String(),
-          'isLearned': dbWord.reviewCount >= 5, // Consider learned if reviewed 5+ times
-          'difficulty': dbWord.difficulty,
-          'masteryLevel': dbWord.masteryLevel,
-        };
-      }
-    } catch (e) {
-      print('⚠️ Error getting word progress from database: $e');
-    }
-    
-    // Fallback to SharedPreferences for backward compatibility
-    final prefs = await SharedPreferences.getInstance();
-    final wordKey = '${topic}_$wordEn';
-    final progressJson = prefs.getString('$_wordProgressPrefix$wordKey');
-    
-    if (progressJson != null) {
-      return Map<String, dynamic>.from(jsonDecode(progressJson));
-    }
-    
+    // Default empty progress
     return {
       'word': wordEn,
       'topic': topic,
@@ -144,6 +156,7 @@ class UserProgressRepository {
       'nextReview': null,
       'isLearned': false,
       'difficulty': 1,
+      'masteryLevel': 0.0,
     };
   }
 
@@ -155,60 +168,59 @@ class UserProgressRepository {
     // Keep for backward compatibility
   }
 
-  /// Update word progress after correct answer (syncs to database)
+  /// Update word progress after correct answer
+  /// Dual write: Save to SharedPreferences (sync) and database (async)
   Future<void> updateWordProgress(String topic, dWord word, bool isCorrect) async {
-    // Update in database (primary source of truth)
-    try {
-      final success = await _dbRepository.updateWordProgressAfterAnswer(
-        wordEn: word.en,
-        isCorrect: isCorrect,
-      );
-      
-      if (success) {
-        print('✅ Updated word progress in database: ${word.en}');
-      } else {
-        print('⚠️ Failed to update word progress in database: ${word.en}');
-      }
-    } catch (e) {
-      print('❌ Error updating word progress in database: $e');
-    }
+    final cacheService = WordProgressCacheService();
     
-    // Also keep SharedPreferences for backward compatibility and quick access
-    final progress = await getWordProgress(topic, word.en);
+    // Get current progress
+    final currentProgress = await getWordProgress(topic, word.en, word: word);
+    final newReviewCount = (currentProgress['reviewCount'] as int) + 1;
+    final newTotalAttempts = (currentProgress['totalAttempts'] as int) + 1;
+    final newCorrectAnswers = isCorrect 
+      ? (currentProgress['correctAnswers'] as int) + 1
+      : (currentProgress['correctAnswers'] as int);
     
-    progress['reviewCount'] = (progress['reviewCount'] ?? 0) + 1;
-    progress['totalAttempts'] = (progress['totalAttempts'] ?? 0) + 1;
+    final accuracy = newTotalAttempts > 0 ? (newCorrectAnswers / newTotalAttempts) : 0.0;
     
-    if (isCorrect) {
-      progress['correctAnswers'] = (progress['correctAnswers'] ?? 0) + 1;
-    }
-    
-    progress['lastReviewed'] = DateTime.now().toIso8601String();
-    
-    // Calculate next review date based on performance
-    final reviewCount = progress['reviewCount'] as int;
-    final correctAnswers = progress['correctAnswers'] as int;
-    final accuracy = correctAnswers / (progress['totalAttempts'] as int);
-    
-    // Spaced repetition: more correct answers = longer intervals
+    // Calculate next review date
     int daysToAdd = 1;
     if (accuracy >= 0.8) {
-      daysToAdd = [1, 3, 7, 14, 30][reviewCount.clamp(0, 4)];
+      daysToAdd = [1, 3, 7, 14, 30][newReviewCount.clamp(0, 4)];
     } else if (accuracy >= 0.6) {
-      daysToAdd = [1, 2, 4, 7, 14][reviewCount.clamp(0, 4)];
-    } else {
-      daysToAdd = 1; // Review again tomorrow
+      daysToAdd = [1, 2, 4, 7, 14][newReviewCount.clamp(0, 4)];
     }
     
-    progress['nextReview'] = DateTime.now().add(Duration(days: daysToAdd)).toIso8601String();
-    progress['isLearned'] = accuracy >= 0.7 && reviewCount >= 3;
-    progress['difficulty'] = accuracy >= 0.8 ? 1 : accuracy >= 0.6 ? 2 : 3;
+    final newProgress = {
+      'word': word.en,
+      'topic': topic,
+      'reviewCount': newReviewCount,
+      'correctAnswers': newCorrectAnswers,
+      'totalAttempts': newTotalAttempts,
+      'lastReviewed': DateTime.now().toIso8601String(),
+      'nextReview': DateTime.now().add(Duration(days: daysToAdd)).toIso8601String(),
+      'isLearned': newReviewCount >= 5,
+      'difficulty': accuracy >= 0.8 ? 1 : accuracy >= 0.6 ? 2 : 3,
+      'masteryLevel': accuracy,
+    };
     
-    // Word progress is already saved in database by updateWordProgressAfterAnswer
-    // No need to save to SharedPreferences anymore
+    // PHASE 1: Save to SharedPreferences immediately (sync - fast)
+    await cacheService.saveWordProgress(topic, word.en, newProgress);
     
-    // Topic progress is now calculated from database, no need to update separately
-    // Note: getTopicProgress() will calculate from database when needed
+    // PHASE 2: Save to database asynchronously (async - non-blocking)
+    _dbRepository.updateWordProgress(
+      wordEn: word.en,
+      reviewCount: newReviewCount,
+      correctAnswers: newCorrectAnswers,
+      totalAttempts: newTotalAttempts,
+      lastReviewed: DateTime.now(),
+      nextReview: DateTime.now().add(Duration(days: daysToAdd)),
+      masteryLevel: accuracy,
+    ).catchError((e) {
+      print('❌ Error updating word progress in database: $e');
+      // SharedPreferences already saved, so app can continue
+      return false;
+    });
     
     // Update last_topic in SharedPreferences
     await _updateLastTopic(topic);
@@ -224,64 +236,62 @@ class UserProgressRepository {
     return await getAllTopicsProgressBatch();
   }
 
-  /// Batch load progress for all topics in optimized queries
+  /// Batch load progress for all topics from JSON and SharedPreferences (NO DATABASE)
+  /// First load: Only load from JSON files, no database queries
   Future<Map<String, Map<String, dynamic>>> getAllTopicsProgressBatch() async {
     try {
       const targetTopics = ['1.1', '1.2', '1.3', '1.4', '1.5', '2.0'];
       final topicsProgress = <String, Map<String, dynamic>>{};
+      final cacheService = WordProgressCacheService();
+      final levelLoader = LevelVocabularyLoader();
       
-      // Initialize default progress for all topics
-      for (final topic in targetTopics) {
-        topicsProgress[topic] = {
-          'topic': topic,
-          'totalWords': 0,
-          'learnedWords': 0,
-          'correctAnswers': 0,
-          'totalAttempts': 0,
-          'sessions': 0,
-          'lastStudied': null,
-          'bestAccuracy': 0.0,
-          'avgAccuracy': 0.0,
-          'totalStudyTime': 0,
-        };
-      }
-      
-      // Batch query: Get all words for all topics in one query
-      final allTopicWords = await _dbRepository.getWordsByTopicsBatch(targetTopics);
-      
-      // Group words by topic and calculate progress
+      // Load words from JSON files (fast, no database)
       final wordsByTopic = <String, List<Word>>{};
-      for (final word in allTopicWords) {
-        if (word.topic.isNotEmpty && targetTopics.contains(word.topic)) {
-          wordsByTopic.putIfAbsent(word.topic, () => []).add(word);
-        }
+      for (final topic in targetTopics) {
+        final words = await levelLoader.getWordsByLevel(topic);
+        wordsByTopic[topic] = words;
       }
       
-      // Calculate progress for each topic
+      // Calculate progress for each topic from JSON + SharedPreferences
       for (final topic in targetTopics) {
         final topicWords = wordsByTopic[topic] ?? [];
         int totalWords = topicWords.length;
+        
+        // Get progress from SharedPreferences cache (fast)
+        final topicProgressMap = await cacheService.getAllTopicProgress(topic);
+        
         int learnedWords = 0;
         int totalCorrect = 0;
         int totalAttempts = 0;
         DateTime? lastStudied;
         double bestAccuracy = 0.0;
         
-        for (final word in topicWords) {
-          if (word.reviewCount >= 5) {
+        // Calculate from cached progress in SharedPreferences
+        for (final progressEntry in topicProgressMap.entries) {
+          final progress = progressEntry.value;
+          final reviewCount = (progress['reviewCount'] ?? 0) as int;
+          final correctAnswers = (progress['correctAnswers'] ?? 0) as int;
+          final attempts = (progress['totalAttempts'] ?? 0) as int;
+          final masteryLevel = (progress['masteryLevel'] ?? 0.0).toDouble();
+          final lastReviewedStr = progress['lastReviewed'];
+          
+          if (reviewCount >= 5) {
             learnedWords++;
           }
-          totalCorrect += word.correctAnswers;
-          totalAttempts += word.totalAttempts;
+          totalCorrect += correctAnswers;
+          totalAttempts += attempts;
           
-          if (word.lastReviewed != null) {
-            if (lastStudied == null || word.lastReviewed!.isAfter(lastStudied)) {
-              lastStudied = word.lastReviewed;
-            }
+          if (lastReviewedStr != null) {
+            try {
+              final lastReviewed = DateTime.parse(lastReviewedStr);
+              if (lastStudied == null || lastReviewed.isAfter(lastStudied)) {
+                lastStudied = lastReviewed;
+              }
+            } catch (_) {}
           }
           
-          if (word.masteryLevel > bestAccuracy) {
-            bestAccuracy = word.masteryLevel * 100;
+          if (masteryLevel > bestAccuracy) {
+            bestAccuracy = masteryLevel * 100;
           }
         }
         
@@ -319,37 +329,35 @@ class UserProgressRepository {
     }
   }
 
-  /// Get words that need review today (from database)
+  /// Get words that need review today
+  /// Load from JSON and SharedPreferences ONLY (NO DATABASE on first load)
+  /// Database is only used for additional words not in JSON (after user has progress)
   Future<List<Map<String, dynamic>>> getWordsForReview() async {
-    try {
-      // Get from database first
-      final words = await _dbRepository.getWordsForReview(limit: 100);
-      return words.map((word) => {
-        'word': word.en,
-        'topic': word.topic,
-        'reviewCount': word.reviewCount,
-        'correctAnswers': word.correctAnswers,
-        'totalAttempts': word.totalAttempts,
-        'lastReviewed': word.lastReviewed?.toIso8601String(),
-        'nextReview': word.nextReview.toIso8601String(),
-        'isLearned': word.reviewCount >= 5,
-        'difficulty': word.difficulty,
-        'masteryLevel': word.masteryLevel,
-      }).toList();
-    } catch (e) {
-      print('⚠️ Error getting words for review from database: $e');
-      // Fallback to SharedPreferences
-      return await _getWordsForReviewFromSharedPrefs();
+    final levelLoader = LevelVocabularyLoader();
+    
+    // Get all words from JSON (all topics)
+    final allTopics = ['1.1', '1.2', '1.3', '1.4', '1.5', '2.0'];
+    final jsonWords = <String, Word>{}; // Map of word.en -> Word from JSON
+    
+    for (final topic in allTopics) {
+      final words = await levelLoader.getWordsByLevel(topic);
+      for (final word in words) {
+        jsonWords[word.en.toLowerCase()] = word;
+      }
     }
-  }
-  
-  /// Fallback: Get words for review from SharedPreferences
-  Future<List<Map<String, dynamic>>> _getWordsForReviewFromSharedPrefs() async {
+    
+    // Get words for review from SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final allKeys = prefs.getKeys();
+    final prefix = 'word_progress_';
     final wordKeys = allKeys.where((key) => 
-      key.startsWith(_wordProgressPrefix)
+      key.startsWith(prefix)
     ).toList();
+    
+    // If no progress keys found (first load), return empty list (no database query)
+    if (wordKeys.isEmpty) {
+      return [];
+    }
     
     final wordsForReview = <Map<String, dynamic>>[];
     final today = DateTime.now();
@@ -357,14 +365,41 @@ class UserProgressRepository {
     for (final key in wordKeys) {
       final progressJson = prefs.getString(key);
       if (progressJson != null) {
-        final wordProgress = Map<String, dynamic>.from(jsonDecode(progressJson));
-        final nextReviewStr = wordProgress['nextReview'];
-        
-        if (nextReviewStr != null) {
-          final nextReview = DateTime.parse(nextReviewStr);
-          if (nextReview.isBefore(today) || nextReview.isAtSameMomentAs(today)) {
-            wordsForReview.add(wordProgress);
+        try {
+          final wordProgress = Map<String, dynamic>.from(jsonDecode(progressJson));
+          final nextReviewStr = wordProgress['nextReview'];
+          
+          if (nextReviewStr != null) {
+            final nextReview = DateTime.parse(nextReviewStr);
+            if (nextReview.isBefore(today) || nextReview.isAtSameMomentAs(today)) {
+              final wordEn = wordProgress['word'] as String? ?? '';
+              final wordEnLower = wordEn.toLowerCase();
+              
+              // If word is in JSON, use JSON data (no database query)
+              if (jsonWords.containsKey(wordEnLower)) {
+                final jsonWord = jsonWords[wordEnLower]!;
+                wordProgress.addAll({
+                  'pronunciation': jsonWord.pronunciation,
+                  'sentence': jsonWord.sentence,
+                  'sentenceVi': jsonWord.sentenceVi,
+                  'level': jsonWord.level.toString().split('.').last,
+                  'type': jsonWord.type.toString().split('.').last,
+                  'difficulty': jsonWord.difficulty,
+                  'tags': jsonWord.tags,
+                  'synonyms': jsonWord.synonyms,
+                  'antonyms': jsonWord.antonyms,
+                });
+                wordsForReview.add(wordProgress);
+              }
+              // Skip words not in JSON (don't query database on first load)
+              // Database queries should only happen for search functionality
+              else {
+                print('⚠️ Skipping word $wordEn - not found in JSON (no database query on first load)');
+              }
+            }
           }
+        } catch (e) {
+          print('⚠️ Error parsing word progress for key $key: $e');
         }
       }
     }
