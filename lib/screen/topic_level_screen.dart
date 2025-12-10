@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bvo/model/word.dart';
 import 'package:bvo/service/vocabulary_data_loader.dart';
 import 'package:bvo/screen/flashcard_screen.dart';
+import 'package:bvo/screen/quiz_game_screen.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/repository/quiz_repository.dart';
 import 'package:bvo/service/audio_service.dart';
@@ -211,6 +212,49 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
     });
   }
 
+  Future<void> _startQuiz() async {
+    final allWords = _getCurrentLevelWords();
+    
+    if (allWords.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không có từ nào để quiz ở level này!')),
+      );
+      return;
+    }
+
+    // Use same filter as flashcard: words that are not mastered (reviewCount < 5)
+    final List<Word> wordsToQuiz = [];
+    for (final word in allWords) {
+      // Use reviewCount directly from Word object (same as flashcard)
+      if (word.reviewCount < 5) {
+        wordsToQuiz.add(word);
+      }
+    }
+
+    if (wordsToQuiz.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tất cả từ ở level này đã được thuộc rồi! 🎉'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuizGameScreen(
+          words: wordsToQuiz,
+          title: 'Quiz ${_getCurrentLevelName()} Level',
+        ),
+      ),
+    ).then((_) {
+      // Refresh statistics and UI after quiz
+      _refreshData();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -290,8 +334,8 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
             ],
           ),
         ),
-        // Flashcard button at bottom
-        _buildFlashcardButton(),
+        // Action buttons at bottom
+        _buildActionButtons(),
       ],
     );
   }
@@ -475,13 +519,14 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
     );
   }
 
-  Widget _buildFlashcardButton() {
+  Widget _buildActionButtons() {
     final allWords = _getCurrentLevelWords();
     // Calculate non-mastered count directly (no async, no database queries)
+    // Use same count for both flashcard and quiz (reviewCount < 5)
     final nonMasteredCount = _getNonMasteredWordCount(allWords);
     
     return Container(
-      key: ValueKey('flashcard_button_$_refreshKey'), // Force rebuild when refreshKey changes
+      key: ValueKey('action_buttons_$_refreshKey'), // Force rebuild when refreshKey changes
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -495,38 +540,73 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton.icon(
-            onPressed: nonMasteredCount == 0 ? null : _startFlashcard,
-            icon: const Icon(Icons.style, size: 24),
-            label: Text(
-              nonMasteredCount == 0
-                ? 'Tất cả từ đã thuộc! 🎉'
-                : 'Bắt đầu Flashcard ($nonMasteredCount từ)',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Flashcard button
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: nonMasteredCount == 0 ? null : _startFlashcard,
+                icon: const Icon(Icons.style, size: 24),
+                label: Text(
+                  nonMasteredCount == 0
+                    ? 'Tất cả từ đã thuộc! 🎉'
+                    : 'Bắt đầu Flashcard ($nonMasteredCount từ)',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey[300],
+                  disabledForegroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
               ),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
-              disabledBackgroundColor: Colors.grey[300],
-              disabledForegroundColor: Colors.grey[600],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            const SizedBox(height: 12),
+            // Quiz button (uses same words as flashcard)
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: nonMasteredCount == 0 ? null : _startQuiz,
+                icon: const Icon(Icons.quiz, size: 24),
+                label: Text(
+                  nonMasteredCount == 0
+                    ? 'Tất cả từ đã thuộc! 🎉'
+                    : 'Học theo Quiz ($nonMasteredCount từ)',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey[300],
+                  disabledForegroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
               ),
-              elevation: 0,
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  /// Count words that are not mastered (reviewCount < 5) for flashcard button
+  /// Count words that are not mastered (reviewCount < 5) for flashcard and quiz buttons
   /// Uses reviewCount directly from Word objects (no database queries)
   int _getNonMasteredWordCount(List<Word> words) {
     if (words.isEmpty) return 0;

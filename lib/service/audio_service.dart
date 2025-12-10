@@ -30,6 +30,7 @@ class AudioService {
   final Queue<_AudioItem> _queue = Queue<_AudioItem>();
   bool _isPlaying = false;
   bool _isInitialized = false;
+  String? _currentText; // Track currently playing text to avoid duplicates
 
   /// Initialize TTS
   Future<void> initialize() async {
@@ -101,6 +102,15 @@ class AudioService {
     required double speechRate,
     required double pitch,
   }) async {
+    // Check if this text is already in queue or currently playing
+    final isAlreadyQueued = _queue.any((item) => item.text == text);
+    final isCurrentlyPlaying = _currentText == text;
+    
+    if (isAlreadyQueued || isCurrentlyPlaying) {
+      print('⏭️ Skipping duplicate: "$text" (already in queue or playing)');
+      return; // Don't add duplicate, return immediately
+    }
+
     final completer = Completer<void>();
     final item = _AudioItem(
       text: text,
@@ -135,6 +145,7 @@ class AudioService {
 
     _isPlaying = true;
     final item = _queue.removeFirst();
+    _currentText = item.text; // Track currently playing text
     print('🔄 Processing queue item: "${item.text}" (queue remaining: ${_queue.length})');
 
     try {
@@ -194,6 +205,7 @@ class AudioService {
       }
       _isPlaying = false;
       _currentItemCompleter = null;
+      _currentText = null; // Clear currently playing text on error
       // Continue with next item
       _processQueue();
     }
@@ -216,6 +228,7 @@ class AudioService {
     }
     
     _isPlaying = false;
+    _currentText = null; // Clear currently playing text
     
     // Reset to normal speed after slow speech
     if (_queue.isEmpty) {
@@ -234,6 +247,7 @@ class AudioService {
       await _flutterTts.stop();
       _queue.clear();
       _isPlaying = false;
+      _currentText = null; // Clear currently playing text
       // Complete current item if exists
       if (_currentItemCompleter != null && !_currentItemCompleter!.isCompleted) {
         _currentItemCompleter!.complete();

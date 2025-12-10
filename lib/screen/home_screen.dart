@@ -12,7 +12,6 @@ import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/service/notification_manager.dart';
 import 'package:bvo/screen/topic_detail_screen.dart';
 import 'package:bvo/service/difficult_words_service.dart';
-import 'package:bvo/screen/flashcard_screen.dart';
 import 'package:bvo/screen/quiz_game_screen.dart';
 import 'package:bvo/screen/smart_review_screen.dart';
 import 'package:bvo/service/performance_monitor.dart';
@@ -2064,16 +2063,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 16),
         
-        // Flashcard button
-        _buildActionButton(
-          'Bắt đầu Flashcard',
-          'Học từ mới và ôn tập',
-          Icons.style,
-          onTap: () => _startFlashcard(),
-        ),
-        
-        const SizedBox(height: 12),
-        
         // Quiz button
         _buildActionButton(
           'Làm bài Quiz',
@@ -2274,59 +2263,6 @@ class _HomeScreenState extends State<HomeScreen> {
   
   // ==================== HELPER METHODS ====================
   
-  /// Get next 10 words for flashcard (sorted by ID/index, excluding mastered words)
-  Future<List<Word>> _getNextFlashcardWords() async {
-    try {
-      // OPTIMIZED: Use cached words
-      final allWords = await _getAllWordsCached();
-      
-      print('🎯 HomeScreen: Total words in repository: ${allWords.length}');
-      
-      // Create a map to track original index for sorting
-      final wordIndexMap = <Word, int>{};
-      for (int i = 0; i < allWords.length; i++) {
-        wordIndexMap[allWords[i]] = i;
-      }
-      
-      // Filter out mastered words (reviewCount >= 5 = đã thuộc)
-      final nonMasteredWords = <Word>[];
-      final masteredWords = <String>[];
-      
-      // OPTIMIZED: Use word.reviewCount directly from loaded Word objects
-      for (final word in allWords) {
-        if (word.reviewCount < 5) {
-          nonMasteredWords.add(word);
-        } else {
-          masteredWords.add(word.en);
-        }
-      }
-      
-      print('🎯 HomeScreen: Non-mastered words: ${nonMasteredWords.length}');
-      print('🎯 HomeScreen: Mastered words (filtered out): ${masteredWords.length}');
-      
-      // Sort by ID first, then by original index (maintain order from JSON array)
-      nonMasteredWords.sort((a, b) {
-        // If both have IDs, sort by ID
-        if (a.id != null && b.id != null) {
-          return a.id!.compareTo(b.id!);
-        }
-        // Otherwise, maintain original order from JSON array
-        final indexA = wordIndexMap[a] ?? 0;
-        final indexB = wordIndexMap[b] ?? 0;
-        return indexA.compareTo(indexB);
-      });
-      
-      // Get next 10 words
-      final flashcardWords = nonMasteredWords.take(10).toList();
-      print('🎯 HomeScreen: Flashcard words to show: ${flashcardWords.length}');
-      
-      return flashcardWords;
-    } catch (e) {
-      print('Error getting flashcard words: $e');
-      return [];
-    }
-  }
-  
   /// Get words currently being learned for quiz (not mastered)
   Future<List<Word>> _getQuizWords() async {
     try {
@@ -2377,43 +2313,6 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       print('Error getting quiz words: $e');
       return [];
-    }
-  }
-  
-  Future<void> _startFlashcard() async {
-    final words = await _getNextFlashcardWords();
-    
-    if (words.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('🎉 Không có từ nào để học. Tất cả từ đã được thuộc!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-      return;
-    }
-    
-    print('🎯 HomeScreen: Starting flashcard with ${words.length} words');
-    
-    // Group words by topic (use first topic as default)
-    final topic = words.first.topic;
-    
-    if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => FlashCardScreen(
-            words: words,
-            topic: topic,
-            startIndex: 0,
-          ),
-        ),
-      ).then((_) async {
-        // Refresh dashboard to reload flashcard word list
-        await refreshDashboard();
-      });
     }
   }
   
