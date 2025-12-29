@@ -10,7 +10,9 @@ import 'import_reading_screen.dart';
 import 'form_import_reading_screen.dart';
 import 'edit_reading_screen.dart';
 import 'listen_reading_dialog.dart';
-import 'reading_quiz_screen.dart';
+import '../../widget/quiz_planning_dialog.dart';
+import '../../repository/reading_quiz_repository.dart';
+import '../quiz_game_screen.dart';
 
 class ReadingListScreen extends StatefulWidget {
   const ReadingListScreen({Key? key}) : super(key: key);
@@ -105,7 +107,10 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
       if (mounted) {
         showDialog(
           context: context,
-          builder: (context) => ListenReadingDialog(questions: questions),
+          builder: (context) => ListenReadingDialog(
+            questions: questions,
+            readingId: reading.id,
+          ),
         );
       }
     } catch (e) {
@@ -113,6 +118,79 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi khi tải câu hỏi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _startReadingQuiz(Reading reading) async {
+    try {
+      // Load words from ReadingQuizRepository
+      final quizRepository = ReadingQuizRepository();
+      final words = await quizRepository.getReadingQuizWords(reading.id);
+      
+      if (words.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Chưa có từ vựng nào trong quiz của bài reading này'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Get due words (words that need review)
+      final dueWords = await quizRepository.getReadingDueWords(reading.id);
+      final wordsToShow = dueWords.isNotEmpty ? dueWords : words;
+
+      // Show quiz planning dialog directly
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => QuizPlanningDialog(
+            words: wordsToShow,
+            title: 'Quiz: ${reading.title}',
+            onStartQuiz: (selectedWords) {
+              if (selectedWords.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Vui lòng chọn ít nhất một từ để quiz!'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                return;
+              }
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => QuizGameScreen(
+                    words: selectedWords,
+                    title: 'Quiz: ${reading.title}',
+                    onWordProgressUpdate: (word, isCorrect) async {
+                      await quizRepository.updateReadingWordProgress(
+                        reading.id,
+                        word,
+                        isCorrect,
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải quiz: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -453,15 +531,7 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                       await _loadReadings();
                     }
                   } else if (value == 'quiz') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ReadingQuizScreen(
-                          readingId: reading.id,
-                          readingTitle: reading.title,
-                        ),
-                      ),
-                    );
+                    _startReadingQuiz(reading);
                   } else if (value == 'download') {
                     await _downloadReading(reading);
                   } else if (value == 'delete') {

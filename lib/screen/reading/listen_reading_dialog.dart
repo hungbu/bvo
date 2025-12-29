@@ -4,15 +4,18 @@ import 'package:flutter_tts/flutter_tts.dart';
 import '../../model/practice_question.dart';
 import '../../widget/selectable_text_with_word_lookup.dart' show TextWithWordLookup;
 import '../../repository/dictionary_words_repository.dart';
+import '../../repository/reading_quiz_repository.dart';
 import '../../service/dialog_manager.dart';
 import '../dictionary/word_search_dialog.dart' show WordDetailDialog;
 
 class ListenReadingDialog extends StatefulWidget {
   final List<PracticeQuestion> questions;
+  final String? readingId;
 
   const ListenReadingDialog({
     Key? key,
     required this.questions,
+    this.readingId,
   }) : super(key: key);
 
   @override
@@ -233,7 +236,13 @@ class _ListenReadingDialogState extends State<ListenReadingDialog> {
       if (mounted && dialogManager.canOpenWordDetailDialog()) {
         await showDialog(
           context: context,
-          builder: (context) => WordDetailDialog(word: word),
+          builder: (context) => WordDetailDialog(
+            word: word,
+            readingId: widget.readingId,
+            readingQuizRepository: widget.readingId != null
+                ? ReadingQuizRepository()
+                : null,
+          ),
         );
         // Dialog closed, flag is reset in dispose()
       }

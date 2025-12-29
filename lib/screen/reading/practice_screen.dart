@@ -1036,7 +1036,11 @@ class _PracticeScreenState extends State<PracticeScreen> {
       if (mounted && dialogManager.canOpenWordDetailDialog()) {
         await showDialog(
           context: context,
-          builder: (context) => WordDetailDialog(word: word),
+          builder: (context) => WordDetailDialog(
+            word: word,
+            readingId: widget.readingId,
+            readingQuizRepository: ReadingQuizRepository(),
+          ),
         );
         // Dialog closed, flag is reset in dispose()
       }

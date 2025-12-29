@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../model/word.dart';
 import '../../repository/dictionary_words_repository.dart';
 import '../../repository/quiz_repository.dart';
+import '../../repository/reading_quiz_repository.dart';
 import '../../service/audio_service.dart';
 import '../../service/dialog_manager.dart';
 
@@ -250,8 +251,15 @@ class _WordSearchDialogState extends State<WordSearchDialog> {
 
 class WordDetailDialog extends StatefulWidget {
   final Word word;
+  final String? readingId; // Optional: for reading context
+  final ReadingQuizRepository? readingQuizRepository; // Optional
 
-  const WordDetailDialog({Key? key, required this.word}) : super(key: key);
+  const WordDetailDialog({
+    Key? key,
+    required this.word,
+    this.readingId,
+    this.readingQuizRepository,
+  }) : super(key: key);
 
   @override
   State<WordDetailDialog> createState() => _WordDetailDialogState();
@@ -259,7 +267,8 @@ class WordDetailDialog extends StatefulWidget {
 
 class _WordDetailDialogState extends State<WordDetailDialog> {
   final AudioService _audioService = AudioService();
-  final QuizRepository _quizRepository = QuizRepository();
+  late final QuizRepository _quizRepository;
+  late final ReadingQuizRepository? _readingQuizRepository;
   final DialogManager _dialogManager = DialogManager();
   bool _isInQuiz = false;
   bool _isChecking = true;
@@ -267,6 +276,9 @@ class _WordDetailDialogState extends State<WordDetailDialog> {
   @override
   void initState() {
     super.initState();
+    _quizRepository = QuizRepository();
+    _readingQuizRepository = widget.readingQuizRepository ?? 
+        (widget.readingId != null ? ReadingQuizRepository() : null);
     _dialogManager.setWordDetailDialogOpen(true);
     _checkIfInQuiz();
   }
@@ -288,7 +300,16 @@ class _WordDetailDialogState extends State<WordDetailDialog> {
 
   Future<void> _checkIfInQuiz() async {
     try {
-      final quizWords = await _quizRepository.getQuizWords();
+      List<Word> quizWords;
+      
+      // Check in ReadingQuizRepository if readingId is provided
+      if (widget.readingId != null && _readingQuizRepository != null) {
+        quizWords = await _readingQuizRepository!.getReadingQuizWords(widget.readingId!);
+      } else {
+        // Default: check in QuizRepository (quiz chung)
+        quizWords = await _quizRepository.getQuizWords();
+      }
+      
       if (mounted) {
         setState(() {
           _isInQuiz = quizWords.any(
@@ -309,21 +330,40 @@ class _WordDetailDialogState extends State<WordDetailDialog> {
 
   Future<void> _addToQuiz() async {
     try {
-      final success = await _quizRepository.addWordToQuiz(widget.word);
+      bool success;
+      String message;
+      
+      // Add to ReadingQuizRepository if readingId is provided
+      if (widget.readingId != null && _readingQuizRepository != null) {
+        success = await _readingQuizRepository!.addWordToReadingQuiz(
+          widget.readingId!,
+          widget.word,
+        );
+        message = success 
+            ? 'Đã thêm từ vào quiz của bài reading này!'
+            : 'Từ này đã có trong quiz của bài reading này';
+      } else {
+        // Default: add to QuizRepository (quiz chung)
+        success = await _quizRepository.addWordToQuiz(widget.word);
+        message = success 
+            ? 'Đã thêm từ vào quiz!'
+            : 'Từ này đã có trong quiz';
+      }
+      
       if (success && mounted) {
         setState(() {
           _isInQuiz = true;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã thêm từ vào quiz!'),
+          SnackBar(
+            content: Text(message),
             backgroundColor: Colors.green,
           ),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Từ này đã có trong quiz'),
+          SnackBar(
+            content: Text(message),
             backgroundColor: Colors.orange,
           ),
         );
@@ -342,14 +382,29 @@ class _WordDetailDialogState extends State<WordDetailDialog> {
 
   Future<void> _removeFromQuiz() async {
     try {
-      final success = await _quizRepository.removeWordFromQuiz(widget.word);
+      bool success;
+      String message;
+      
+      // Remove from ReadingQuizRepository if readingId is provided
+      if (widget.readingId != null && _readingQuizRepository != null) {
+        success = await _readingQuizRepository!.removeWordFromReadingQuiz(
+          widget.readingId!,
+          widget.word,
+        );
+        message = 'Đã xóa từ khỏi quiz của bài reading này';
+      } else {
+        // Default: remove from QuizRepository (quiz chung)
+        success = await _quizRepository.removeWordFromQuiz(widget.word);
+        message = 'Đã xóa từ khỏi quiz';
+      }
+      
       if (success && mounted) {
         setState(() {
           _isInQuiz = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã xóa từ khỏi quiz'),
+          SnackBar(
+            content: Text(message),
             backgroundColor: Colors.blue,
           ),
         );
