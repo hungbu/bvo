@@ -69,10 +69,25 @@ Write-Host "Platform: $env:CMAKE_GENERATOR_PLATFORM" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Fix flutter_tts CMakeLists.txt if needed
-Write-Host "Checking flutter_tts plugin configuration..." -ForegroundColor Cyan
-if (Test-Path ".\fix_flutter_tts.ps1") {
-    & ".\fix_flutter_tts.ps1"
+# Auto-fix CMake errors before building
+Write-Host "Running pre-build CMake fix..." -ForegroundColor Cyan
+if (Test-Path ".\fix_cmake_before_build.ps1") {
+    & ".\fix_cmake_before_build.ps1"
+} else {
+    # Fallback: direct fix
+    $ephemeralPath = "windows\flutter\ephemeral"
+    if (-not (Test-Path $ephemeralPath)) {
+        Write-Host "Ephemeral folder not found. Running flutter pub get..." -ForegroundColor Yellow
+        flutter pub get
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Error: flutter pub get failed!" -ForegroundColor Red
+            exit 1
+        }
+    }
+    
+    if (Test-Path ".\fix_flutter_tts.ps1") {
+        & ".\fix_flutter_tts.ps1"
+    }
 }
 
 # Now run Flutter with the configured environment

@@ -1,18 +1,62 @@
 # Script to automatically fix flutter_tts CMakeLists.txt after Flutter regenerates it
 # Run this after: flutter clean, flutter pub get, or when build fails
+# This script fixes common CMake syntax errors including missing parentheses
 
 $ErrorActionPreference = "Stop"
 
-$flutterTtsPath = "windows\flutter\ephemeral\.plugin_symlinks\flutter_tts\windows\CMakeLists.txt"
+# Try multiple possible paths for the CMakeLists.txt file
+$possiblePaths = @(
+    "windows\flutter\ephemeral\.plugin_symlinks\flutter_tts\windows\CMakeLists.txt",
+    "flutter\ephemeral\.plugin_symlinks\flutter_tts\windows\CMakeLists.txt"
+)
 
-if (-not (Test-Path $flutterTtsPath)) {
-    Write-Host "flutter_tts CMakeLists.txt not found. Plugin may not be installed." -ForegroundColor Yellow
+$flutterTtsPath = $null
+foreach ($path in $possiblePaths) {
+    if (Test-Path $path) {
+        $flutterTtsPath = $path
+        break
+    }
+}
+
+if (-not $flutterTtsPath) {
+    Write-Host "flutter_tts CMakeLists.txt not found. Plugin may not be installed or ephemeral folder not generated yet." -ForegroundColor Yellow
+    Write-Host "Try running: flutter pub get" -ForegroundColor Cyan
     exit 0
 }
 
-Write-Host "Fixing flutter_tts CMakeLists.txt..." -ForegroundColor Cyan
+Write-Host "Fixing flutter_tts CMakeLists.txt at: $flutterTtsPath" -ForegroundColor Cyan
 
 $content = Get-Content $flutterTtsPath -Raw
+
+# Check for syntax errors: missing closing parentheses
+Write-Host "Checking for syntax errors..." -ForegroundColor Cyan
+$openParens = ([regex]::Matches($content, '\(')).Count
+$closeParens = ([regex]::Matches($content, '\)')).Count
+$openBrackets = ([regex]::Matches($content, '\{')).Count
+$closeBrackets = ([regex]::Matches($content, '\}')).Count
+
+if ($openParens -ne $closeParens) {
+    Write-Host "Warning: Unbalanced parentheses detected! Open: $openParens, Close: $closeParens" -ForegroundColor Yellow
+    Write-Host "Attempting to fix by adding missing closing parentheses..." -ForegroundColor Yellow
+    
+    # Try to fix by finding incomplete function calls near the end of file
+    # Common pattern: find_program(... without closing )
+    if ($content -match '(?s)(find_program\([^)]*?)(\r?\n\s*ENV PATH\s*)(\r?\n)') {
+        $content = $content -replace '(?s)(find_program\([^)]*?)(\r?\n\s*ENV PATH\s*)(\r?\n)', '$1$2)$3'
+        Write-Host "Fixed missing closing parenthesis in find_program!" -ForegroundColor Green
+    }
+    
+    # Check again
+    $openParens = ([regex]::Matches($content, '\(')).Count
+    $closeParens = ([regex]::Matches($content, '\)')).Count
+    if ($openParens -ne $closeParens) {
+        Write-Host "Warning: Still unbalanced. Manual review may be needed." -ForegroundColor Yellow
+    }
+}
+
+if ($openBrackets -ne $closeBrackets) {
+    Write-Host "Warning: Unbalanced brackets detected! Open: $openBrackets, Close: $closeBrackets" -ForegroundColor Yellow
+}
 
 # Check if already fixed (but continue to check for windowsapp.lib)
 $nugetFixed = $false
@@ -127,6 +171,19 @@ if (-not $found -and $content -match 'ARGS install') {
     }
 }
 
+# Fix incomplete find_program calls (common source of missing parenthesis errors)
+if ($content -match '(?s)find_program\([^)]*ENV PATH\s*\n(?!\))') {
+    Write-Host "Fixing incomplete find_program call..." -ForegroundColor Yellow
+    $content = $content -replace '(?s)(find_program\([^)]*ENV PATH)\s*\n(?!\))', '$1)`n'
+    $found = $true
+}
+
+# Fix any execute_process calls missing closing parenthesis
+if ($content -match 'execute_process\s*\(\s*COMMAND[^)]*$') {
+    Write-Host "Fixing incomplete execute_process call..." -ForegroundColor Yellow
+    # This is more complex, so we'll handle it in the NuGet section replacement
+}
+
 if ($found) {
     Set-Content $flutterTtsPath $content -NoNewline
     Write-Host "Fixed NuGet section!" -ForegroundColor Green
@@ -135,9 +192,43 @@ if ($found) {
     Write-Host "The file may already be fixed or have a different format." -ForegroundColor Yellow
 }
 
+# Fix incomplete set() function for bundled_libraries (common error at line 95)
+Write-Host "Checking for incomplete set() function..." -ForegroundColor Cyan
+$needsReload = $false
+
+# Check for missing closing parenthesis
+if ($content -match '(?s)set\(flutter_tts_bundled_libraries\s+""\s+PARENT_SCOPE\s+################ NuGet import begin') {
+    Write-Host "Fixing incomplete set() function for bundled_libraries..." -ForegroundColor Yellow
+    # Fix: Add closing parenthesis and proper newline
+    $content = $content -replace '(?s)(set\(flutter_tts_bundled_libraries\s+""\s+PARENT_SCOPE)\s+(################ NuGet import begin)', "`$1)`r`n`r`n`$2"
+    Set-Content $flutterTtsPath $content -NoNewline
+    Write-Host "Fixed incomplete set() function!" -ForegroundColor Green
+    $needsReload = $true
+} 
+# Check for literal \n character (should be actual newline)
+elseif ($content.Contains('PARENT_SCOPE)`n################')) {
+    Write-Host "Fixing literal newline character in set() function..." -ForegroundColor Yellow
+    $content = $content.Replace('PARENT_SCOPE)`n################', "PARENT_SCOPE)`r`n`r`n################")
+    [System.IO.File]::WriteAllText($flutterTtsPath, $content)
+    Write-Host "Fixed literal newline character!" -ForegroundColor Green
+    $needsReload = $true
+}
+# Check for missing newline after closing parenthesis
+elseif ($content -match 'PARENT_SCOPE\)\s+################ NuGet import begin') {
+    Write-Host "Fixing newline formatting after set() function..." -ForegroundColor Yellow
+    $content = $content -replace '(PARENT_SCOPE\))\s+(################ NuGet import begin)', "`$1`r`n`r`n`$2"
+    Set-Content $flutterTtsPath $content -NoNewline
+    Write-Host "Fixed newline formatting!" -ForegroundColor Green
+    $needsReload = $true
+}
+
+# Reload content if we made changes
+if ($needsReload) {
+    $content = Get-Content $flutterTtsPath -Raw
+}
+
 # Fix Windows Runtime library linkage
 Write-Host "Checking Windows Runtime library linkage..." -ForegroundColor Cyan
-$content = Get-Content $flutterTtsPath -Raw
 
 if ($content -notmatch "windowsapp\.lib") {
     # Add windowsapp.lib after flutter_wrapper_plugin
@@ -151,6 +242,16 @@ if ($content -notmatch "windowsapp\.lib") {
     }
 } else {
     Write-Host "Windows Runtime library already linked!" -ForegroundColor Green
+}
+
+# Final syntax check
+$finalOpenParens = ([regex]::Matches($content, '\(')).Count
+$finalCloseParens = ([regex]::Matches($content, '\)')).Count
+if ($finalOpenParens -eq $finalCloseParens) {
+    Write-Host "Syntax check passed: All parentheses balanced!" -ForegroundColor Green
+} else {
+    Write-Host "Warning: Syntax check failed. Open: $finalOpenParens, Close: $finalCloseParens" -ForegroundColor Yellow
+    Write-Host "The file may still have issues. Please review manually." -ForegroundColor Yellow
 }
 
 Write-Host "`nflutter_tts CMakeLists.txt fixed successfully!" -ForegroundColor Green

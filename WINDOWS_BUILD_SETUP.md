@@ -80,6 +80,44 @@ flutter run -d android
 ### File NÊN commit:
 - `prepare_build.ps1` - Script chuẩn bị build (tự động detect platform)
 - `run_windows.ps1` - Script build Windows tự động
+- `fix_flutter_tts.ps1` - Script sửa lỗi CMake của flutter_tts plugin
+- `fix_cmake_before_build.ps1` - Script tự động sửa lỗi CMake trước khi build
+
+## Sửa Lỗi CMake (flutter_tts)
+
+### Lỗi thường gặp:
+```
+CMake Error at flutter/ephemeral/.plugin_symlinks/flutter_tts/windows/CMakeLists.txt:95:
+  Parse error.  Function missing ending ")".  End of file reached.
+```
+
+### Giải pháp tự động:
+Script `fix_flutter_tts.ps1` tự động:
+1. Phát hiện lỗi thiếu dấu đóng ngoặc
+2. Sửa lỗi NuGet configuration
+3. Thêm Windows Runtime library linkage
+4. Kiểm tra syntax trước khi build
+
+**Script tự động chạy khi:**
+- Chạy `.\run_windows.ps1` (tự động gọi trước khi build)
+- Chạy `.\prepare_build.ps1 windows` (tự động gọi sau `flutter pub get`)
+
+### Sửa thủ công (nếu cần):
+```powershell
+# 1. Đảm bảo ephemeral folder đã được tạo
+flutter pub get
+
+# 2. Chạy script sửa lỗi
+.\fix_flutter_tts.ps1
+
+# 3. Build lại
+flutter run -d windows
+```
+
+### Lưu ý:
+- Script `fix_flutter_tts.ps1` sẽ tự động backup file gốc (`.backup`)
+- Nếu vẫn gặp lỗi, kiểm tra file backup và so sánh với file đã sửa
+- Có thể cần chạy `flutter clean` trước khi build lại
 - `run_windows.bat` - Script build Windows tự động (batch)
 - `clean_windows_build.ps1` - Script cleanup Windows build
 - `fix_flutter_tts.ps1` - Script fix plugin flutter_tts

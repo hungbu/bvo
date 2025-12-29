@@ -100,10 +100,18 @@ if ($LASTEXITCODE -ne 0) {
 if ($Platform -eq "windows") {
     Write-Host "[4/4] Fixing Windows-specific issues..." -ForegroundColor Yellow
     
-    # Fix flutter_tts plugin
+    # Wait a moment for ephemeral folder to be fully generated
+    Start-Sleep -Milliseconds 500
+    
+    # Fix flutter_tts plugin (must run after pub get)
     if (Test-Path ".\fix_flutter_tts.ps1") {
         Write-Host "  Fixing flutter_tts plugin..." -ForegroundColor Gray
-        & ".\fix_flutter_tts.ps1" | Out-Null
+        & ".\fix_flutter_tts.ps1"
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "  Warning: fix_flutter_tts.ps1 had issues, but continuing..." -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "  Warning: fix_flutter_tts.ps1 not found!" -ForegroundColor Yellow
     }
     
     Write-Host ""
