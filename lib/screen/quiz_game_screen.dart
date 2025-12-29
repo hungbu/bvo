@@ -15,11 +15,13 @@ enum QuizType {
 class QuizGameScreen extends StatefulWidget {
   final List<Word> words;
   final String title;
+  final Future<void> Function(Word word, bool isCorrect)? onWordProgressUpdate;
 
   const QuizGameScreen({
     Key? key,
     required this.words,
     this.title = 'Quiz',
+    this.onWordProgressUpdate,
   }) : super(key: key);
 
   @override
@@ -244,8 +246,13 @@ class _QuizGameScreenState extends State<QuizGameScreen> with TickerProviderStat
 
     print('   📝 Updating word progress...');
     try {
-      // Update word progress in repository
-      await QuizRepository().updateWordProgress(currentWord, isAnswerCorrect);
+      // Use custom callback if provided, otherwise use default QuizRepository
+      if (widget.onWordProgressUpdate != null) {
+        await widget.onWordProgressUpdate!(currentWord, isAnswerCorrect);
+      } else {
+        // Update word progress in repository
+        await QuizRepository().updateWordProgress(currentWord, isAnswerCorrect);
+      }
       
       // Also update UserProgressRepository for comprehensive tracking
       await UserProgressRepository().updateWordProgress(currentWord.topic, currentWord, isAnswerCorrect);

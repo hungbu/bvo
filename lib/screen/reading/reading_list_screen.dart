@@ -10,6 +10,7 @@ import 'import_reading_screen.dart';
 import 'form_import_reading_screen.dart';
 import 'edit_reading_screen.dart';
 import 'listen_reading_dialog.dart';
+import 'reading_quiz_screen.dart';
 
 class ReadingListScreen extends StatefulWidget {
   const ReadingListScreen({Key? key}) : super(key: key);
@@ -407,6 +408,16 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                     ),
                   ),
                   const PopupMenuItem<String>(
+                    value: 'quiz',
+                    child: Row(
+                      children: [
+                        Icon(Icons.quiz, size: 20),
+                        SizedBox(width: 8),
+                        Text('Quiz'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
                     value: 'download',
                     child: Row(
                       children: [
@@ -441,6 +452,16 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                     if (result == true) {
                       await _loadReadings();
                     }
+                  } else if (value == 'quiz') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReadingQuizScreen(
+                          readingId: reading.id,
+                          readingTitle: reading.title,
+                        ),
+                      ),
+                    );
                   } else if (value == 'download') {
                     await _downloadReading(reading);
                   } else if (value == 'delete') {

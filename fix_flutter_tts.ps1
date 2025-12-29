@@ -14,11 +14,12 @@ Write-Host "Fixing flutter_tts CMakeLists.txt..." -ForegroundColor Cyan
 
 $content = Get-Content $flutterTtsPath -Raw
 
-# Check if already fixed
+# Check if already fixed (but continue to check for windowsapp.lib)
+$nugetFixed = $false
 if ($content -match "find_program\(NUGET_EXE NAMES nuget nuget\.exe") {
     if ($content -match "ENV PATH") {
-        Write-Host "flutter_tts CMakeLists.txt already fixed!" -ForegroundColor Green
-        exit 0
+        $nugetFixed = $true
+        Write-Host "NuGet section already fixed!" -ForegroundColor Green
     }
 }
 
@@ -128,12 +129,30 @@ if (-not $found -and $content -match 'ARGS install') {
 
 if ($found) {
     Set-Content $flutterTtsPath $content -NoNewline
-    Write-Host "Fixed flutter_tts CMakeLists.txt successfully!" -ForegroundColor Green
+    Write-Host "Fixed NuGet section!" -ForegroundColor Green
 } else {
     Write-Host "Warning: Could not find NuGet section to replace. File may have different structure." -ForegroundColor Yellow
     Write-Host "The file may already be fixed or have a different format." -ForegroundColor Yellow
-    Write-Host "You may need to manually check the file for syntax errors." -ForegroundColor Yellow
 }
 
-Write-Host "`nYou can now try building again: flutter run -d windows" -ForegroundColor Cyan
+# Fix Windows Runtime library linkage
+Write-Host "Checking Windows Runtime library linkage..." -ForegroundColor Cyan
+$content = Get-Content $flutterTtsPath -Raw
+
+if ($content -notmatch "windowsapp\.lib") {
+    # Add windowsapp.lib after flutter_wrapper_plugin
+    if ($content -match "(target_link_libraries\(\$\{PLUGIN_NAME\} PRIVATE flutter flutter_wrapper_plugin\))") {
+        $replacement = '$1' + "`n`n# Link Windows Runtime library for WinRT support`ntarget_link_libraries(`${PLUGIN_NAME} PRIVATE windowsapp.lib)"
+        $content = $content -replace "(target_link_libraries\(\$\{PLUGIN_NAME\} PRIVATE flutter flutter_wrapper_plugin\))", $replacement
+        Set-Content $flutterTtsPath $content -NoNewline
+        Write-Host "Added windowsapp.lib linkage!" -ForegroundColor Green
+    } else {
+        Write-Host "Warning: Could not find target_link_libraries section to add windowsapp.lib" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "Windows Runtime library already linked!" -ForegroundColor Green
+}
+
+Write-Host "`nflutter_tts CMakeLists.txt fixed successfully!" -ForegroundColor Green
+Write-Host "You can now try building again: flutter run -d windows" -ForegroundColor Cyan
 

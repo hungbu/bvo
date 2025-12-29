@@ -4,7 +4,7 @@ import '../../model/practice_question.dart';
 import '../../repository/practice_repository.dart';
 import '../../repository/reading_repository.dart';
 import '../../repository/word_repository.dart';
-import '../../repository/quiz_repository.dart';
+import '../../repository/reading_quiz_repository.dart';
 import '../../repository/dictionary_words_repository.dart';
 import '../../repository/practice_history_repository.dart';
 import '../../model/practice_history.dart';
@@ -30,7 +30,6 @@ class _PracticeScreenState extends State<PracticeScreen> {
   final PracticeRepository _repository = PracticeRepository();
   final ReadingRepository _readingRepository = ReadingRepository();
   final WordRepository _wordRepository = WordRepository();
-  final QuizRepository _quizRepository = QuizRepository();
   final DictionaryWordsRepository _dictionaryRepository = DictionaryWordsRepository();
   final PracticeHistoryRepository _historyRepository = PracticeHistoryRepository();
   List<PracticeQuestion> _questions = [];
@@ -1206,7 +1205,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
                           return;
                         }
 
-                        final addedCount = await _quizRepository.addWordsToQuiz(wordsToAdd);
+                        // Add to ReadingQuizRepository (quiz riêng cho reading này)
+                        final readingQuizRepo = ReadingQuizRepository();
+                        final addedCount = await readingQuizRepo.addWordsToReadingQuiz(
+                          widget.readingId,
+                          wordsToAdd,
+                        );
                         Navigator.of(context).pop();
                         
                         if (mounted) {
@@ -1214,7 +1218,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
                             SnackBar(
                               content: Text(
                                 addedCount > 0
-                                    ? 'Đã thêm $addedCount từ vào danh sách ôn tập'
+                                    ? 'Đã thêm $addedCount từ vào quiz của bài reading này'
                                     : 'Không có từ nào được thêm (có thể đã tồn tại)',
                               ),
                               duration: const Duration(seconds: 3),

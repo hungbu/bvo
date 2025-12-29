@@ -6,6 +6,7 @@ import 'package:bvo/screen/quiz_game_screen.dart';
 import 'package:bvo/repository/user_progress_repository.dart';
 import 'package:bvo/repository/quiz_repository.dart';
 import 'package:bvo/service/audio_service.dart';
+import 'package:bvo/widget/quiz_planning_dialog.dart';
 
 class TopicLevelScreen extends StatefulWidget {
   const TopicLevelScreen({super.key});
@@ -241,18 +242,41 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
       return;
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => QuizGameScreen(
+    // Show quiz planning dialog
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => QuizPlanningDialog(
           words: wordsToQuiz,
           title: 'Quiz ${_getCurrentLevelName()} Level',
+          onStartQuiz: (selectedWords) {
+            if (selectedWords.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Vui lòng chọn ít nhất một từ để quiz!'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+              return;
+            }
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => QuizGameScreen(
+                  words: selectedWords,
+                  title: 'Quiz ${_getCurrentLevelName()} Level',
+                ),
+              ),
+            ).then((_) {
+              // Refresh statistics and UI after quiz
+              _refreshData();
+            });
+          },
         ),
-      ),
-    ).then((_) {
-      // Refresh statistics and UI after quiz
-      _refreshData();
-    });
+      );
+    }
   }
 
   @override
@@ -543,35 +567,6 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Flashcard button
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton.icon(
-                onPressed: nonMasteredCount == 0 ? null : _startFlashcard,
-                icon: const Icon(Icons.style, size: 24),
-                label: Text(
-                  nonMasteredCount == 0
-                    ? 'Tất cả từ đã thuộc! 🎉'
-                    : 'Bắt đầu Flashcard ($nonMasteredCount từ)',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey[300],
-                  disabledForegroundColor: Colors.grey[600],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
             // Quiz button (uses same words as flashcard)
             SizedBox(
               width: double.infinity,
@@ -590,6 +585,35 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey[300],
+                  disabledForegroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Flashcard button
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: nonMasteredCount == 0 ? null : _startFlashcard,
+                icon: const Icon(Icons.style, size: 24),
+                label: Text(
+                  nonMasteredCount == 0
+                    ? 'Tất cả từ đã thuộc! 🎉'
+                    : 'Bắt đầu Flashcard ($nonMasteredCount từ)',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                   disabledBackgroundColor: Colors.grey[300],
                   disabledForegroundColor: Colors.grey[600],
