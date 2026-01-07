@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/word.dart';
+import '../model/practice_question.dart';
+import 'reading_repository.dart';
+import 'dictionary_words_repository.dart';
 
 class ReadingQuizRepository {
   static String _getKey(String readingId) => 'reading_quiz_$readingId';
@@ -230,6 +233,112 @@ class ReadingQuizRepository {
   double _calculateMasteryLevel(int correctAnswers, int totalAttempts) {
     if (totalAttempts == 0) return 0.0;
     return (correctAnswers / totalAttempts).clamp(0.0, 1.0);
+  }
+
+  /// Tự động khởi tạo quiz từ question số 1 của reading
+  /// Extract các từ từ correctAnswers của question 1 và thêm vào quiz
+  Future<int> initializeFromQuestion1(String readingId) async {
+    try {
+      // Kiểm tra xem đã có từ nào chưa
+      final existingWords = await getReadingQuizWords(readingId);
+      if (existingWords.isNotEmpty) {
+        // Đã có từ rồi, không cần initialize
+        return 0;
+      }
+
+      // Lấy questions từ reading
+      final readingRepository = ReadingRepository();
+      final questions = await readingRepository.loadQuestionsForReading(readingId);
+      
+      if (questions.isEmpty) {
+        // Không có question nào
+        return 0;
+      }
+
+      // Lấy question số 1 (index 0)
+      final PracticeQuestion question1 = questions[0];
+      
+      // Extract words từ correctAnswers
+      final wordsToAdd = <Word>[];
+      final dictionaryRepo = DictionaryWordsRepository();
+      
+      // Extract words từ tất cả correctAnswers
+      for (final answerText in question1.correctAnswers) {
+        final extractedWords = _extractWordsFromText(answerText);
+        
+        // Lấy Word objects từ dictionary
+        for (final wordText in extractedWords) {
+          final word = await dictionaryRepo.getWord(wordText);
+          if (word != null) {
+            // Tạo Word với topic là reading title
+            final reading = await readingRepository.getReading(readingId);
+            final topic = reading?.title ?? 'Reading';
+            
+            final quizWord = word.copyWith(
+              topic: topic,
+              reviewCount: 0,
+              nextReview: DateTime.now(),
+              lastReviewed: null,
+              correctAnswers: 0,
+              totalAttempts: 0,
+            );
+            
+            // Kiểm tra xem từ đã có trong list chưa (tránh duplicate)
+            if (!wordsToAdd.any((w) => w.en.toLowerCase() == wordText.toLowerCase())) {
+              wordsToAdd.add(quizWord);
+            }
+          }
+        }
+      }
+
+      // Thêm các từ vào quiz
+      if (wordsToAdd.isNotEmpty) {
+        await addWordsToReadingQuiz(readingId, wordsToAdd);
+        return wordsToAdd.length;
+      }
+
+      return 0;
+    } catch (e) {
+      print('Error initializing quiz from question 1: $e');
+      return 0;
+    }
+  }
+
+  /// Extract English words from text (helper method)
+  List<String> _extractWordsFromText(String text) {
+    // Match English words (letters, apostrophes, hyphens)
+    final wordPattern = RegExp(r"[a-zA-Z]+(?:'[a-zA-Z]+)?(?:-[a-zA-Z]+)?");
+    final matches = wordPattern.allMatches(text);
+    
+    final words = <String>{};
+    for (final match in matches) {
+      final word = match.group(0)!.toLowerCase();
+      // Filter out common short words (articles, prepositions, etc.)
+      if (word.length > 2 && !_isCommonWord(word)) {
+        words.add(word);
+      }
+    }
+    
+    return words.toList()..sort();
+  }
+
+  /// Check if word is a common English word (articles, prepositions, etc.)
+  bool _isCommonWord(String word) {
+    const commonWords = {
+      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+      'of', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during',
+      'including', 'against', 'among', 'throughout', 'despite', 'towards',
+      'upon', 'concerning',
+      'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
+      'do', 'does', 'did', 'will', 'would', 'should', 'could', 'may', 'might',
+      'can', 'must', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she',
+      'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his',
+      'its', 'our', 'their', 'what', 'which', 'who', 'whom', 'whose',
+      'where', 'when', 'why', 'how', 'all', 'each', 'every', 'both', 'few',
+      'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only',
+      'own', 'same', 'so', 'than', 'too', 'very', 'just', 'now'
+    };
+    return commonWords.contains(word);
   }
 }
 

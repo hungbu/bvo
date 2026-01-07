@@ -129,18 +129,44 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
     try {
       // Load words from ReadingQuizRepository
       final quizRepository = ReadingQuizRepository();
-      final words = await quizRepository.getReadingQuizWords(reading.id);
+      var words = await quizRepository.getReadingQuizWords(reading.id);
       
+      // Nếu chưa có từ nào, tự động khởi tạo từ question 1
       if (words.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Chưa có từ vựng nào trong quiz của bài reading này'),
-              backgroundColor: Colors.orange,
+              content: Text('Đang tải từ vựng từ câu hỏi số 1...'),
+              backgroundColor: Colors.blue,
             ),
           );
         }
-        return;
+        
+        final addedCount = await quizRepository.initializeFromQuestion1(reading.id);
+        
+        if (addedCount > 0) {
+          // Reload words sau khi đã thêm
+          words = await quizRepository.getReadingQuizWords(reading.id);
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Đã thêm $addedCount từ vựng từ câu hỏi số 1 vào quiz'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Không tìm thấy từ vựng trong câu hỏi số 1'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          return;
+        }
       }
 
       // Get due words (words that need review)
