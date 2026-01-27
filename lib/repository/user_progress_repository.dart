@@ -160,12 +160,35 @@ class UserProgressRepository {
     };
   }
 
-  /// Save progress for a specific word (deprecated - now in database)
-  /// Kept for backward compatibility
-  @Deprecated('Word progress is now stored in database')
+  /// Save progress for a specific word
+  /// Dual write: Save to SharedPreferences (sync) and database (async)
   Future<void> saveWordProgress(String topic, String wordEn, Map<String, dynamic> progress) async {
-    // No-op: word progress is now stored in database
-    // Keep for backward compatibility
+    try {
+      final cacheService = WordProgressCacheService();
+      
+      // 1. Save to SharedPreferences immediately (cache)
+      await cacheService.saveWordProgress(topic, wordEn, progress);
+      
+      // 2. Save to database asynchronously
+      _dbRepository.updateWordProgress(
+        wordEn: wordEn,
+        reviewCount: progress['reviewCount'] as int?,
+        correctAnswers: progress['correctAnswers'] as int?,
+        totalAttempts: progress['totalAttempts'] as int?,
+        masteryLevel: (progress['masteryLevel'] as num?)?.toDouble(),
+        nextReview: progress['nextReview'] != null ? DateTime.parse(progress['nextReview'] as String) : null,
+        lastReviewed: progress['lastReviewed'] != null ? DateTime.parse(progress['lastReviewed'] as String) : null,
+        currentInterval: progress['currentInterval'] as int?,
+        easeFactor: (progress['easeFactor'] as num?)?.toDouble(),
+      ).catchError((e) {
+        print('❌ Error updating word progress in database within saveWordProgress: $e');
+        return false;
+      });
+      
+      print('💾 Persisted progress for "$wordEn" to both cache and database');
+    } catch (e) {
+      print('❌ Error in saveWordProgress for "$wordEn": $e');
+    }
   }
 
   /// Update word progress after correct answer

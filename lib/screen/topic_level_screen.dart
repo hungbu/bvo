@@ -520,21 +520,38 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
             ],
           ],
         ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.remove_red_eye_outlined,
-              size: 16,
-              color: Colors.grey[600],
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.remove_red_eye_outlined,
+                  size: 14,
+                  color: Colors.grey[600],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '$reviewCount',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 2),
-            Text(
-              '$reviewCount',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
+            const SizedBox(width: 4),
+            IconButton(
+              icon: Icon(
+                isLearned ? Icons.check_circle : Icons.task_alt,
+                size: 24,
+                color: isLearned ? Colors.green : Colors.grey[400],
               ),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () => _markWordAsMastered(word),
+              tooltip: isLearned ? 'Đã thuộc (Bấm để hủy)' : 'Đánh dấu đã thuộc',
             ),
           ],
         ),
@@ -949,12 +966,10 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
                         const SizedBox(width: 12),
                         Expanded(
                           child: TextButton(
-                            onPressed: reviewCount >= 5 || _masteredWords.contains(word.en)
-                              ? null
-                              : () {
-                                  Navigator.of(context).pop();
-                                  _markWordAsMastered(word);
-                                },
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              _markWordAsMastered(word);
+                            },
                             style: TextButton.styleFrom(
                               backgroundColor: reviewCount >= 5 || _masteredWords.contains(word.en)
                                 ? Colors.grey[300]
@@ -970,14 +985,14 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
                               children: [
                                 Icon(
                                   reviewCount >= 5 || _masteredWords.contains(word.en)
-                                    ? Icons.check_circle 
+                                    ? Icons.undo 
                                     : Icons.task_alt,
                                   size: 18,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   reviewCount >= 5 || _masteredWords.contains(word.en)
-                                    ? 'Mastered'
+                                    ? 'Chưa thuộc'
                                     : 'Đã thuộc',
                                 ),
                               ],
@@ -1082,31 +1097,54 @@ class _TopicLevelScreenState extends State<TopicLevelScreen> with SingleTickerPr
       // Get current progress
       final currentProgress = await _progressRepository.getWordProgress(word.topic, word.en);
       
-      // Update to mastered status (reviewCount = 5)
-      currentProgress['reviewCount'] = 5;
-      currentProgress['isLearned'] = true;
+      // Toggle logic: If already mastered (reviewCount >= 5), set back to 0. Otherwise set to 5.
+      final bool currentlyMastered = (currentProgress['reviewCount'] ?? 0) >= 5;
+      final int newReviewCount = currentlyMastered ? 0 : 5;
+      final bool newIsLearned = !currentlyMastered;
+      
+      // Update progress data
+      currentProgress['reviewCount'] = newReviewCount;
+      currentProgress['isLearned'] = newIsLearned;
       currentProgress['lastReviewed'] = DateTime.now().toIso8601String();
       
       // Save updated progress
       await _progressRepository.saveWordProgress(word.topic, word.en, currentProgress);
       
+      // Update the in-memory word lists to reflect the change immediately
+      final updatedWord = word.copyWith(
+        reviewCount: newReviewCount,
+        lastReviewed: DateTime.now(),
+      );
+
+      // Helper function to update a word in a list
+      List<Word> updateWordInList(List<Word> list) {
+        return list.map((w) => w.en == word.en && w.topic == word.topic ? updatedWord : w).toList();
+      }
+
       setState(() {
-        _masteredWords.add(word.en);
-      });
-      
-      // Reload statistics to update the learned count
-      _calculateLearnedCount();
-      
-      // Increment refresh key to force FutureBuilder rebuild
-      setState(() {
+        if (newIsLearned) {
+          _masteredWords.add(word.en);
+        } else {
+          _masteredWords.remove(word.en);
+        }
+        
+        _basicWords = updateWordInList(_basicWords);
+        _intermediateWords = updateWordInList(_intermediateWords);
+        _advancedWords = updateWordInList(_advancedWords);
+        
+        // Update the statistics map based on the updated lists
+        _calculateLearnedCount();
+        
         _refreshKey++;
       });
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✅ Marked "${word.en}" as mastered!'),
-            backgroundColor: Theme.of(context).primaryColor,
+            content: Text(newIsLearned 
+              ? '✅ Marked "${word.en}" as mastered!' 
+              : '🔄 Marked "${word.en}" as unlearned'),
+            backgroundColor: newIsLearned ? Theme.of(context).primaryColor : Colors.orange,
             duration: const Duration(seconds: 2),
           ),
         );
